@@ -15,7 +15,7 @@ The couple manages every detail from a dashboard and gets a push notification on
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38bdf8?logo=tailwindcss&logoColor=white)
 ![License](https://img.shields.io/badge/license-proprietary-6f5b4e)
 
-**[Live demo](https://plataforma-bodas.vercel.app/demo)** · **[Dashboard demo](#-try-the-dashboard)** · **[Architecture](docs/architecture.md)** · **[Deployment](docs/deployment.md)**
+**[Live demo](https://invitacion-bodas.vercel.app/demo)** · **[Dashboard demo](#-try-the-dashboard)** · **[Architecture](docs/architecture.md)** · **[Deployment](docs/deployment.md)**
 
 </div>
 
@@ -59,13 +59,13 @@ The couple manages every detail from a dashboard and gets a push notification on
 
 ## 👀 Try the dashboard
 
-Open **[plataforma-bodas.vercel.app/admin](https://plataforma-bodas.vercel.app/admin)** and sign in with the read-only demo account:
+Open **[invitacion-bodas.vercel.app/admin](https://invitacion-bodas.vercel.app/admin)** and sign in with the read-only demo account:
 
 | Email | Password |
 | --- | --- |
 | `demo@plataforma-bodas.app` | `VerLaDemo2026!` |
 
-You can explore every screen; the database rejects any change made with this account. The guest side is at **[/demo](https://plataforma-bodas.vercel.app/demo)** — try confirming attendance from your phone.
+You can explore every screen; the database rejects any change made with this account. The guest side is at **[/demo](https://invitacion-bodas.vercel.app/demo)** — try confirming attendance from your phone.
 
 ## 🧱 Tech stack
 
