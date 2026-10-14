@@ -1,0 +1,27 @@
+Copyright (c) 2026 Daniel Espinal (github.com/Daniiel18). All rights reserved.
+
+This repository and all of its contents — including source code, database
+migrations, documentation, designs and illustrations — are proprietary.
+
+The source code is published for viewing and evaluation only. No license is
+granted to copy, modify, merge, publish, distribute, sublicense, sell, host as a
+service or otherwise use this software, in whole or in part, without the prior
+written permission of the copyright holder.
+
+GitHub's Terms of Service allow users to view and fork public repositories on
+GitHub. That does not grant any of the rights listed above.
+
+Contributions submitted through pull requests are accepted under the terms in
+CONTRIBUTING.md.
+
+Third-party software and media keep their own licenses:
+  - Open-source dependencies listed in package.json, under their respective licenses.
+  - Demo photos from Unsplash, under the Unsplash License (https://unsplash.com/license).
+  - Demo music "Canon in D Major" by Kevin MacLeod (incompetech.com), licensed
+    under Creative Commons Attribution 4.0 (https://creativecommons.org/licenses/by/4.0/).
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT
+HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING FROM, OUT OF
+OR IN CONNECTION WITH THE SOFTWARE OR ITS USE.
