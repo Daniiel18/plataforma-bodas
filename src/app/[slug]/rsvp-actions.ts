@@ -1,0 +1,202 @@
+"use server";
+
+import { createHash, randomBytes } from "node:crypto";
+
+import { headers } from "next/headers";
+import { after } from "next/server";
+import { z } from "zod";
+
+import { notifyCouple } from "@/lib/notify";
+import { createAdminClient } from "@/lib/supabase/admin";
+
+/**
+ * Acciones públicas del formulario de asistencia. El invitado no tiene
+ * cuenta: lo identifica un token secreto que se guarda en su celular y en
+ * su enlace personal. En la base de datos solo se guarda su hash.
+ */
+
+const ERROR_CODES = [
+  "INVITATION_NOT_FOUND",
+  "RSVP_CLOSED",
+  "RATE_LIMITED",
+  "TOO_MANY_COMPANIONS",
+  "INVALID_COMPANIONS",
+  "RSVP_NOT_FOUND",
+  "NO_CHANGE",
+  "WISH_EXISTS",
+] as const;
+
+export type RsvpErrorCode = (typeof ERROR_CODES)[number] | "INVALID" | "UNAVAILABLE";
+type Failure = { ok: false; code: RsvpErrorCode };
+
+export type MyRsvp = {
+  fullName: string;
+  attending: boolean;
+  companions: string[];
+  hasWish: boolean;
+  canChange: boolean;
+};
+
+const slugSchema = z
+  .string()
+  .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/)
+  .max(80);
+const tokenSchema = z.string().regex(/^[A-Za-z0-9_-]{20,64}$/);
+const nameSchema = z.string().trim().min(2).max(120);
+const localeSchema = z.enum(["es", "en"]);
+
+const hashToken = (token: string) => createHash("sha256").update(token).digest("hex");
+
+function failureFrom(error: { message?: string } | null): Failure {
+  const message = error?.message ?? "";
+  const code = ERROR_CODES.find((c) => message.includes(c));
+  if (!code) console.error("RSVP:", message);
+  return { ok: false, code: code ?? "UNAVAILABLE" };
+}
+
+/** Huella anónima de la conexión (para frenar envíos masivos). */
+async function connectionHash() {
+  const h = await headers();
+  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "";
+  return ip
+    ? createHash("sha256")
+        .update(`${process.env.IP_HASH_SALT ?? ""}:${ip}`)
+        .digest("hex")
+        .slice(0, 32)
+    : null;
+}
+
+function admin() {
+  try {
+    return createAdminClient();
+  } catch {
+    return null;
+  }
+}
+
+const submitSchema = z
+  .object({
+    slug: slugSchema,
+    fullName: nameSchema,
+    attending: z.boolean(),
+    companions: z.array(nameSchema).max(50),
+    locale: localeSchema,
+    website: z.string().max(0), // campo trampa: las personas no lo ven
+  })
+  .refine((v) => v.attending || v.companions.length === 0);
+
+export async function submitRsvp(input: z.input<typeof submitSchema>): Promise<{ ok: true; token: string } | Failure> {
+  const parsed = submitSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, code: "INVALID" };
+  const v = parsed.data;
+
+  const db = admin();
+  if (!db) return { ok: false, code: "UNAVAILABLE" };
+
+  const token = randomBytes(24).toString("base64url");
+  const ipHash = await connectionHash();
+  const { data, error } = await db
+    .rpc("rsvp_submit", {
+      p_slug: v.slug,
+      p_full_name: v.fullName,
+      p_attending: v.attending,
+      p_companions: v.companions,
+      p_locale: v.locale,
+      p_token_hash: hashToken(token),
+      p_ip_hash: ipHash,
+    })
+    .single<{ rsvp_id: string; wedding_id: string }>();
+  if (error || !data) return failureFrom(error);
+
+  after(() =>
+    notifyCouple(data.wedding_id, { kind: "rsvp", name: v.fullName, attending: v.attending, companions: v.companions }),
+  );
+  return { ok: true, token };
+}
+
+export async function getMyRsvp(slug: string, token: string): Promise<{ ok: true; rsvp: MyRsvp | null } | Failure> {
+  if (!slugSchema.safeParse(slug).success || !tokenSchema.safeParse(token).success) return { ok: true, rsvp: null };
+  const db = admin();
+  if (!db) return { ok: false, code: "UNAVAILABLE" };
+
+  const { data, error } = await db.rpc("rsvp_status", { p_slug: slug, p_token_hash: hashToken(token) }).maybeSingle<{
+    full_name: string;
+    attending: boolean;
+    companions: string[];
+    has_wish: boolean;
+    can_change: boolean;
+  }>();
+  if (error) return failureFrom(error);
+  if (!data) return { ok: true, rsvp: null };
+
+  return {
+    ok: true,
+    rsvp: {
+      fullName: data.full_name,
+      attending: data.attending,
+      companions: data.companions ?? [],
+      hasWish: data.has_wish,
+      canChange: data.can_change,
+    },
+  };
+}
+
+const changeSchema = z
+  .object({
+    slug: slugSchema,
+    token: tokenSchema,
+    attending: z.boolean(),
+    companions: z.array(nameSchema).max(50),
+  })
+  .refine((v) => v.attending || v.companions.length === 0);
+
+export async function changeAttendance(input: z.input<typeof changeSchema>): Promise<{ ok: true } | Failure> {
+  const parsed = changeSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, code: "INVALID" };
+  const v = parsed.data;
+  const db = admin();
+  if (!db) return { ok: false, code: "UNAVAILABLE" };
+
+  const { data, error } = await db
+    .rpc("rsvp_change", {
+      p_slug: v.slug,
+      p_token_hash: hashToken(v.token),
+      p_attending: v.attending,
+      p_companions: v.companions,
+    })
+    .single<{ rsvp_id: string; wedding_id: string; full_name: string }>();
+  if (error || !data) return failureFrom(error);
+
+  after(() =>
+    notifyCouple(data.wedding_id, {
+      kind: "change",
+      name: data.full_name,
+      attending: v.attending,
+      companions: v.companions,
+    }),
+  );
+  return { ok: true };
+}
+
+const wishSchema = z.object({
+  slug: slugSchema,
+  token: tokenSchema,
+  message: z.string().trim().min(1).max(1000),
+  locale: localeSchema,
+});
+
+export async function submitWish(input: z.input<typeof wishSchema>): Promise<{ ok: true } | Failure> {
+  const parsed = wishSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, code: "INVALID" };
+  const v = parsed.data;
+  const db = admin();
+  if (!db) return { ok: false, code: "UNAVAILABLE" };
+
+  const { data, error } = await db
+    .rpc("wish_submit", { p_slug: v.slug, p_token_hash: hashToken(v.token), p_message: v.message, p_locale: v.locale })
+    .single<{ wish_id: string; wedding_id: string; full_name: string }>();
+  if (error || !data) return failureFrom(error);
+
+  after(() => notifyCouple(data.wedding_id, { kind: "wish", name: data.full_name, message: v.message }));
+  return { ok: true };
+}
