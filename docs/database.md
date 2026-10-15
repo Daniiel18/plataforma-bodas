@@ -87,10 +87,14 @@ Guests never write to tables directly. The RSVP Server Actions call these functi
 
 | Function | Purpose |
 | --- | --- |
-| `rsvp_submit` | Creates an RSVP and its companions. Checks publication, deadline, max companions and a per-connection rate limit. |
+| `rsvp_reply` | Saves the answer, its companions and the optional wish in one transaction (one notification per guest). |
+| `rsvp_submit` | Building block of `rsvp_reply`: creates the RSVP and its companions. Checks publication, deadline, max companions and a per-connection rate limit. |
 | `rsvp_status` | Returns the guest's own answer from their token hash. |
 | `rsvp_change` | Switches Yes ↔ No before the deadline; increments `change_count`. |
-| `wish_submit` | Stores the guest's single private wish. |
+
+## Realtime
+
+`rsvps` and `wishes` belong to the `supabase_realtime` publication so the dashboard updates live. `rsvps` uses `REPLICA IDENTITY FULL`, which lets the dashboard see the previous answer in update events (to announce Yes ↔ No changes). Realtime evaluates Row Level Security with each subscriber's token, so a couple only receives their own wedding's changes.
 
 ## Integrity rules
 

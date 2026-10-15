@@ -1,0 +1,179 @@
+import type { BackgroundKey, PhotoVeil } from "./backgrounds";
+import type { MediaImage } from "./media";
+import {
+  bilingual,
+  DEFAULT_TEXT,
+  parseContent,
+  type Bi,
+  type GalleryStyle,
+  type SectionType,
+  type Translations,
+} from "./sections";
+import type { TemplateKey } from "./templates";
+
+/**
+ * Turns a section's saved (or draft) content into what the invitation renders.
+ * Pure, so the public invitation and the dashboard's live previews share it.
+ */
+
+export type Photo = MediaImage & { id: string; caption: Bi | null };
+
+export type ZelleInfo = {
+  holderName: string;
+  handle: string;
+  note: Bi | null;
+  qr: MediaImage | null;
+  /** Opens Zelle with the couple as the recipient. */
+  link: string | null;
+};
+
+export type SectionView =
+  | { type: "hero"; kicker: Bi; cover: MediaImage | null }
+  | { type: "parents"; title: Bi; intro: Bi | null; families: { title: Bi | null; names: string[] }[] }
+  | { type: "celebration"; title: Bi; message: Bi | null }
+  | { type: "gallery"; title: Bi; style: GalleryStyle; autoplay: boolean; photos: Photo[] }
+  | { type: "location"; title: Bi; venue: string; address: string; note: Bi | null }
+  | { type: "dress_code"; title: Bi; description: Bi }
+  | { type: "program"; title: Bi; items: { time: string; title: Bi }[] }
+  | {
+      type: "rsvp";
+      title: Bi;
+      message: Bi;
+      closed: Bi;
+      deadline: string | null;
+      deadlineLabel: Bi | null;
+      maxCompanions: number;
+    }
+  | { type: "gifts"; title: Bi; message: Bi; zelle: ZelleInfo };
+
+export type InvitationData = {
+  slug: string;
+  updatedAt: string;
+  template: TemplateKey;
+  accent: string | null;
+  /** Page background; `photo` only when the background is "Tu foto". */
+  background: { key: BackgroundKey; photo: string | null; veil: PhotoVeil };
+  couple: { partner1: string; partner2: string };
+  event: { startsAt: string; timeZone: string } | null;
+  intro: { title: Bi; subtitle: Bi | null; button: Bi } | null;
+  music: { url: string; autoplayOnOpen: boolean } | null;
+  location: { venue: string; address: string } | null;
+  cover: MediaImage | null;
+  sections: SectionView[];
+};
+
+/** Everything a section needs besides its own content. */
+export type ViewContext = {
+  cover: MediaImage | null;
+  photos: Photo[];
+  event: { startsAt: string; timeZone: string } | null;
+  rsvp: { deadline: string | null; timeZone: string | null; maxCompanions: number };
+  /** null when the couple hid the gift or has no Zelle details yet. */
+  zelle: ZelleInfo | null;
+};
+
+/** Returns null when the section has nothing to show yet. */
+export function buildSectionView(
+  type: SectionType,
+  raw: unknown,
+  tr: Translations,
+  ctx: ViewContext,
+): SectionView | null {
+  switch (type) {
+    case "hero": {
+      const c = parseContent("hero", raw);
+      return { type, kicker: bilingual(c.kicker, "kicker", tr, DEFAULT_TEXT.hero.kicker)!, cover: ctx.cover };
+    }
+    case "parents": {
+      const c = parseContent("parents", raw);
+      const families = c.families
+        .map((f, i) => ({ title: bilingual(f.title, `families.${i}.title`, tr), names: f.names.filter(Boolean) }))
+        .filter((f) => f.names.length > 0);
+      if (!families.length) return null;
+      return {
+        type,
+        title: bilingual(c.title, "title", tr, DEFAULT_TEXT.parents.title)!,
+        intro: bilingual(c.intro, "intro", tr),
+        families,
+      };
+    }
+    case "celebration": {
+      if (!ctx.event) return null;
+      const c = parseContent("celebration", raw);
+      return {
+        type,
+        title: bilingual(c.title, "title", tr, DEFAULT_TEXT.celebration.title)!,
+        message: bilingual(c.message, "message", tr),
+      };
+    }
+    case "gallery": {
+      if (!ctx.photos.length) return null;
+      const c = parseContent("gallery", raw);
+      return {
+        type,
+        title: bilingual(c.title, "title", tr, DEFAULT_TEXT.gallery.title)!,
+        style: c.style,
+        autoplay: c.autoplay,
+        photos: ctx.photos,
+      };
+    }
+    case "location": {
+      const c = parseContent("location", raw);
+      if (!c.venue && !c.address) return null;
+      return {
+        type,
+        title: bilingual(c.title, "title", tr, DEFAULT_TEXT.location.title)!,
+        venue: c.venue,
+        address: c.address,
+        note: bilingual(c.note, "note", tr),
+      };
+    }
+    case "dress_code": {
+      const c = parseContent("dress_code", raw);
+      const description = bilingual(c.description, "description", tr);
+      if (!description) return null;
+      return { type, title: bilingual(c.title, "title", tr, DEFAULT_TEXT.dress_code.title)!, description };
+    }
+    case "program": {
+      const c = parseContent("program", raw);
+      if (!c.items.length) return null;
+      return {
+        type,
+        title: bilingual(c.title, "title", tr, DEFAULT_TEXT.program.title)!,
+        items: c.items.map((item, i) => ({ time: item.time, title: bilingual(item.title, `items.${i}.title`, tr)! })),
+      };
+    }
+    case "rsvp": {
+      const c = parseContent("rsvp", raw);
+      const { deadline, timeZone, maxCompanions } = ctx.rsvp;
+      const formatDeadline = (lang: string) =>
+        new Intl.DateTimeFormat(lang, {
+          timeZone: timeZone ?? "UTC",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        }).format(new Date(deadline!));
+      return {
+        type,
+        title: bilingual(c.title, "title", tr, DEFAULT_TEXT.rsvp.title)!,
+        message: bilingual(c.message, "message", tr, DEFAULT_TEXT.rsvp.message)!,
+        closed: bilingual(c.closed_message, "closed_message", tr, DEFAULT_TEXT.rsvp.closed)!,
+        deadline,
+        deadlineLabel: deadline ? { es: formatDeadline("es"), en: formatDeadline("en-US") } : null,
+        maxCompanions,
+      };
+    }
+    case "gifts": {
+      if (!ctx.zelle) return null;
+      const c = parseContent("gifts", raw);
+      return {
+        type,
+        title: bilingual(c.title, "title", tr, DEFAULT_TEXT.gifts.title)!,
+        message: bilingual(c.message, "message", tr, DEFAULT_TEXT.gifts.message)!,
+        zelle: ctx.zelle,
+      };
+    }
+    default:
+      return null; // intro and music are not content blocks
+  }
+}

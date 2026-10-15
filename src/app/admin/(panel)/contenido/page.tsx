@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { getAdminContext } from "@/lib/admin";
+import { loadInvitationParts } from "@/lib/invitation";
 import { publicMediaUrl } from "@/lib/media";
 import { collectTexts, parseContent, SECTION_TYPES, type SectionType, type Translations } from "@/lib/sections";
 
@@ -15,7 +16,7 @@ export default function ContentPage() {
     <>
       <PageHeader
         title="Contenido"
-        description="Escribe en español: al guardar se traduce solo al inglés. Puedes ocultar secciones y cambiar su orden."
+        description="Escribe en español: al guardar se traduce solo al inglés. Cada sección muestra cómo se verá con tu plantilla; puedes ocultarlas y cambiar su orden."
       />
       <Suspense fallback={<BlockSkeleton className="h-[32rem]" />}>
         <ContentLoader />
@@ -26,7 +27,7 @@ export default function ContentPage() {
 
 async function ContentLoader() {
   const { supabase, wedding } = await getAdminContext();
-  const [{ data: rows }, { data: cover }] = await Promise.all([
+  const [{ data: rows }, { data: cover }, parts] = await Promise.all([
     supabase
       .from("sections")
       .select("type, position, is_visible, content, content_en")
@@ -38,6 +39,7 @@ async function ContentLoader() {
       .eq("wedding_id", wedding.id)
       .eq("kind", "cover")
       .maybeSingle(),
+    loadInvitationParts(supabase, wedding),
   ]);
 
   const sections: EditorSection[] = (rows ?? [])
@@ -69,6 +71,8 @@ async function ContentLoader() {
           : null
       }
       hasEventDate={Boolean(wedding.event_starts_at && wedding.timezone)}
+      invitation={parts.data}
+      ctx={parts.ctx}
     />
   );
 }

@@ -9,13 +9,13 @@ import { resolveAccent, resolveTemplate } from "@/lib/templates";
 import { BlockSkeleton, PageHeader } from "../page-header";
 import { AppearanceEditor } from "./appearance-editor";
 
-export const metadata: Metadata = { title: "Apariencia" };
+export const metadata: Metadata = { title: "Plantilla" };
 
 export default function AppearancePage() {
   return (
     <>
       <PageHeader
-        title="Apariencia"
+        title="Plantilla"
         description="Elige la plantilla, el fondo y el color de la invitación. Puedes cambiarlos cuando quieras."
       />
       <Suspense fallback={<BlockSkeleton className="h-96" />}>

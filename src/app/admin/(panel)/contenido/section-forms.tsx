@@ -2,7 +2,7 @@
 
 import { ArrowDownIcon, ArrowUpIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useTransition, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useTransition, type ReactNode } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -20,9 +20,21 @@ type FormProps = {
   content: SectionContent<SectionType>;
   weddingId: string;
   cover: CurrentMedia;
+  /** Receives every edit, so the live preview can follow the typing. */
+  onDraft?: (content: unknown) => void;
 };
 
-export function SectionForm({ type, content, weddingId, cover }: FormProps) {
+const DraftContext = createContext<((content: unknown) => void) | undefined>(undefined);
+
+export function SectionForm({ onDraft, ...props }: FormProps) {
+  return (
+    <DraftContext.Provider value={onDraft}>
+      <SectionFields {...props} />
+    </DraftContext.Provider>
+  );
+}
+
+function SectionFields({ type, content, weddingId, cover }: Omit<FormProps, "onDraft">) {
   switch (type) {
     case "intro":
       return <IntroForm initial={content as SectionContent<"intro">} />;
@@ -124,6 +136,8 @@ function TextField({
 
 function useFields<T extends object>(initial: T) {
   const [values, setValues] = useState(initial);
+  const onDraft = useContext(DraftContext);
+  useEffect(() => onDraft?.(values), [values, onDraft]);
   const set =
     <K extends keyof T>(key: K) =>
     (value: T[K]) =>

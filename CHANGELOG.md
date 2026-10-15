@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- **Single reply with wish**: the form asks for attendance and companions, then the optional wish, and saves everything in one transaction (`rsvp_reply`), so the couple gets one notification with the wish included.
+- **Live dashboard** with Supabase Realtime: new answers and wishes appear as in-app notifications and pages update without reloading.
+- **Share dialog** right after publishing (and from the overview): link, ready-made invitation message with optional English version, and one-tap sharing to Messages/iMessage, WhatsApp, Messenger, Telegram, Facebook, email and the native share sheet.
+- **Zelle**: *Send with Zelle* button that opens Zelle with the couple as recipient, and *Save QR* to the photo library.
+- **Content previews**: every section in the content editor shows how it looks in the chosen template, live while typing.
+
 - **Template engine**: templates are now data (palette, fonts, ornaments, photo frame, card and button styles) rendered through CSS variables, so a new template is a single catalog entry.
 - **11 new templates** (14 in total) in seven collections, inspired by champagne, ivory, cream, warm beige and soft-gold palettes: Champagne & Ivory, Romantic Beige, Champagne Satin, Art Déco Champagne, Candlelight, White & Gold, Sage Garden, Dusty Rose, Rustic Pampas, Burgundy & Champagne and the dark Champagne Night.
 - **14 page backgrounds** that work with any template — plain, cotton paper, linen, satin, watercolor, marble, bokeh, damask, lace, art déco, botanical, polka dots, pinstripes — and **"Your photo"**, with three veil strengths so text stays readable.
@@ -18,6 +24,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - Unknown or unpublished invitation URLs now answer with a real **404** status: published invitations are prerendered at build time and Partial Prefetching is off, so the page checks the invitation before streaming.
 - The 3D gallery mounts its carousel on the guest's device and shows the first photo until then, so invitations can be fully prerendered.
 - Every code comment is now in English.
+- The template comes first in the dashboard menu (renamed *Plantilla*), and the content editor no longer repeats links to the Gallery, Gifts and Music pages.
 - **Get directions** is now a single button: Android opens the system's map app chooser, iPhone shows a native-style sheet with Apple Maps, Google Maps and Waze, and computers open Google Maps.
 
 ## [1.0.0] — 2026-10-15

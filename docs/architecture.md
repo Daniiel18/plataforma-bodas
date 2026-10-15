@@ -90,19 +90,19 @@ sequenceDiagram
   participant P as Push service
   participant C as Couple's phone
 
-  G->>A: submitRsvp(name, attending, companions, honeypot)
+  G->>A: submitRsvp(name, attending, companions, wish, honeypot)
   A->>A: Zod validation, salted IP hash
-  A->>DB: rsvp_submit(slug, …, sha256(token), ip_hash)
+  A->>DB: rsvp_reply(slug, …, wish, sha256(token), ip_hash)
   DB->>DB: published? deadline? rate limit? max companions?
-  DB-->>A: rsvp_id
+  DB-->>A: rsvp_id (answer, companions and wish in one transaction)
   A-->>G: token (saved on the device + personal link)
   A--)P: after(): notifyCouple()
-  P--)C: "✅ Ana confirmed (3 people)"
-  G->>A: submitWish(token, message)
-  A->>DB: wish_submit — one wish per RSVP
+  P--)C: "✅ Ana confirmed (3 people) · 💌 wish"
   G->>A: changeAttendance(token, yes ↔ no)
   A->>DB: rsvp_change — only before the deadline
 ```
+
+The form has two steps — attendance and companions, then the optional wish — and sends everything at once, so the couple receives one notification per guest.
 
 Guests have no accounts. A random 192-bit token identifies their answer; only its SHA-256 hash is stored. The token lives in `localStorage` and in a personal link (`/<slug>?respuesta=<token>`) so the answer can be changed from another device.
 
@@ -113,9 +113,15 @@ Guests have no accounts. A random 192-bit token identifies their answer; only it
 3. A Server Action validates the path, type and size and registers the file; a database trigger enforces the limits (30 photos, one cover, one song, one QR).
 4. Guests receive images through `next/image`, so Vercel's CDN serves optimized versions and Supabase egress stays low. Music is only downloaded after the guest opens the envelope.
 
-## Notifications
+## Notifications and live dashboard
 
-The dashboard is an installable PWA ("Mi boda"). Enabling notifications registers `public/sw.js`, subscribes with VAPID and stores the subscription in `push_subscriptions`. On every RSVP, change or wish the server sends an encrypted Web Push message; expired subscriptions (HTTP 404/410) are removed automatically. On iPhone, Web Push requires adding the dashboard to the home screen (iOS 16.4+).
+The dashboard is an installable PWA ("Mi boda"). Enabling notifications registers `public/sw.js`, subscribes with VAPID and stores the subscription in `push_subscriptions`. For every answer (with its wish) and every change the server sends an encrypted Web Push message; expired subscriptions (HTTP 404/410) are removed automatically. On iPhone, Web Push requires adding the dashboard to the home screen (iOS 16.4+).
+
+While the dashboard is open it also listens to `rsvps` and `wishes` through **Supabase Realtime** (`postgres_changes`, filtered by wedding). The channel joins with the couple's session token, so Row Level Security decides which changes reach it. New answers show an in-app notification — grouped with their wish — and the current page refreshes itself; coming back from the background triggers a refresh too.
+
+## Sharing
+
+Publishing the invitation opens a share dialog: the link, a ready-made invitation message in Spanish (English optional) built by [`src/lib/share.ts`](../src/lib/share.ts), and one-tap links for Messages/iMessage (`sms:`), WhatsApp, Messenger, Telegram, Facebook, email and the native share sheet. Link previews use the couple's cover photo.
 
 ## Project structure
 

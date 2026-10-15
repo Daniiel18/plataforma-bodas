@@ -7,16 +7,25 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAdminContext } from "@/lib/admin";
 import { daysUntil, displayZone, formatDateTime, formatShortDateTime, isPast } from "@/lib/dates";
+import { shareDetails } from "@/lib/share";
 import type { DuplicateMatch, Rsvp, WeddingStats } from "@/lib/types";
 
 import { BlockSkeleton, CardsSkeleton, PageHeader } from "./page-header";
+import { ShareInvitationButton } from "./share-invitation";
 
 export const metadata: Metadata = { title: "Resumen" };
 
 export default function DashboardPage() {
   return (
     <>
-      <PageHeader title="Resumen" />
+      <PageHeader
+        title="Resumen"
+        actions={
+          <Suspense fallback={null}>
+            <ShareAction />
+          </Suspense>
+        }
+      />
       <Suspense
         fallback={
           <div className="grid gap-6">
@@ -29,6 +38,13 @@ export default function DashboardPage() {
       </Suspense>
     </>
   );
+}
+
+/** Once the invitation is published, sharing it is one tap away. */
+async function ShareAction() {
+  const { wedding } = await getAdminContext();
+  if (!wedding.is_published) return null;
+  return <ShareInvitationButton slug={wedding.slug} details={shareDetails(wedding)} />;
 }
 
 async function Dashboard() {

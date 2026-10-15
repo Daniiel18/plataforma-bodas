@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAdminContext } from "@/lib/admin";
 import { dateToZonedInput } from "@/lib/dates";
+import { shareDetails } from "@/lib/share";
 
 import { BlockSkeleton, PageHeader } from "../page-header";
 import { NotificationsCard } from "./notifications-card";
@@ -107,6 +108,7 @@ async function WeddingSettings() {
         max_companions: wedding.max_companions,
         is_published: wedding.is_published,
       }}
+      share={shareDetails(wedding)}
     />
   );
 }

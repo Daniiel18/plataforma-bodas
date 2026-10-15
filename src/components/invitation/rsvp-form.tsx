@@ -1,16 +1,9 @@
 "use client";
 
-import { CheckIcon, CopyIcon, HeartIcon, MinusIcon, PlusIcon } from "lucide-react";
+import { ArrowLeftIcon, CheckIcon, CopyIcon, HeartIcon, MinusIcon, PlusIcon } from "lucide-react";
 import { useEffect, useState, useTransition, type FormEvent, type ReactNode } from "react";
 
-import {
-  changeAttendance,
-  getMyRsvp,
-  submitRsvp,
-  submitWish,
-  type MyRsvp,
-  type RsvpErrorCode,
-} from "@/app/[slug]/rsvp-actions";
+import { changeAttendance, getMyRsvp, submitRsvp, type MyRsvp, type RsvpErrorCode } from "@/app/[slug]/rsvp-actions";
 import type { Bi } from "@/lib/sections";
 
 import { T, TB } from "./lang";
@@ -46,7 +39,6 @@ const ERRORS: Record<RsvpErrorCode, Bi> = {
     en: "We couldn't find your answer. Please confirm again.",
   },
   NO_CHANGE: { es: "Tu respuesta ya estaba así.", en: "Your answer was already set that way." },
-  WISH_EXISTS: { es: "Ya nos enviaste tu deseo. ¡Gracias!", en: "You already sent us your wish. Thank you!" },
   INVALID: {
     es: "Revisa los datos: cada nombre debe tener al menos 2 letras.",
     en: "Please check the form: each name needs at least 2 letters.",
@@ -164,7 +156,8 @@ export function RsvpForm(props: Props) {
 }
 
 // ---------------------------------------------------------------------
-// Steps 1 and 2: name, attendance and companions
+// Step 1: name, attendance and companions · Step 2: optional wish.
+// Everything is sent together, so the couple gets a single notification.
 // ---------------------------------------------------------------------
 
 function NewRsvpForm({
@@ -176,28 +169,36 @@ function NewRsvpForm({
   onAnswered,
 }: Props & { onAnswered: (rsvp: MyRsvp, token: string) => void }) {
   const lang = useLang();
+  const [step, setStep] = useState<"details" | "wish">("details");
   const [name, setName] = useState("");
   const [attending, setAttending] = useState<boolean | null>(null);
   const [companions, setCompanions] = useState<string[]>([]);
+  const [wish, setWish] = useState("");
   const [website, setWebsite] = useState("");
   const [error, setError] = useState<RsvpErrorCode | null>(null);
   const [pending, startTransition] = useTransition();
 
-  const submit = (event: FormEvent) => {
+  const next = (event: FormEvent) => {
     event.preventDefault();
-    if (preview) return;
     if (!validName(name) || attending === null || (attending && !companions.every(validName))) {
       setError("INVALID");
       return;
     }
     setError(null);
+    setStep("wish");
+  };
+
+  const send = (withWish: boolean) => {
+    if (preview || attending === null) return;
     startTransition(async () => {
       const list = attending ? companions.map((c) => c.trim()) : [];
+      const message = withWish ? wish.trim() : "";
       const result = await submitRsvp({
         slug,
         fullName: name.trim(),
         attending,
         companions: list,
+        wish: message,
         locale: lang,
         website,
       });
@@ -206,14 +207,87 @@ function NewRsvpForm({
         return;
       }
       onAnswered(
-        { fullName: name.trim(), attending, companions: list, hasWish: false, canChange: !isPastDeadline(deadline) },
+        {
+          fullName: name.trim(),
+          attending,
+          companions: list,
+          hasWish: Boolean(message),
+          canChange: !isPastDeadline(deadline),
+        },
         result.token,
       );
     });
   };
 
+  const stepLabel = (
+    <p className="text-center text-xs tracking-[0.2em] text-[var(--inv-ink-soft)] uppercase">
+      <T es={`Paso ${step === "details" ? 1 : 2} de 2`} en={`Step ${step === "details" ? 1 : 2} of 2`} />
+    </p>
+  );
+
+  if (step === "wish") {
+    return (
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          send(true);
+        }}
+        className="mx-auto grid max-w-sm gap-5 text-left"
+        noValidate
+      >
+        {stepLabel}
+        <label className="grid gap-2">
+          <span className="text-center text-sm font-semibold tracking-[0.12em] uppercase">
+            <T es="¿Quieres dejarles un deseo?" en="Would you like to leave them a wish?" />
+          </span>
+          <span className="text-center text-xs text-[var(--inv-ink-soft)]">
+            <T es="Opcional · solo lo leerán los novios" en="Optional · only the couple will read it" />
+          </span>
+          <textarea
+            className={`${inputClass} min-h-32 resize-y`}
+            value={wish}
+            onChange={(e) => setWish(e.target.value)}
+            maxLength={1000}
+            placeholder={pick(
+              lang,
+              "Escribe tus buenos deseos para los novios…",
+              "Write your best wishes for the couple…",
+            )}
+          />
+        </label>
+
+        {error && <ErrorText code={error} />}
+        {preview && <PreviewNotice />}
+
+        <button type="submit" className="inv-button" disabled={pending || preview}>
+          {pending ? <T es="Enviando…" en="Sending…" /> : <T es="Enviar mi respuesta" en="Send my answer" />}
+        </button>
+        {wish.trim() && (
+          <button
+            type="button"
+            className="inv-button inv-button-ghost"
+            disabled={pending || preview}
+            onClick={() => send(false)}
+          >
+            <T es="Enviar sin deseo" en="Send without a wish" />
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={() => setStep("details")}
+          disabled={pending}
+          className="mx-auto flex items-center gap-1.5 text-sm text-[var(--inv-ink-soft)] underline underline-offset-4"
+        >
+          <ArrowLeftIcon className="size-3.5" aria-hidden />
+          <T es="Volver" en="Back" />
+        </button>
+      </form>
+    );
+  }
+
   return (
-    <form onSubmit={submit} className="mx-auto grid max-w-sm gap-5 text-left" noValidate>
+    <form onSubmit={next} className="mx-auto grid max-w-sm gap-5 text-left" noValidate>
+      {stepLabel}
       {deadlineLabel && (
         <p className="text-center text-sm text-[var(--inv-ink-soft)]">
           <T es={<>Por favor, confirma antes del {deadlineLabel.es}</>} en={<>Please reply by {deadlineLabel.en}</>} />
@@ -270,16 +344,20 @@ function NewRsvpForm({
       />
 
       {error && <ErrorText code={error} />}
-      {preview && (
-        <p className="rounded-xl bg-[var(--inv-card)] px-4 py-3 text-center text-sm">
-          Vista previa: el formulario se activa cuando publiques la invitación.
-        </p>
-      )}
+      {preview && <PreviewNotice />}
 
-      <button type="submit" className="inv-button" disabled={pending || preview}>
-        {pending ? <T es="Enviando…" en="Sending…" /> : <T es="Enviar mi respuesta" en="Send my answer" />}
+      <button type="submit" className="inv-button">
+        <T es="Continuar" en="Continue" />
       </button>
     </form>
+  );
+}
+
+function PreviewNotice() {
+  return (
+    <p className="rounded-xl bg-[var(--inv-card)] px-4 py-3 text-center text-sm">
+      Vista previa: el formulario se activa cuando publiques la invitación.
+    </p>
   );
 }
 
@@ -379,7 +457,7 @@ function ErrorText({ code }: { code: RsvpErrorCode }) {
 }
 
 // ---------------------------------------------------------------------
-// Step 3: thanks, wish, personal link and changing the answer
+// After answering: thanks, personal link and changing the answer
 // ---------------------------------------------------------------------
 
 function AnsweredView({
@@ -419,12 +497,10 @@ function AnsweredView({
         </p>
       </div>
 
-      {rsvp.hasWish ? (
+      {rsvp.hasWish && (
         <p className="text-sm text-[var(--inv-ink-soft)]">
           <T es="Tu deseo ya les llegó a los novios ♡" en="Your wish has been delivered ♡" />
         </p>
-      ) : (
-        <WishBox slug={slug} token={token} onSent={() => onUpdate({ ...rsvp, hasWish: true })} />
       )}
 
       <PersonalLink slug={slug} token={token} />
@@ -445,69 +521,6 @@ function AnsweredView({
         <T es={`¿No eres ${name}? Responder como otra persona`} en={`Not ${name}? Reply as someone else`} />
       </button>
     </div>
-  );
-}
-
-function WishBox({ slug, token, onSent }: { slug: string; token: string; onSent: () => void }) {
-  const lang = useLang();
-  const [message, setMessage] = useState("");
-  const [skipped, setSkipped] = useState(false);
-  const [error, setError] = useState<RsvpErrorCode | null>(null);
-  const [pending, startTransition] = useTransition();
-
-  if (skipped) {
-    return (
-      <button type="button" onClick={() => setSkipped(false)} className="text-sm underline underline-offset-4">
-        <T es="Dejar un deseo a los novios" en="Leave a wish for the couple" />
-      </button>
-    );
-  }
-
-  return (
-    <form
-      className="grid gap-3 text-left"
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (!message.trim()) return;
-        startTransition(async () => {
-          const result = await submitWish({ slug, token, message, locale: lang });
-          if (result.ok || result.code === "WISH_EXISTS") onSent();
-          else setError(result.code);
-        });
-      }}
-    >
-      <label className="grid gap-2">
-        <span className="text-center text-sm font-semibold tracking-[0.12em] uppercase">
-          <T es="Déjales un deseo (opcional)" en="Leave them a wish (optional)" />
-        </span>
-        <textarea
-          className={`${inputClass} min-h-28 resize-y`}
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          maxLength={1000}
-          placeholder={pick(
-            lang,
-            "Escribe tus buenos deseos para los novios…",
-            "Write your best wishes for the couple…",
-          )}
-        />
-      </label>
-      <p className="text-xs text-[var(--inv-ink-soft)]">
-        <T
-          es="Solo lo leerán los novios. Puedes enviar un único deseo."
-          en="Only the couple will read it. You can send one wish."
-        />
-      </p>
-      {error && <ErrorText code={error} />}
-      <div className="grid grid-cols-2 gap-3">
-        <button type="button" className="inv-button inv-button-ghost" onClick={() => setSkipped(true)}>
-          <T es="Omitir" en="Skip" />
-        </button>
-        <button type="submit" className="inv-button" disabled={pending || !message.trim()}>
-          {pending ? <T es="Enviando…" en="Sending…" /> : <T es="Enviar deseo" en="Send wish" />}
-        </button>
-      </div>
-    </form>
   );
 }
 

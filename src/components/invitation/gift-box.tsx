@@ -1,8 +1,8 @@
 "use client";
 
-import { CheckIcon, CopyIcon } from "lucide-react";
+import { CheckIcon, CopyIcon, DownloadIcon, SendIcon } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { ZelleInfo } from "@/lib/invitation";
 
@@ -13,7 +13,41 @@ import { pick, useLang } from "./use-lang";
 export function GiftBox({ zelle }: { zelle: ZelleInfo }) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [qrFile, setQrFile] = useState<File | null>(null);
   const lang = useLang();
+
+  // Fetched as soon as the box opens, so saving it later is instant: iPhone
+  // only allows the share sheet straight from a tap.
+  useEffect(() => {
+    if (!open || !zelle.qr) return;
+    let active = true;
+    fetch(zelle.qr.url)
+      .then((response) => response.blob())
+      .then((blob) => {
+        if (active) setQrFile(new File([blob], "zelle-qr.png", { type: blob.type || "image/png" }));
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [open, zelle.qr]);
+
+  /** Phones get the share sheet ("Save image"); computers download the file. */
+  const saveQr = async () => {
+    if (!qrFile) return;
+    if (navigator.canShare?.({ files: [qrFile] })) {
+      try {
+        await navigator.share({ files: [qrFile] });
+        return;
+      } catch (error) {
+        if ((error as Error).name === "AbortError") return;
+      }
+    }
+    const url = URL.createObjectURL(qrFile);
+    const link = Object.assign(document.createElement("a"), { href: url, download: qrFile.name });
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   const copy = async () => {
     try {
@@ -71,6 +105,22 @@ export function GiftBox({ zelle }: { zelle: ZelleInfo }) {
               sizes="220px"
               className="h-auto w-52 rounded-lg bg-white p-2"
             />
+          )}
+          {(zelle.link || zelle.qr) && (
+            <div className="grid w-full gap-2">
+              {zelle.link && (
+                <a href={zelle.link} target="_blank" rel="noopener noreferrer" className="inv-button">
+                  <SendIcon className="size-4" aria-hidden />
+                  <T es="Enviar con Zelle" en="Send with Zelle" />
+                </a>
+              )}
+              {zelle.qr && (
+                <button type="button" onClick={saveQr} disabled={!qrFile} className="inv-button inv-button-ghost">
+                  <DownloadIcon className="size-4" aria-hidden />
+                  <T es="Guardar QR" en="Save QR code" />
+                </button>
+              )}
+            </div>
           )}
           {zelle.holderName && <p className="text-lg font-medium">{zelle.holderName}</p>}
           {zelle.handle && (

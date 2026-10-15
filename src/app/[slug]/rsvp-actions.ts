@@ -23,7 +23,6 @@ const ERROR_CODES = [
   "INVALID_COMPANIONS",
   "RSVP_NOT_FOUND",
   "NO_CHANGE",
-  "WISH_EXISTS",
 ] as const;
 
 export type RsvpErrorCode = (typeof ERROR_CODES)[number] | "INVALID" | "UNAVAILABLE";
@@ -80,11 +79,13 @@ const submitSchema = z
     fullName: nameSchema,
     attending: z.boolean(),
     companions: z.array(nameSchema).max(50),
+    wish: z.string().trim().max(1000),
     locale: localeSchema,
     website: z.string().max(0), // honeypot field: people never see it
   })
   .refine((v) => v.attending || v.companions.length === 0);
 
+/** Saves the answer and the optional wish together, then sends the couple a single notification. */
 export async function submitRsvp(input: z.input<typeof submitSchema>): Promise<{ ok: true; token: string } | Failure> {
   const parsed = submitSchema.safeParse(input);
   if (!parsed.success) return { ok: false, code: "INVALID" };
@@ -96,11 +97,12 @@ export async function submitRsvp(input: z.input<typeof submitSchema>): Promise<{
   const token = randomBytes(24).toString("base64url");
   const ipHash = await connectionHash();
   const { data, error } = await db
-    .rpc("rsvp_submit", {
+    .rpc("rsvp_reply", {
       p_slug: v.slug,
       p_full_name: v.fullName,
       p_attending: v.attending,
       p_companions: v.companions,
+      p_wish: v.wish || null,
       p_locale: v.locale,
       p_token_hash: hashToken(token),
       p_ip_hash: ipHash,
@@ -109,7 +111,13 @@ export async function submitRsvp(input: z.input<typeof submitSchema>): Promise<{
   if (error || !data) return failureFrom(error);
 
   after(() =>
-    notifyCouple(data.wedding_id, { kind: "rsvp", name: v.fullName, attending: v.attending, companions: v.companions }),
+    notifyCouple(data.wedding_id, {
+      kind: "rsvp",
+      name: v.fullName,
+      attending: v.attending,
+      companions: v.companions,
+      wish: v.wish || null,
+    }),
   );
   return { ok: true, token };
 }
@@ -175,28 +183,5 @@ export async function changeAttendance(input: z.input<typeof changeSchema>): Pro
       companions: v.companions,
     }),
   );
-  return { ok: true };
-}
-
-const wishSchema = z.object({
-  slug: slugSchema,
-  token: tokenSchema,
-  message: z.string().trim().min(1).max(1000),
-  locale: localeSchema,
-});
-
-export async function submitWish(input: z.input<typeof wishSchema>): Promise<{ ok: true } | Failure> {
-  const parsed = wishSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, code: "INVALID" };
-  const v = parsed.data;
-  const db = admin();
-  if (!db) return { ok: false, code: "UNAVAILABLE" };
-
-  const { data, error } = await db
-    .rpc("wish_submit", { p_slug: v.slug, p_token_hash: hashToken(v.token), p_message: v.message, p_locale: v.locale })
-    .single<{ wish_id: string; wedding_id: string; full_name: string }>();
-  if (error || !data) return failureFrom(error);
-
-  after(() => notifyCouple(data.wedding_id, { kind: "wish", name: data.full_name, message: v.message }));
   return { ok: true };
 }

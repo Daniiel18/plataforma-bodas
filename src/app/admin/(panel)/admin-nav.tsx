@@ -31,11 +31,11 @@ const NAV: NavItem[] = [
   { href: "/admin", label: "Resumen", icon: LayoutDashboardIcon },
   { href: "/admin/invitados", label: "Invitados", icon: UsersIcon },
   { href: "/admin/deseos", label: "Deseos", icon: HeartIcon },
+  { href: "/admin/apariencia", label: "Plantilla", icon: PaletteIcon },
   { href: "/admin/contenido", label: "Contenido", icon: FileTextIcon },
   { href: "/admin/galeria", label: "Galería", icon: ImagesIcon },
   { href: "/admin/musica", label: "Música", icon: MusicIcon },
   { href: "/admin/regalos", label: "Regalos", icon: GiftIcon },
-  { href: "/admin/apariencia", label: "Apariencia", icon: PaletteIcon },
   { href: "/admin/ajustes", label: "Ajustes", icon: SettingsIcon },
 ];
 

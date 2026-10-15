@@ -7,6 +7,7 @@ import { getAdminContext, getUnreadWishesCount } from "@/lib/admin";
 
 import { signOut } from "../actions";
 import { MobileNav, SidebarNav } from "./admin-nav";
+import { LiveUpdates } from "./live-updates";
 
 export const metadata: Metadata = {
   title: { template: "%s · Panel de la boda", default: "Panel de la boda" },
@@ -31,8 +32,16 @@ export default function PanelLayout({ children }: LayoutProps<"/admin">) {
         </header>
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 md:px-8 md:py-10">{children}</main>
       </div>
+      <Suspense>
+        <Live />
+      </Suspense>
     </div>
   );
+}
+
+async function Live() {
+  const { wedding } = await getAdminContext();
+  return <LiveUpdates weddingId={wedding.id} />;
 }
 
 function coupleTitle(partner1: string, partner2: string) {

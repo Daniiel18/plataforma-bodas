@@ -36,19 +36,21 @@ The couple manages every detail from a dashboard and gets a push notification on
 - **One-tap add to calendar** that picks the right app for the guest's device — Apple Calendar on iPhone, Google Calendar on Android, an `.ics` file on computers — with a reminder the day before.
 - **3D photo gallery** in five styles — coverflow, cube, stacked cards, flip and a custom 3D ring — with swipe and full-screen viewer.
 - **Venue map** with a single *Get directions* button: Android shows the system's app chooser (Google Maps, Waze…), iPhone gets a native-style sheet with Apple Maps, Google Maps and Waze.
-- **Gift box** that opens to reveal a Zelle QR code and a copy-to-clipboard handle.
-- **RSVP in three steps**: attendance, named companions and an optional private wish. A personal link lets guests change *Yes ↔ No* from any device until the deadline.
+- **Gift box** that opens to reveal the Zelle QR code, a *Send with Zelle* button that opens Zelle with the couple as recipient, *Save QR* (straight to the photo library on phones) and a copy-to-clipboard handle.
+- **Two-step reply**: attendance and named companions, then an optional private wish — saved together, so the couple gets a single notification. A personal link lets guests change *Yes ↔ No* from any device until the deadline.
 - **Spanish and English**, picked from the phone's language with a flicker-free toggle that never interrupts the music.
 
 ### For the couple
 
 - **Overview**: attendees, companions, declines, unread wishes, days to go and possible duplicates.
 - **Guest list** with filters, accent-insensitive search, duplicate detection (fuzzy matching across guests *and* companions), notes, archiving, manual entries and **CSV export**.
-- **Content editor** for every section, with show/hide and reordering. Text written in Spanish is **auto-translated on save** and can be corrected by hand.
+- **Content editor** with a **live preview of each section in the chosen template** that follows the typing, plus show/hide and reordering. Text written in Spanish is **auto-translated on save** and can be corrected by hand.
 - **Gallery manager**: up to 30 photos, compressed in the browser, drag-and-drop ordering and a live preview of every 3D style.
 - **Template studio**: 14 templates in seven collections (classic, romantic, glamour, minimal, botanical, boho and evening), 14 page backgrounds — from silk and marble to damask, lace and art déco, or the couple's own photo — and curated accent colors, all mixable with a live preview.
 - **Music and gifts**: upload the song and the Zelle QR.
-- **Push notifications** to the couple's phones (installable as an app) for every RSVP, change and wish.
+- **Live dashboard**: answers and wishes appear instantly as in-app notifications and every page updates itself, no reload needed (Supabase Realtime).
+- **Push notifications** to the couple's phones (installable as an app): one per answer, with the wish included, and one per change.
+- **Share on publish**: the moment the invitation goes live, a dialog offers the link and a ready-made invitation message (optionally bilingual) for Messages/iMessage, WhatsApp, Messenger, Telegram, Facebook, email or the phone's share sheet.
 - **Live preview** of the invitation before publishing.
 
 <p align="center">

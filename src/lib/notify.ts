@@ -2,63 +2,10 @@ import "server-only";
 
 import webpush from "web-push";
 
+import { composeNotice, type CoupleNotice } from "@/lib/notice";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export type CoupleNotice =
-  | { kind: "rsvp"; name: string; attending: boolean; companions: string[] }
-  | { kind: "change"; name: string; attending: boolean; companions: string[] }
-  | { kind: "wish"; name: string; message: string }
-  | { kind: "test" };
-
-type Payload = { title: string; body: string; url: string; tag: string };
-
-const truncate = (text: string, max: number) => (text.length > max ? `${text.slice(0, max - 1)}…` : text);
-
-function compose(notice: CoupleNotice): Payload {
-  switch (notice.kind) {
-    case "rsvp": {
-      const people = 1 + notice.companions.length;
-      return notice.attending
-        ? {
-            title: `✅ ${notice.name} confirmó`,
-            body: notice.companions.length
-              ? `${people} personas: ${notice.name}, ${notice.companions.join(", ")}`
-              : "Asistirá sin acompañantes",
-            url: "/admin/invitados",
-            tag: "rsvp",
-          }
-        : {
-            title: `✉️ ${notice.name} no podrá asistir`,
-            body: "Respondió que no asistirá",
-            url: "/admin/invitados",
-            tag: "rsvp",
-          };
-    }
-    case "change":
-      return {
-        title: `🔄 ${notice.name} cambió su respuesta`,
-        body: notice.attending
-          ? `Ahora asistirá${notice.companions.length ? ` con ${notice.companions.join(", ")}` : ""}`
-          : "Ahora no asistirá",
-        url: "/admin/invitados",
-        tag: "rsvp",
-      };
-    case "wish":
-      return {
-        title: `💌 Deseo de ${notice.name}`,
-        body: truncate(notice.message, 160),
-        url: "/admin/deseos",
-        tag: "wish",
-      };
-    case "test":
-      return {
-        title: "🔔 Notificaciones activadas",
-        body: "Así te avisaremos cuando alguien confirme o deje un deseo.",
-        url: "/admin",
-        tag: "test",
-      };
-  }
-}
+export type { CoupleNotice };
 
 function configured() {
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -82,7 +29,7 @@ export async function notifyCouple(weddingId: string, notice: CoupleNotice): Pro
     .eq("wedding_id", weddingId);
   if (!subscriptions?.length) return 0;
 
-  const payload = JSON.stringify(compose(notice));
+  const payload = JSON.stringify(composeNotice(notice));
   let delivered = 0;
   const expired: string[] = [];
 

@@ -9,10 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { COMMON_TIME_ZONES } from "@/lib/dates";
+import type { ShareDetails } from "@/lib/share";
 import type { ActionResult } from "@/lib/types";
 
 import { FormMessage } from "../../form-message";
 import { useFormAction } from "../../use-form-action";
+import { ShareInvitationButton, ShareInvitationDialog } from "../share-invitation";
 import { updateWeddingSettings } from "./actions";
 
 type Props = {
@@ -26,17 +28,25 @@ type Props = {
     max_companions: number;
     is_published: boolean;
   };
+  share: ShareDetails;
 };
 
 const selectClass =
   "h-9 w-full rounded-lg border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
-export function SettingsForm({ wedding }: Props) {
+export function SettingsForm({ wedding, share }: Props) {
   const [deadlineEnabled, setDeadlineEnabled] = useState(Boolean(wedding.deadline_local));
+  const [published, setPublished] = useState(wedding.is_published);
+  const [savedPublished, setSavedPublished] = useState(wedding.is_published);
+  const [celebrate, setCelebrate] = useState(false);
   const [state, onSubmit, pending] = useFormAction(async (prev: ActionResult | null, formData: FormData) => {
     const result = await updateWeddingSettings(prev, formData);
     if (result.ok) {
       toast.success(result.message);
+      // Just published: offer to share it right away.
+      const nowPublished = formData.get("is_published") === "on";
+      if (nowPublished && !savedPublished) setCelebrate(true);
+      setSavedPublished(nowPublished);
       return null;
     }
     return result;
@@ -130,8 +140,20 @@ export function SettingsForm({ wedding }: Props) {
             Mientras esté apagado, los invitados no pueden ver la invitación (/{wedding.slug}).
           </p>
         </div>
-        <Switch id="is_published" name="is_published" defaultChecked={wedding.is_published} />
+        <Switch id="is_published" name="is_published" checked={published} onCheckedChange={setPublished} />
       </div>
+      {savedPublished && published && (
+        <div className="justify-self-start">
+          <ShareInvitationButton slug={wedding.slug} details={share} variant="outline" />
+        </div>
+      )}
+      <ShareInvitationDialog
+        slug={wedding.slug}
+        details={share}
+        open={celebrate}
+        onOpenChange={setCelebrate}
+        justPublished
+      />
 
       <FormMessage state={state} />
       <Button type="submit" disabled={pending} className="justify-self-start">

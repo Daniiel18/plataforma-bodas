@@ -24,7 +24,7 @@ import {
   RsvpSection,
 } from "./invitation-sections";
 
-function renderSection(section: SectionView, data: InvitationData, preview: boolean) {
+export function renderSection(section: SectionView, data: InvitationData, preview: boolean) {
   switch (section.type) {
     case "hero":
       return <HeroSection section={section} data={data} />;
