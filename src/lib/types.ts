@@ -65,5 +65,5 @@ export type DuplicateMatch = {
   score: number;
 };
 
-/** Resultado estándar de las Server Actions de formularios. */
+/** Standard result of form Server Actions. */
 export type ActionResult = { ok: true; message?: string } | { ok: false; error: string };

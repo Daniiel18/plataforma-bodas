@@ -20,7 +20,7 @@ export function PageHeader({
   );
 }
 
-/** Esqueletos de carga para el contenido que depende de la sesión. */
+/** Loading skeletons for session-dependent content. */
 export function CardsSkeleton({ count = 4 }: { count?: number }) {
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" aria-busy="true">

@@ -1,7 +1,7 @@
 -- =====================================================================
--- Límites de archivos por boda:
---   galería: hasta 30 fotos · portada, canción, QR y vista previa: 1 cada uno
--- La app ya valida antes de subir; esto es la red de seguridad en la BD.
+-- File limits per wedding:
+--   gallery: up to 30 photos · cover, song, QR and preview image: 1 each
+-- The app validates before uploading; this is the database safety net.
 -- =====================================================================
 
 create or replace function public.enforce_media_limits()
@@ -13,7 +13,7 @@ declare
   current_count integer;
   max_allowed integer := case new.kind when 'gallery' then 30 else 1 end;
 begin
-  -- Serializa altas concurrentes de la misma boda y tipo.
+  -- Serializes concurrent inserts for the same wedding and kind.
   perform pg_advisory_xact_lock(hashtext(new.wedding_id::text || new.kind::text));
 
   select count(*) into current_count

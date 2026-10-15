@@ -28,7 +28,7 @@ const ACCEPT = {
   audio: "audio/mpeg,audio/mp4,audio/x-m4a,audio/aac,.mp3,.m4a",
 };
 
-/** Subir, reemplazar o quitar un archivo único (portada, QR, canción o fondo). */
+/** Upload, replace or remove a single file (cover, QR, song or background). */
 export function SingleMediaField({ weddingId, kind, current, emptyLabel, hint }: Props) {
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);

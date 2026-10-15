@@ -1,6 +1,6 @@
 -- =====================================================================
--- Notificaciones push: dispositivos de los novios que reciben avisos.
--- Reemplaza los avisos por correo (el correo de wedding_private ya no se usa).
+-- Push notifications: the couple's devices that receive alerts.
+-- Replaces email alerts (the email in wedding_private is no longer used).
 -- =====================================================================
 
 create table public.push_subscriptions (

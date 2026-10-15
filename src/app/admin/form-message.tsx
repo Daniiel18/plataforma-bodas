@@ -1,6 +1,6 @@
 import type { ActionResult } from "@/lib/types";
 
-/** Muestra el error o la confirmación devuelta por una Server Action. */
+/** Shows the error or confirmation returned by a Server Action. */
 export function FormMessage({ state }: { state: ActionResult | null }) {
   if (!state) return null;
   if (state.ok) {

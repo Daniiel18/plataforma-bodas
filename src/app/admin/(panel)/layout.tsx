@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-// La estructura se pinta al instante; lo que depende de la sesión llega por streaming.
+// The shell paints instantly; session-dependent content streams in.
 export default function PanelLayout({ children }: LayoutProps<"/admin">) {
   return (
     <div className="flex min-h-svh">

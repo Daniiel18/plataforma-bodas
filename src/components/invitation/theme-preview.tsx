@@ -12,9 +12,9 @@ type Props = {
   background: BackgroundKey;
   accent: string | null;
   couple: string;
-  /** Foto de portada de la boda (si no hay, un degradado de la plantilla). */
+  /** The wedding's cover photo (a template gradient when there is none). */
   cover?: string | null;
-  /** Foto de fondo, para el fondo "Tu foto". */
+  /** Background photo, for the "Tu foto" background. */
   backgroundPhoto?: string | null;
   veil?: PhotoVeil;
   size?: "card" | "large";
@@ -44,7 +44,7 @@ const SIZES = {
   },
 };
 
-/** Muestra reducida de la invitación con una plantilla y un fondo aplicados. */
+/** Scaled-down invitation with a template and a background applied. */
 export function ThemePreview({
   template,
   background,
@@ -103,7 +103,7 @@ export function ThemePreview({
   );
 }
 
-/** Solo el fondo, para elegirlo en el panel. */
+/** Just the background, for picking it in the dashboard. */
 export function BackgroundSwatch({
   template,
   background,

@@ -1,12 +1,11 @@
 /**
- * Utilidades de fecha con zona horaria. Las fechas se guardan en UTC y se
- * muestran/editan en la zona horaria de la boda, sin depender de la zona
- * del servidor ni del navegador.
+ * Time-zone aware date helpers. Dates are stored in UTC and shown or edited
+ * in the wedding's time zone, regardless of the server's or browser's zone.
  */
 
 /**
- * Zona usada solo para mostrar fechas del panel (p. ej. cuándo respondió
- * un invitado) mientras la novia no haya elegido la zona de la boda.
+ * Zone used only to display dashboard dates (e.g. when a guest answered)
+ * until the couple sets the wedding's time zone.
  */
 const FALLBACK_TIME_ZONE = "America/New_York";
 
@@ -36,27 +35,27 @@ function zonedParts(date: Date, timeZone: string) {
   };
 }
 
-/** Diferencia (ms) entre la hora local de `timeZone` y UTC en ese instante. */
+/** Offset (ms) between local time in `timeZone` and UTC at that instant. */
 function offsetMs(date: Date, timeZone: string) {
   const p = zonedParts(date, timeZone);
   const asUtc = Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second);
   return asUtc - Math.floor(date.getTime() / 1000) * 1000;
 }
 
-/** "2026-12-19T15:00" en `timeZone` → instante UTC. */
+/** "2026-12-19T15:00" in `timeZone` → UTC instant. */
 export function zonedInputToDate(value: string, timeZone: string): Date {
   const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(value);
   if (!match) throw new Error(`Fecha inválida: ${value}`);
   const [, y, mo, d, h, mi] = match.map(Number);
   const naive = Date.UTC(y, mo - 1, d, h, mi);
   let utc = naive - offsetMs(new Date(naive), timeZone);
-  // Segunda pasada para cambios de horario (DST).
+  // Second pass for daylight-saving transitions.
   const corrected = naive - offsetMs(new Date(utc), timeZone);
   if (corrected !== utc) utc = corrected;
   return new Date(utc);
 }
 
-/** Instante UTC → "2026-12-19T15:00" en `timeZone` (para <input type="datetime-local">). */
+/** UTC instant → "2026-12-19T15:00" in `timeZone` (for <input type="datetime-local">). */
 export function dateToZonedInput(date: Date | string, timeZone: string): string {
   const p = zonedParts(new Date(date), timeZone);
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -83,7 +82,7 @@ export function formatShortDateTime(date: Date | string, timeZone: string, local
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** Días completos (redondeando hacia arriba) desde ahora hasta `date`. */
+/** Whole days (rounded up) from now until `date`. */
 export function daysUntil(date: Date | string) {
   return Math.ceil((new Date(date).getTime() - Date.now()) / DAY_MS);
 }
@@ -101,7 +100,7 @@ export function isValidTimeZone(timeZone: string) {
   }
 }
 
-/** Zonas horarias más probables para los invitados (América + España). */
+/** Most likely time zones for the guests (the Americas and Spain). */
 export const COMMON_TIME_ZONES = [
   { value: "America/New_York", label: "Este de EE. UU. (Nueva York, Miami)" },
   { value: "America/Chicago", label: "Centro de EE. UU. (Chicago, Houston)" },

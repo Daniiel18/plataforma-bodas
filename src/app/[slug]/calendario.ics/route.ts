@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { buildIcs } from "@/lib/ics";
 import { getPublicInvitation } from "@/lib/invitation";
 
-/** Archivo de calendario: en iPhone abre "Añadir al calendario" directamente. */
+/** Calendar file: on iPhone it opens "Add to Calendar" directly. */
 export async function GET(request: NextRequest, { params }: RouteContext<"/[slug]/calendario.ics">) {
   const { slug } = await params;
   const data = await getPublicInvitation(slug);

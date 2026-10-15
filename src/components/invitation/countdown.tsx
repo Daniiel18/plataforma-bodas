@@ -18,7 +18,7 @@ const UNITS = [
   { key: "s", es: "segundos", en: "seconds" },
 ] as const;
 
-/** Cuenta regresiva exacta, calculada en el celular del invitado cada segundo. */
+/** Exact countdown, computed on the guest's phone every second. */
 export function Countdown({ target }: { target: string }) {
   const now = useSyncExternalStore(subscribe, nowInSeconds, () => null);
   const targetSeconds = Math.floor(Date.parse(target) / 1000);

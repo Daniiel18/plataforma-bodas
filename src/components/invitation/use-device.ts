@@ -13,7 +13,7 @@ function detect(): Device {
   return "other";
 }
 
-/** Tipo de dispositivo del invitado (null durante el render del servidor). */
+/** The guest's device type (null during server rendering). */
 export function useDevice(): Device {
   return useSyncExternalStore(noopSubscribe, detect, () => null);
 }

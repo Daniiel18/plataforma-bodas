@@ -31,7 +31,7 @@ import { saveAppearance } from "./actions";
 type Appearance = {
   template: TemplateKey;
   accent: AccentValue | null;
-  /** null = el fondo recomendado de la plantilla. */
+  /** null = the template's recommended background. */
   background: BackgroundKey | null;
   veil: PhotoVeil;
 };

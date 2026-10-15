@@ -1,4 +1,4 @@
-/* Service worker del panel: muestra las notificaciones push de los novios. */
+/* Dashboard service worker: shows the couple's push notifications. */
 
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim()));

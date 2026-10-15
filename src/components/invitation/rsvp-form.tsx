@@ -22,7 +22,7 @@ type Props = {
   deadline: string | null;
   deadlineLabel: Bi | null;
   closed: Bi;
-  /** En la vista previa del panel el formulario se muestra pero no envía. */
+  /** In the dashboard preview the form is shown but never submits. */
   preview?: boolean;
 };
 
@@ -70,14 +70,14 @@ const storage = {
     try {
       localStorage.setItem(key, value);
     } catch {
-      // Navegación privada: queda el enlace personal.
+      // Private browsing: the personal link still works.
     }
   },
   remove: (key: string) => {
     try {
       localStorage.removeItem(key);
     } catch {
-      // nada que limpiar
+      // nothing to clean up
     }
   },
 };
@@ -98,7 +98,7 @@ export function RsvpForm(props: Props) {
     const key = storageKey(slug);
 
     const load = async () => {
-      // Enlace personal: /slug?respuesta=TOKEN → se guarda y se limpia de la URL.
+      // Personal link: /slug?respuesta=TOKEN → stored, then removed from the URL.
       const url = new URL(window.location.href);
       const fromLink = url.searchParams.get("respuesta");
       if (fromLink) {
@@ -164,7 +164,7 @@ export function RsvpForm(props: Props) {
 }
 
 // ---------------------------------------------------------------------
-// Paso 1 y 2: nombre, asistencia y acompañantes
+// Steps 1 and 2: name, attendance and companions
 // ---------------------------------------------------------------------
 
 function NewRsvpForm({
@@ -257,7 +257,7 @@ function NewRsvpForm({
 
       {attending && <CompanionFields companions={companions} onChange={setCompanions} max={maxCompanions} />}
 
-      {/* Campo trampa para robots: oculto a las personas. */}
+      {/* Honeypot field for bots: hidden from people. */}
       <input
         type="text"
         name="website"
@@ -379,7 +379,7 @@ function ErrorText({ code }: { code: RsvpErrorCode }) {
 }
 
 // ---------------------------------------------------------------------
-// Paso 3: gracias, deseo, enlace personal y cambio de respuesta
+// Step 3: thanks, wish, personal link and changing the answer
 // ---------------------------------------------------------------------
 
 function AnsweredView({
@@ -531,7 +531,7 @@ function PersonalLink({ slug, token }: { slug: string; token: string }) {
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
           } catch {
-            // Sin permiso de portapapeles: el enlace se puede seleccionar a mano.
+            // No clipboard permission: the link can be selected by hand.
           }
         }}
         className="flex items-center justify-center gap-2 rounded-full bg-[var(--inv-card)] px-4 py-2 text-sm"

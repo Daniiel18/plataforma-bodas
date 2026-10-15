@@ -1,4 +1,4 @@
-/** Se muestra si la invitación no existe o todavía no está publicada. */
+/** Shown when the invitation does not exist or is not published yet. */
 export default function InvitationNotFound() {
   return (
     <main className="grid flex-1 place-items-center bg-[#f6efe6] px-6 py-20 text-center text-[#4a3f37]">

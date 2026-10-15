@@ -1,12 +1,12 @@
 import { z } from "zod";
 
 /**
- * Modelo de contenido de cada sección de la invitación.
+ * Content model of each invitation section.
  *
- * - `content` (sections.content) guarda lo que escribe la novia, en español.
- * - `content_en` (sections.content_en) guarda la traducción de cada texto
- *   traducible como { ruta: { src, en, manual } }. `src` es el texto en
- *   español que se tradujo: si la novia lo cambia, se vuelve a traducir.
+ * - `content` (sections.content) stores what the couple writes, in Spanish.
+ * - `content_en` (sections.content_en) stores the translation of each
+ *   translatable text as { path: { src, en, manual } }. `src` is the Spanish
+ *   text that was translated: if the couple changes it, it is translated again.
  */
 
 export const SECTION_TYPES = [
@@ -41,7 +41,7 @@ export const SECTION_LABELS: Record<SectionType, string> = {
 
 export type Bi = { es: string; en: string };
 
-/** Textos que se muestran si la novia deja el campo vacío. */
+/** Texts shown when the couple leaves the field empty. */
 export const DEFAULT_TEXT = {
   intro: {
     title: { es: "Les invitamos cordialmente", en: "You are cordially invited" },
@@ -84,7 +84,7 @@ export const GALLERY_STYLES = [
 export type GalleryStyle = (typeof GALLERY_STYLES)[number]["value"];
 
 // ---------------------------------------------------------------------
-// Esquemas (validan lo que guarda el panel)
+// Schemas (validate what the dashboard saves)
 // ---------------------------------------------------------------------
 
 const text = (max: number) => z.string().trim().max(max, `Máximo ${max} caracteres`).default("");
@@ -132,7 +132,7 @@ export const sectionSchemas = {
 
 export type SectionContent<T extends SectionType> = z.infer<(typeof sectionSchemas)[T]>;
 
-/** Lee el contenido guardado tolerando datos viejos o incompletos. */
+/** Reads saved content, tolerating old or incomplete data. */
 export function parseContent<T extends SectionType>(type: T, raw: unknown): SectionContent<T> {
   const schema = sectionSchemas[type] as unknown as z.ZodType<SectionContent<T>>;
   const parsed = schema.safeParse(raw ?? {});
@@ -140,10 +140,10 @@ export function parseContent<T extends SectionType>(type: T, raw: unknown): Sect
 }
 
 // ---------------------------------------------------------------------
-// Traducciones
+// Translations
 // ---------------------------------------------------------------------
 
-/** Rutas traducibles por sección (`*` = cada elemento de una lista). */
+/** Translatable paths per section (`*` = each item of a list). */
 const TRANSLATABLE: Record<SectionType, string[]> = {
   intro: ["title", "subtitle", "button"],
   hero: ["kicker"],
@@ -161,7 +161,7 @@ const TRANSLATABLE: Record<SectionType, string[]> = {
 export type TranslationEntry = { src: string; en: string; manual?: boolean };
 export type Translations = Record<string, TranslationEntry>;
 
-/** Todos los textos traducibles (no vacíos) de una sección, con su ruta. */
+/** Every non-empty translatable text of a section, with its path. */
 export function collectTexts(type: SectionType, content: unknown): { path: string; text: string }[] {
   const out: { path: string; text: string }[] = [];
   const walk = (value: unknown, parts: string[], prefix: string[]) => {
@@ -181,9 +181,9 @@ export function collectTexts(type: SectionType, content: unknown): { path: strin
 }
 
 /**
- * Calcula las traducciones nuevas: conserva las que siguen vigentes y
- * traduce solo los textos nuevos o cambiados. Si la traducción falla, el
- * texto queda pendiente y en la invitación se muestra en español.
+ * Computes the new translations: keeps those still valid and translates only
+ * new or changed texts. If translation fails, the text stays pending and the
+ * invitation shows it in Spanish.
  */
 export async function syncTranslations(
   type: SectionType,
@@ -212,7 +212,7 @@ export async function syncTranslations(
   return { translations: next, pending: texts.filter((t) => !next[t.path]).length };
 }
 
-/** Texto bilingüe de una ruta, usando la traducción solo si sigue vigente. */
+/** Bilingual text of a path, using the translation only while it is still valid. */
 export function bilingual(
   text: string | undefined,
   path: string,

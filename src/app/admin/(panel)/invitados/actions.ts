@@ -62,7 +62,7 @@ const manualRsvpSchema = z.object({
   note: z.string().trim().max(500),
 });
 
-/** Para respuestas que llegan por teléfono o en persona. */
+/** For answers received by phone or in person. */
 export async function createManualRsvp(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
   const { supabase, wedding, readOnly } = await getAdminContext();
   if (readOnly) return READ_ONLY_RESULT;

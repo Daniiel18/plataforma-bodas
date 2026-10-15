@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-// Temporal: la invitación pública (/[slug]) se construye en la Etapa 3.
+// Platform home. Each invitation lives at /[slug].
 export default function Home() {
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-4 px-4 py-20 text-center">

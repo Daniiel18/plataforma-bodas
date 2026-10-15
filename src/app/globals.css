@@ -49,7 +49,7 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Paleta base champagne / beige (panel de administración). */
+/* Base champagne / beige palette (dashboard). */
 :root {
   --background: #fbf8f3;
   --foreground: #3f352e;

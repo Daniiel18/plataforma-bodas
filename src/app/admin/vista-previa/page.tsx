@@ -17,7 +17,7 @@ export default function PreviewPage() {
   );
 }
 
-/** La invitación tal como la verán los invitados, aunque todavía no esté publicada. */
+/** The invitation exactly as guests will see it, even before it is published. */
 async function Preview() {
   const { supabase, wedding } = await getAdminContext();
   const data = await loadInvitation(supabase, wedding);

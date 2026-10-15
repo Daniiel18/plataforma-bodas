@@ -3,8 +3,8 @@ import type { ReactNode } from "react";
 import type { Bi } from "@/lib/sections";
 
 /**
- * Texto bilingüe: se renderizan ambas versiones y el CSS muestra la del
- * idioma activo. Así cambiar de idioma es instantáneo y no corta la música.
+ * Bilingual text: both versions are rendered and CSS shows the active
+ * language, so switching is instant and never interrupts the music.
  */
 export function T({ es, en }: { es: ReactNode; en: ReactNode }) {
   return (
@@ -24,9 +24,9 @@ export function TB({ text }: { text: Bi }) {
 }
 
 /**
- * Debe ser el primer hijo del contenedor `.invitation`: decide el idioma
- * antes de que el navegador pinte (preferencia guardada o idioma del
- * celular; español si el celular está en español, inglés en cualquier otro).
+ * Must be the first child of the `.invitation` container: it picks the
+ * language before the browser paints (saved preference, otherwise the phone's
+ * language: Spanish for Spanish phones, English for everything else).
  */
 export function LangScript() {
   const code = `(function(){try{var el=document.currentScript.parentElement;var saved=localStorage.getItem("inv-lang");var lang;if(saved==="es"||saved==="en"){lang=saved}else{var nav=((navigator.languages&&navigator.languages[0])||navigator.language||"es").toLowerCase();lang=nav.indexOf("es")===0?"es":"en"}el.setAttribute("data-lang",lang);document.documentElement.lang=lang}catch(e){}})();`;

@@ -1,13 +1,13 @@
 import "server-only";
 
 /**
- * Traducción automática español → inglés con MyMemory (gratis, sin cuenta).
- * Límite gratuito: ~5.000 caracteres/día por IP, o ~50.000 si se define
- * MYMEMORY_EMAIL. Solo se traduce al guardar en el panel, nunca por visita.
+ * Automatic Spanish → English translation with MyMemory (free, no account).
+ * Free quota: ~5,000 characters/day per IP, or ~50,000 when MYMEMORY_EMAIL is
+ * set. Texts are only translated when saved in the dashboard, never per visit.
  */
 
 const ENDPOINT = "https://api.mymemory.translated.net/get";
-const MAX_CHUNK_BYTES = 450; // MyMemory acepta hasta 500 bytes por consulta
+const MAX_CHUNK_BYTES = 450; // MyMemory accepts up to 500 bytes per request
 const CONCURRENCY = 4;
 
 const byteLength = (s: string) => new TextEncoder().encode(s).length;
@@ -90,7 +90,7 @@ async function translateOne(text: string): Promise<string | null> {
   return out.join("\n");
 }
 
-/** Traduce varios textos; devuelve `null` en los que fallaron. */
+/** Translates several texts; returns `null` for those that failed. */
 export async function translateEsToEn(texts: string[]): Promise<(string | null)[]> {
   const results: (string | null)[] = new Array(texts.length).fill(null);
   let next = 0;

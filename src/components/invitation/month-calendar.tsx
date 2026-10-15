@@ -18,7 +18,7 @@ const WEEKDAYS = {
   en: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
 };
 
-/** Calendario del mes de la boda con el día marcado (versión es y en). */
+/** Calendar of the wedding month with the day marked (es and en versions). */
 export function MonthCalendar({ startsAt, timeZone }: Props) {
   const { year, month, day } = eventDay(startsAt, timeZone);
   const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();

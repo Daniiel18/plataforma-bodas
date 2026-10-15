@@ -24,10 +24,12 @@ Thanks for your interest in improving the platform! Bug reports, ideas and pull 
 ## Guidelines
 
 - **Commits** follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`, `ci:`.
+- **Code, comments and commit messages** are written in English.
 - **UI text** is bilingual. Guest-facing strings go through the `T` component with Spanish and English versions; dashboard text is Spanish.
-- **Database changes** go in a new timestamped file in `supabase/migrations/` — never edit an applied migration. Every new table needs Row Level Security, and write policies must use `is_wedding_editor()`.
+- **Database changes** go in a new timestamped file in `supabase/migrations/` — never change the SQL of an applied migration. Every new table needs Row Level Security, and write policies must use `is_wedding_editor()`.
 - **Server Actions** must authorize themselves with `getAdminContext()` and return `READ_ONLY_RESULT` for read-only accounts.
 - **Next.js 16 / Cache Components**: request-time data (cookies, `searchParams`, sessions) must live behind `<Suspense>`; public invitation data is cached with `"use cache"` and refreshed with `updateTag`.
+- **Templates** are one entry in `src/lib/templates.ts`; a new background is one entry in `src/lib/backgrounds.ts` plus its `[data-bg]` rule in `invitation.css`. Ornaments must be original SVGs that read the `--inv-orn-*` variables.
 - Keep the guest experience fast on mobile data: compress media and avoid heavy client dependencies.
 
 ## Contribution terms

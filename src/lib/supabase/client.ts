@@ -1,6 +1,6 @@
 import { createBrowserClient } from "@supabase/ssr";
 
-/** Cliente de Supabase para componentes de cliente (p. ej. subir archivos). */
+/** Supabase client for client components (e.g. file uploads). */
 export function createClient() {
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

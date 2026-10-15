@@ -47,7 +47,7 @@ function renderSection(section: SectionView, data: InvitationData, preview: bool
   }
 }
 
-/** La invitación completa. La usan la página pública y la vista previa del panel. */
+/** The full invitation, used by the public page and the dashboard preview. */
 export function InvitationView({ data, preview = false }: { data: InvitationData; preview?: boolean }) {
   const dateLabel = data.event ? eventDateParts(data.event.startsAt, data.event.timeZone).long : null;
   const template = getTemplate(data.template);

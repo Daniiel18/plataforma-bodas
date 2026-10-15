@@ -4,7 +4,7 @@ export type MediaKind = "gallery" | "cover" | "audio" | "qr" | "background";
 
 export const MEDIA_LIMITS: Record<MediaKind, number> = { gallery: 30, cover: 1, audio: 1, qr: 1, background: 1 };
 
-/** Tamaño máximo del archivo ya procesado (el bucket acepta hasta 15 MB). */
+/** Maximum size of the processed file (the bucket accepts up to 15 MB). */
 export const MAX_UPLOAD_BYTES: Record<MediaKind, number> = {
   gallery: 5 * 1024 * 1024,
   cover: 5 * 1024 * 1024,

@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 
-/** El panel se puede instalar como app ("Mi boda") para recibir avisos en el celular. */
+/** The dashboard can be installed as an app ("Mi boda") to get notifications on the phone. */
 export const metadata: Metadata = {
   manifest: "/admin.webmanifest",
   appleWebApp: { capable: true, title: "Mi boda", statusBarStyle: "default" },

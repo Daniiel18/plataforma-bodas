@@ -1,9 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
 
 /**
- * Tarea diaria (Vercel Cron): una consulta mínima para que el plan gratuito
- * de Supabase no pause el proyecto por inactividad. Vercel envía
- * `Authorization: Bearer <CRON_SECRET>` automáticamente.
+ * Daily job (Vercel Cron): a minimal query so Supabase's free plan never
+ * pauses the project for inactivity. Vercel sends
+ * `Authorization: Bearer <CRON_SECRET>` automatically.
  */
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;

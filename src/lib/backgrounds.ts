@@ -1,7 +1,7 @@
 /**
- * Fondos de la página. Son independientes de la plantilla: cada uno se pinta con
- * los colores de la plantilla elegida (ver `[data-bg]` en invitation.css), así
- * que cualquier combinación queda armónica.
+ * Page backgrounds. They are independent of the template: each one is painted
+ * with the chosen template's colors (see `[data-bg]` in invitation.css), so
+ * every combination stays harmonious.
  */
 export const BACKGROUNDS = [
   { key: "liso", name: "Liso", description: "Solo el color de la plantilla." },
@@ -22,7 +22,7 @@ export const BACKGROUNDS = [
 
 export type BackgroundKey = (typeof BACKGROUNDS)[number]["key"];
 
-/** Qué tanto se ve la foto de fondo (el resto es un velo del color de la plantilla). */
+/** How visible the background photo is (the rest is a veil in the template's color). */
 export const PHOTO_VEILS = [
   { key: "visible", label: "Se ve más", strength: "55%" },
   { key: "medio", label: "Equilibrado", strength: "72%" },
@@ -37,7 +37,7 @@ export function isBackgroundKey(value: unknown): value is BackgroundKey {
   return BACKGROUNDS.some((b) => b.key === value);
 }
 
-/** Fondo elegido por la novia en `theme_overrides`, o null si usa el de la plantilla. */
+/** Background chosen by the couple in `theme_overrides`, or null for the template's. */
 export function chosenBackground(overrides: unknown): BackgroundKey | null {
   const value = (overrides as { background?: unknown } | null)?.background;
   return isBackgroundKey(value) ? value : null;
@@ -49,8 +49,8 @@ export function resolveVeil(overrides: unknown): PhotoVeil {
 }
 
 /**
- * Fondo que se pinta: el elegido o el de la plantilla. "Tu foto" sin foto
- * subida vuelve al de la plantilla.
+ * Background to paint: the chosen one or the template's. "Tu foto" without an
+ * uploaded photo falls back to the template's.
  */
 export function resolveBackground(
   overrides: unknown,

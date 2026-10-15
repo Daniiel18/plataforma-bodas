@@ -8,13 +8,13 @@ import { createClient } from "@/lib/supabase/server";
 import type { Wedding } from "@/lib/types";
 
 /**
- * Verifica que haya sesión y que la cuenta administre una boda.
- * Se usa en cada página del panel y en cada Server Action
- * (las acciones se pueden invocar directamente, sin pasar por la UI).
+ * Checks that there is a session and that the account manages a wedding.
+ * Used by every dashboard page and every Server Action
+ * (actions can be invoked directly, without going through the UI).
  */
 export const getAdminContext = cache(async () => {
-  // El panel siempre se resuelve en tiempo de petición: la sesión de Supabase
-  // compara la expiración del token con la hora actual.
+  // The dashboard is always resolved at request time: the Supabase session
+  // compares the token's expiry with the current time.
   await connection();
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
@@ -41,18 +41,18 @@ export const getAdminContext = cache(async () => {
     userId: claims.sub,
     email: (claims.email as string | undefined) ?? "",
     wedding,
-    /** Cuenta demo: puede ver todo, pero no guardar cambios. */
+    /** Demo account: can see everything but cannot save changes. */
     readOnly: membership.role !== "owner",
   };
 });
 
-/** Respuesta estándar cuando la cuenta demo intenta guardar algo. */
+/** Standard response when the demo account tries to save something. */
 export const READ_ONLY_RESULT = {
   ok: false as const,
   error: "Modo demo: puedes explorar todo, pero los cambios no se guardan.",
 };
 
-/** Deseos sin leer (contador del menú). */
+/** Unread wishes (menu badge). */
 export const getUnreadWishesCount = cache(async () => {
   const { supabase, wedding } = await getAdminContext();
   const { count } = await supabase

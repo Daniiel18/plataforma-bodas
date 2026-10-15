@@ -29,8 +29,8 @@ const registerSchema = z.object({
 export type RegisteredMedia = { id: string; storage_path: string; width: number | null; height: number | null };
 
 /**
- * Registra un archivo que el navegador ya subió a Storage. Para portada,
- * canción, QR y fondo reemplaza el anterior (y lo borra del almacenamiento).
+ * Registers a file the browser already uploaded to Storage. For the cover,
+ * song, QR and background it replaces the previous one (and deletes it from storage).
  */
 export async function registerMedia(
   input: z.input<typeof registerSchema>,

@@ -36,7 +36,7 @@ async function decode(file: File) {
   }
 }
 
-/** Reduce y comprime la foto en el navegador antes de subirla. */
+/** Resizes and compresses the photo in the browser before uploading it. */
 async function prepareImage(file: File, kind: Exclude<MediaKind, "audio">): Promise<Prepared> {
   if (!file.type.startsWith("image/")) throw new Error("Elige un archivo de imagen (JPG, PNG o WebP).");
   let bitmap: ImageBitmap;
@@ -55,14 +55,14 @@ async function prepareImage(file: File, kind: Exclude<MediaKind, "audio">): Prom
   canvas.getContext("2d")!.drawImage(bitmap, 0, 0, width, height);
   bitmap.close();
 
-  // El QR se guarda en PNG para que siga siendo nítido y escaneable.
+  // The QR is stored as PNG so it stays sharp and scannable.
   if (kind === "qr") {
     const blob = await canvasToBlob(canvas, "image/png");
     if (!blob) throw new Error("No se pudo procesar la imagen.");
     return { blob, ext: "png", mime: "image/png", width, height, duration: null };
   }
 
-  // WebP si el navegador sabe generarlo (Safari en iPhone no): si no, JPEG.
+  // WebP when the browser can encode it (Safari on iPhone cannot); otherwise JPEG.
   let blob = await canvasToBlob(canvas, "image/webp", 0.82);
   if (!blob || blob.type !== "image/webp") blob = await canvasToBlob(canvas, "image/jpeg", 0.85);
   if (!blob) throw new Error("No se pudo procesar la imagen.");
@@ -96,7 +96,7 @@ async function prepareAudio(file: File): Promise<Prepared> {
   return { blob: file, ext, mime, width: null, height: null, duration: await readDuration(file) };
 }
 
-/** Sube un archivo directo a Storage (sin pasar por el servidor) y lo registra. */
+/** Uploads a file straight to Storage (bypassing the server) and registers it. */
 export function useMediaUpload(weddingId: string) {
   const [busy, setBusy] = useState(false);
 
@@ -135,7 +135,7 @@ export function useMediaUpload(weddingId: string) {
     return result.media;
   }
 
-  /** Sube uno o varios archivos en orden; devuelve cuántos se subieron y el primer error. */
+  /** Uploads one or more files in order; returns how many were uploaded and the first error. */
   async function uploadMany(files: File[], kind: MediaKind, onEach?: (media: RegisteredMedia) => void) {
     setBusy(true);
     let uploaded = 0;

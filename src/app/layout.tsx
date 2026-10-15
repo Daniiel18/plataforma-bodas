@@ -30,7 +30,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
-      // La invitación ajusta `lang` según el idioma del invitado antes de hidratar.
+      // The invitation sets `lang` to the guest's language before hydration.
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${cormorant.variable} h-full antialiased`}
     >

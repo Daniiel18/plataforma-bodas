@@ -20,7 +20,7 @@ import { pick, useLang } from "./use-lang";
 
 type Props = { photos: Photo[]; style: GalleryStyle; autoplay: boolean };
 
-/** Carrusel de fotos en 3D con el estilo que eligió la novia. */
+/** 3D photo carousel in the style the couple picked. */
 export function Gallery3D({ photos, style, autoplay }: Props) {
   const [lightbox, setLightbox] = useState<number | null>(null);
 
@@ -98,7 +98,7 @@ function SwiperGallery({
   );
 }
 
-/** Anillo 3D: las fotos giran alrededor de un cilindro. Se arrastra con el dedo. */
+/** 3D ring: photos spin around a cylinder and can be dragged with a finger. */
 function RingGallery({ photos, autoplay, onOpen }: Omit<Props, "style"> & { onOpen: (index: number) => void }) {
   const lang = useLang();
   const trackRef = useRef<HTMLDivElement>(null);
@@ -185,7 +185,7 @@ function RingGallery({ photos, autoplay, onOpen }: Omit<Props, "style"> & { onOp
   );
 }
 
-/** Foto en grande con anterior/siguiente. */
+/** Full-size photo with previous/next. */
 function Lightbox({
   photos,
   index,

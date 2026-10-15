@@ -15,7 +15,7 @@ function getSnapshot(): Lang {
   return document.querySelector(".invitation")?.getAttribute("data-lang") === "en" ? "en" : "es";
 }
 
-/** Idioma activo de la invitación (para atributos como alt o aria-label). */
+/** The invitation's active language (for attributes such as alt or aria-label). */
 export function useLang(): Lang {
   return useSyncExternalStore(subscribe, getSnapshot, () => "es");
 }
@@ -26,12 +26,12 @@ export function setLang(lang: Lang) {
   try {
     localStorage.setItem("inv-lang", lang);
   } catch {
-    // Navegación privada: el cambio aplica solo a esta visita.
+    // Private browsing: the change only applies to this visit.
   }
   window.dispatchEvent(new Event(EVENT));
 }
 
-/** Elige el texto del idioma activo. */
+/** Picks the text for the active language. */
 export function pick<T>(lang: Lang, es: T, en: T) {
   return lang === "en" ? en : es;
 }

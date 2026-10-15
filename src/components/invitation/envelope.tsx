@@ -17,7 +17,7 @@ type Props = {
   autoplayMusic: boolean;
 };
 
-/** Pantalla inicial con el sobre. Al abrirlo arranca la música. */
+/** Opening screen with the envelope. Opening it starts the music. */
 export function Envelope({ title, subtitle, button, couple, dateLabel, autoplayMusic }: Props) {
   const [state, setState] = useState<"closed" | "open" | "gone">("closed");
   const music = useMusic();

@@ -11,7 +11,7 @@ import type { ActionResult } from "@/lib/types";
 const appearanceSchema = z.object({
   template: z.enum(TEMPLATES.map((t) => t.key)),
   accent: z.enum(ACCENTS.map((a) => a.value)).nullable(),
-  /** null = el fondo recomendado de la plantilla. */
+  /** null = the template's recommended background. */
   background: z.enum(BACKGROUNDS.map((b) => b.key)).nullable(),
   veil: z.enum(PHOTO_VEILS.map((v) => v.key)),
 });
@@ -25,7 +25,7 @@ export async function saveAppearance(input: AppearanceInput): Promise<ActionResu
   if (!parsed.success) return { ok: false, error: "Apariencia no válida" };
   const { template, accent, background, veil } = parsed.data;
 
-  // Se guardan solo las elecciones que difieren del estilo de la plantilla.
+  // Only choices that differ from the template's defaults are stored.
   const overrides: Record<string, unknown> = { ...(wedding.theme_overrides ?? {}) };
   delete overrides.accent;
   delete overrides.background;

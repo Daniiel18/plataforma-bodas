@@ -1,12 +1,12 @@
 -- =====================================================================
--- Seguridad: permisos explícitos + Row Level Security
--- El proyecto NO expone tablas automáticamente, así que todo permiso
--- se concede aquí de forma explícita.
+-- Security: explicit grants + Row Level Security
+-- The project does NOT expose tables automatically, so every permission
+-- is granted explicitly here.
 --
--- Invitados (anon): solo leen contenido de bodas publicadas.
---   Nunca leen RSVP ni deseos. Sus envíos (Etapa 4) pasan por
---   funciones validadas en el servidor, no por acceso directo a tablas.
--- Novios (authenticated + miembro de la boda): control total de su boda.
+-- Guests (anon): only read content of published weddings.
+--   They never read RSVPs or wishes. Their submissions go through
+--   server-validated functions, never direct table access.
+-- Couples (authenticated + wedding member): full control of their wedding.
 -- =====================================================================
 
 create or replace function public.is_wedding_member(p_wedding_id uuid)
@@ -37,7 +37,7 @@ as $$
 $$;
 
 -- ---------------------------------------------------------------------
--- Permisos de tabla
+-- Table grants
 -- ---------------------------------------------------------------------
 
 grant usage on schema public to anon, authenticated, service_role;
@@ -70,8 +70,8 @@ alter table public.rsvps           enable row level security;
 alter table public.rsvp_companions enable row level security;
 alter table public.wishes          enable row level security;
 
--- Bodas: el público ve las publicadas; los novios ven y editan la suya.
--- Crear o borrar bodas solo lo hace el administrador de la plataforma (service_role).
+-- Weddings: the public sees published ones; couples see and edit their own.
+-- Only the platform administrator (service_role) creates or deletes weddings.
 create policy "Público ve bodas publicadas" on public.weddings
   for select to anon, authenticated
   using (is_published);
@@ -89,7 +89,7 @@ create policy "Cada cuenta ve sus membresías" on public.wedding_members
   for select to authenticated
   using (user_id = (select auth.uid()));
 
--- Contenido público (secciones, fotos/música/QR, regalos).
+-- Public content (sections, photos/music/QR, gifts).
 create policy "Público ve secciones visibles" on public.sections
   for select to anon, authenticated
   using (is_visible and public.is_published_wedding(wedding_id));
@@ -117,7 +117,7 @@ create policy "Novios gestionan regalos" on public.gift_methods
   using (public.is_wedding_member(wedding_id))
   with check (public.is_wedding_member(wedding_id));
 
--- Datos privados: solo los novios.
+-- Private data: the couple only.
 create policy "Novios gestionan RSVP" on public.rsvps
   for all to authenticated
   using (public.is_wedding_member(wedding_id))

@@ -9,7 +9,7 @@ import type { ZelleInfo } from "@/lib/invitation";
 import { T, TB } from "./lang";
 import { pick, useLang } from "./use-lang";
 
-/** Caja de regalos animada: al tocarla muestra el QR y los datos de Zelle. */
+/** Animated gift box: tapping it reveals the QR and the Zelle details. */
 export function GiftBox({ zelle }: { zelle: ZelleInfo }) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -21,7 +21,7 @@ export function GiftBox({ zelle }: { zelle: ZelleInfo }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Sin permiso de portapapeles: el dato queda visible para copiarlo a mano.
+      // No clipboard permission: the handle stays visible to copy by hand.
     }
   };
 

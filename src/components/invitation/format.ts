@@ -1,6 +1,6 @@
 import type { Bi } from "@/lib/sections";
 
-/** Partes de la fecha del evento, en la zona horaria de la boda y en ambos idiomas. */
+/** Parts of the event date, in the wedding's time zone and in both languages. */
 export function eventDateParts(startsAt: string, timeZone: string) {
   const date = new Date(startsAt);
   const fmt = (lang: string, options: Intl.DateTimeFormatOptions) =>

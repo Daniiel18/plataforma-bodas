@@ -3,9 +3,9 @@ import "server-only";
 import { createClient } from "@supabase/supabase-js";
 
 /**
- * Cliente con la clave secreta: ignora RLS. Solo para el servidor, en
- * operaciones públicas controladas (RSVP, deseos) y para leer datos
- * privados como el correo de avisos.
+ * Client with the secret key: bypasses RLS. Server only, for controlled
+ * public operations (RSVP, wishes) and for reading private data such as the
+ * couple's push subscriptions.
  */
 export function createAdminClient() {
   const key = process.env.SUPABASE_SECRET_KEY;

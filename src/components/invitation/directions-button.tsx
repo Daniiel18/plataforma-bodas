@@ -7,9 +7,9 @@ import { T } from "./lang";
 import { useDevice } from "./use-device";
 
 /**
- * "Cómo llegar" con un solo botón. En Android el sistema pregunta con qué app abrirlo
- * (Google Maps, Waze…). iPhone no tiene ese selector, así que mostramos uno propio con
- * Apple Maps, Google Maps y Waze. En computadoras se abre Google Maps directamente.
+ * Single "Get directions" button. On Android the system asks which app to use
+ * (Google Maps, Waze…). iPhone has no such chooser, so we show our own with
+ * Apple Maps, Google Maps and Waze. Computers open Google Maps directly.
  */
 export function DirectionsButton({ query }: { query: string }) {
   const device = useDevice();
@@ -27,7 +27,7 @@ export function DirectionsButton({ query }: { query: string }) {
 
   if (device === "apple") {
     const close = () => sheet.current?.close();
-    // Apple Maps siempre está instalado; las otras van en otra pestaña por si la app no lo está.
+    // Apple Maps is always installed; the others open in a new tab in case the app is not.
     const apps = [
       { label: "Apple Maps", href: `https://maps.apple.com/?daddr=${q}`, newTab: false },
       { label: "Google Maps", href: googleMaps, newTab: true },
@@ -71,7 +71,7 @@ export function DirectionsButton({ query }: { query: string }) {
 
   return (
     <a
-      // geo: hace que Android muestre su selector de apps de mapas.
+      // geo: makes Android show its map app chooser.
       href={device === "android" ? `geo:0,0?q=${q}` : googleMaps}
       target={device === "android" ? undefined : "_blank"}
       rel="noopener noreferrer"

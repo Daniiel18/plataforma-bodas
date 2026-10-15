@@ -3,8 +3,8 @@ import type { ComponentType } from "react";
 import type { OrnamentSet } from "@/lib/templates";
 
 /**
- * Ilustraciones botánicas y adornos de las plantillas. Son SVG originales que
- * toman sus colores de las variables `--inv-orn-*` de cada plantilla.
+ * Botanical illustrations and ornaments for the templates: original SVGs that
+ * take their colors from each template's `--inv-orn-*` variables.
  */
 
 type DecorationProps = { className?: string };
@@ -18,7 +18,7 @@ const CENTER = "var(--inv-orn-center)";
 
 const svgClass = (className?: string) => `inv-deco ${className ?? ""}`;
 
-/** Hoja puntiaguda con nervio central, apuntando a `deg` grados. */
+/** Pointed leaf with a midrib, facing `deg` degrees. */
 function Leaf({
   x,
   y,
@@ -45,7 +45,7 @@ function Leaf({
   );
 }
 
-/** Rama de flores secas (estilo paniculata). */
+/** Sprig of dried flowers (baby's breath style). */
 export function DriedFlowers({ className }: DecorationProps) {
   const blossoms: [number, number, number][] = [
     [38, 22, 3.2],
@@ -100,7 +100,7 @@ export function DriedFlowers({ className }: DecorationProps) {
   );
 }
 
-/** Rama de hojas alargadas. */
+/** Sprig of long leaves. */
 export function LeafSprig({ className }: DecorationProps) {
   const leaves = [
     [50, 190, -35],
@@ -174,7 +174,7 @@ function Rose({ x, y, r, turn = 0 }: { x: number; y: number; r: number; turn?: n
   );
 }
 
-/** Ramo de tres rosas con hojas. */
+/** Cluster of three roses with leaves. */
 export function RoseCluster({ className }: DecorationProps) {
   return (
     <svg viewBox="0 0 120 210" className={svgClass(className)} aria-hidden fill="none">
@@ -224,7 +224,7 @@ const FLORETS: [number, number, number][] = [
   [-2.6, -2.2, 1.3],
 ];
 
-/** Paniculata: muchas florecitas blancas en tallos finos. */
+/** Baby's breath: many tiny white flowers on thin stems. */
 export function BabysBreath({ className }: DecorationProps) {
   return (
     <svg viewBox="0 0 100 220" className={svgClass(className)} aria-hidden fill="none">
@@ -260,7 +260,7 @@ const EUCALYPTUS_LEAVES: [number, number, number, boolean][] = [
   [58, 34, 5.5, true],
 ];
 
-/** Rama de eucalipto de hoja redonda. */
+/** Round-leaf eucalyptus branch. */
 export function EucalyptusBranch({ className }: DecorationProps) {
   return (
     <svg viewBox="0 0 100 220" className={svgClass(className)} aria-hidden fill="none">
@@ -282,7 +282,7 @@ export function EucalyptusBranch({ className }: DecorationProps) {
 
 type Feather = { d: string; stem: string };
 
-/** Pluma de pampa: tallo curvo con plumas a ambos lados, más anchas en el centro. */
+/** Pampas plume: curved stem with feathers on both sides, widest in the middle. */
 function pampasPlume(base: [number, number], tip: [number, number], bend: number, width: number): Feather {
   const [bx, by] = base;
   const [tx, ty] = tip;
@@ -315,7 +315,7 @@ const PAMPAS = [
   pampasPlume([50, 238], [14, 78], -6, 7),
 ];
 
-/** Plumas de pampa (estilo boho). */
+/** Pampas plumes (boho style). */
 export function Pampas({ className }: DecorationProps) {
   return (
     <svg viewBox="0 0 100 240" className={svgClass(className)} aria-hidden fill="none" strokeLinecap="round">
@@ -331,7 +331,7 @@ export function Pampas({ className }: DecorationProps) {
 
 const FAN_RAYS = Array.from({ length: 11 }, (_, i) => -75 + i * 15);
 
-/** Abanico art déco con rayos y arcos concéntricos. */
+/** Art déco fan with rays and concentric arcs. */
 export function DecoFan({ className }: DecorationProps) {
   const arc = (r: number) => `M${60 - r} 104A${r} ${r} 0 0 1 ${60 + r} 104`;
   return (
@@ -380,7 +380,7 @@ const LAUREL_PAIRS: [number, number, number][] = [
   [56, 40, 9],
 ];
 
-/** Rama de laurel en línea dorada. */
+/** Laurel branch in gold line art. */
 export function Laurel({ className }: DecorationProps) {
   return (
     <svg viewBox="0 0 100 220" className={svgClass(className)} aria-hidden fill="none">
@@ -396,7 +396,7 @@ export function Laurel({ className }: DecorationProps) {
   );
 }
 
-/** Lazo de satén. */
+/** Satin bow. */
 export function SatinBow({ className }: DecorationProps) {
   return (
     <svg viewBox="0 0 140 124" className={svgClass(className)} aria-hidden fill="none">
@@ -418,7 +418,7 @@ export function SatinBow({ className }: DecorationProps) {
   );
 }
 
-/** Corazón pequeño para marcar el día en el calendario. */
+/** Small heart that marks the day on the calendar. */
 export function HeartMark({ className }: DecorationProps) {
   return (
     <svg viewBox="0 0 24 22" className={className} aria-hidden>
@@ -441,7 +441,7 @@ export function Flourish({ className }: DecorationProps) {
   );
 }
 
-/** Ilustración principal y secundaria de cada juego de adornos. */
+/** Main and secondary illustration of each ornament set. */
 const ORNAMENTS: Record<OrnamentSet, [ComponentType<DecorationProps>, ComponentType<DecorationProps>] | null> = {
   "dried-flowers": [DriedFlowers, LeafSprig],
   roses: [RoseCluster, LeafSprig],
@@ -454,7 +454,7 @@ const ORNAMENTS: Record<OrnamentSet, [ComponentType<DecorationProps>, ComponentT
   none: null,
 };
 
-/** El adorno de la plantilla: `primary` (flores) o `secondary` (ramita). */
+/** The template's ornament: `primary` (flowers) or `secondary` (sprig). */
 export function Ornament({
   set,
   variant = "primary",

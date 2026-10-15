@@ -10,9 +10,9 @@ import { notifyCouple } from "@/lib/notify";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
- * Acciones públicas del formulario de asistencia. El invitado no tiene
- * cuenta: lo identifica un token secreto que se guarda en su celular y en
- * su enlace personal. En la base de datos solo se guarda su hash.
+ * Public actions of the attendance form. Guests have no account: they are
+ * identified by a secret token stored on their phone and in their personal
+ * link. Only its hash is stored in the database.
  */
 
 const ERROR_CODES = [
@@ -54,7 +54,7 @@ function failureFrom(error: { message?: string } | null): Failure {
   return { ok: false, code: code ?? "UNAVAILABLE" };
 }
 
-/** Huella anónima de la conexión (para frenar envíos masivos). */
+/** Anonymous fingerprint of the connection (to throttle mass submissions). */
 async function connectionHash() {
   const h = await headers();
   const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "";
@@ -81,7 +81,7 @@ const submitSchema = z
     attending: z.boolean(),
     companions: z.array(nameSchema).max(50),
     locale: localeSchema,
-    website: z.string().max(0), // campo trampa: las personas no lo ven
+    website: z.string().max(0), // honeypot field: people never see it
   })
   .refine((v) => v.attending || v.companions.length === 0);
 

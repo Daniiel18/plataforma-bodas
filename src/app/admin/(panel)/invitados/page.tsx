@@ -167,7 +167,7 @@ async function GuestList({ searchParams }: Pick<PageProps<"/admin/invitados">, "
         </Card>
       ) : (
         <>
-          {/* Escritorio: tabla */}
+          {/* Desktop: table */}
           <Card className="hidden py-0 md:block">
             <Table>
               <TableHeader>
@@ -203,7 +203,7 @@ async function GuestList({ searchParams }: Pick<PageProps<"/admin/invitados">, "
             </Table>
           </Card>
 
-          {/* Celular: tarjetas */}
+          {/* Phone: cards */}
           <ul className="grid gap-3 md:hidden">
             {rows.map((r) => (
               <li key={r.id}>

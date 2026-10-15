@@ -3,10 +3,10 @@ import type { CSSProperties } from "react";
 import type { BackgroundKey } from "./backgrounds";
 
 /**
- * Catálogo de plantillas. Cada plantilla es solo datos: colores, tipografías,
- * adornos y formas. La invitación los convierte en variables CSS y atributos
- * `data-*` (ver invitation.css), así que una plantilla nueva es una entrada más
- * en esta lista, sin CSS propio.
+ * Template catalog. Each template is plain data: colors, fonts, ornaments and
+ * shapes. The invitation turns them into CSS variables and `data-*` attributes
+ * (see invitation.css), so a new template is one more entry in this list, with
+ * no CSS of its own.
  */
 
 export type ScriptFont = "great-vibes" | "pinyon" | "parisienne" | "allura" | "serif-italic";
@@ -29,7 +29,7 @@ export type Template = {
   description: string;
   collection: Collection;
   colors: Colors;
-  /** Colores de flores y hojas; si faltan se usan los de Champagne Clásico. */
+  /** Flower and leaf colors; Champagne Clásico's are used when missing. */
   ornamentColors?: OrnamentColors;
   shadow?: string;
   tone?: "dark";
@@ -40,7 +40,7 @@ export type Template = {
   card: CardStyle;
   button: "pill" | "square";
   names: "ink" | "foil";
-  /** Fondo recomendado (la novia puede elegir otro). */
+  /** Recommended background (the couple can pick another). */
   background: Exclude<BackgroundKey, "foto">;
 };
 
@@ -525,7 +525,7 @@ export type TemplateKey = (typeof TEMPLATES)[number]["key"];
 
 export const DEFAULT_TEMPLATE: TemplateKey = "champagne-clasico";
 
-/** Colores de acento opcionales (botones y nombres). */
+/** Optional accent colors (buttons and names). */
 export const ACCENTS = [
   { value: "#6f5b4e", label: "Moka" },
   { value: "#8e6f3e", label: "Dorado" },
@@ -546,7 +546,7 @@ export function getTemplate(key: string | null | undefined): Template {
   return TEMPLATES.find((t) => t.key === resolved)!;
 }
 
-/** Las plantillas oscuras usan su propio dorado: los acentos son para fondos claros. */
+/** Dark templates keep their own gold: accents are meant for light backgrounds. */
 export function acceptsAccent(template: Template): boolean {
   return template.tone !== "dark";
 }
@@ -570,7 +570,7 @@ const HEADING_FONT: Record<HeadingFont, string> = {
   cinzel: "var(--font-cinzel)",
 };
 
-/** Variables CSS de la plantilla (más el acento elegido, si la plantilla lo admite). */
+/** The template's CSS variables (plus the chosen accent, when the template allows it). */
 export function themeStyle(template: Template, accent: string | null): CSSProperties {
   const c = template.colors;
   const vars: Record<string, string> = {
@@ -600,7 +600,7 @@ export function themeStyle(template: Template, accent: string | null): CSSProper
   return vars as CSSProperties;
 }
 
-/** Atributos `data-*` que activan las variantes de forma en invitation.css. */
+/** `data-*` attributes that enable the shape variants in invitation.css. */
 export function themeAttributes(template: Template, background: BackgroundKey) {
   return {
     "data-bg": background,

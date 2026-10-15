@@ -4,9 +4,9 @@ import { NextResponse, type NextRequest } from "next/server";
 const PUBLIC_ADMIN_PATHS = ["/admin/login", "/admin/recuperar"];
 
 /**
- * Refresca la sesión de Supabase en cada visita al panel y hace una
- * verificación optimista: sin sesión → al login. La autorización real
- * (ser miembro de la boda) se verifica en cada página y acción.
+ * Refreshes the Supabase session on every dashboard visit and runs an
+ * optimistic check: no session → login. Real authorization (being a member
+ * of the wedding) is verified in every page and action.
  */
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });

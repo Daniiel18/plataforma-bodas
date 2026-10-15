@@ -45,7 +45,7 @@ export function SectionForm({ type, content, weddingId, cover }: FormProps) {
   }
 }
 
-/** Formulario común: guarda la sección, traduce y refresca la vista. */
+/** Shared form: saves the section, translates it and refreshes the view. */
 function useSectionSave<T extends SectionType>(type: T) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();

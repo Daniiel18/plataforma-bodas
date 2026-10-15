@@ -4,8 +4,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 /**
- * Destino de los enlaces que envía Supabase por correo (p. ej. recuperar
- * contraseña). Canjea el código por una sesión y redirige dentro del panel.
+ * Target of the links Supabase sends by email (e.g. password recovery).
+ * Exchanges the code for a session and redirects inside the dashboard.
  */
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;

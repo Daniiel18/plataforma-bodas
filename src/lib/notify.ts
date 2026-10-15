@@ -69,8 +69,8 @@ function configured() {
 }
 
 /**
- * Avisa a los novios en sus celulares (Web Push). Las suscripciones que el
- * navegador ya no acepta (404/410) se eliminan. Devuelve cuántos avisos llegaron.
+ * Notifies the couple on their phones (Web Push). Subscriptions the browser
+ * no longer accepts (404/410) are removed. Returns how many were delivered.
  */
 export async function notifyCouple(weddingId: string, notice: CoupleNotice): Promise<number> {
   if (!configured()) return 0;

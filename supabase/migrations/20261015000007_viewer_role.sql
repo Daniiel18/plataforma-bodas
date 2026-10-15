@@ -1,7 +1,7 @@
 -- =====================================================================
--- Rol de solo lectura (cuenta demo pública).
---   owner  → administra la boda (los novios)
---   viewer → ve todo el panel, pero la base de datos rechaza cualquier cambio
+-- Read-only role (public demo account).
+--   owner  → manages the wedding (the couple)
+--   viewer → sees the whole dashboard, but the database rejects any change
 -- =====================================================================
 
 alter table public.wedding_members
@@ -26,14 +26,14 @@ $$;
 revoke all on function public.is_wedding_editor(uuid) from public, anon;
 grant execute on function public.is_wedding_editor(uuid) to authenticated, service_role;
 
--- Bodas: solo los dueños editan.
+-- Weddings: only owners edit.
 drop policy "Novios editan su boda" on public.weddings;
 create policy "Novios editan su boda" on public.weddings
   for update to authenticated
   using (public.is_wedding_editor(id))
   with check (public.is_wedding_editor(id));
 
--- Tablas del panel: los miembros leen; solo los dueños escriben.
+-- Dashboard tables: members read; only owners write.
 do $$
 declare
   t record;
@@ -60,14 +60,14 @@ begin
 end;
 $$;
 
--- Dispositivos para avisos: solo los dueños.
+-- Notification devices: owners only.
 drop policy "Novios gestionan sus dispositivos" on public.push_subscriptions;
 create policy "Dueños gestionan sus dispositivos" on public.push_subscriptions
   for all to authenticated
   using (public.is_wedding_editor(wedding_id))
   with check (public.is_wedding_editor(wedding_id));
 
--- Archivos: solo los dueños suben, cambian o borran.
+-- Files: only owners upload, change or delete.
 create or replace function public.can_manage_storage_object(object_name text)
 returns boolean
 language sql

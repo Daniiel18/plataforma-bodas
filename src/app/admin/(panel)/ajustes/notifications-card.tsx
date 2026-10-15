@@ -51,7 +51,7 @@ async function saveSubscription(subscription: PushSubscription) {
   });
 }
 
-/** Activa los avisos push (nueva respuesta, cambio o deseo) en el dispositivo actual. */
+/** Turns on push notifications (new answer, change or wish) on the current device. */
 export function NotificationsCard({ deviceCount }: { deviceCount: number }) {
   const [status, setStatus] = useState<Status>("checking");
   const [pending, startTransition] = useTransition();
@@ -70,7 +70,7 @@ export function NotificationsCard({ deviceCount }: { deviceCount: number }) {
       if (Notification.permission === "denied") setStatus("denied");
       else if (subscription) {
         setStatus("on");
-        await saveSubscription(subscription); // por si se borró del servidor
+        await saveSubscription(subscription); // in case it was removed from the server
       } else setStatus("off");
     };
     check().catch(() => active && setStatus("unsupported"));

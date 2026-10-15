@@ -1,4 +1,4 @@
-/** Generación del archivo de calendario (.ics, RFC 5545) para "Añadir al calendario". */
+/** Builds the calendar file (.ics, RFC 5545) for "Add to calendar". */
 
 export type IcsEvent = {
   uid: string;
@@ -7,7 +7,7 @@ export type IcsEvent = {
   stampedAt: string;
   location?: string;
   url?: string;
-  /** Recordatorio antes del evento (formato de duración iCalendar, p. ej. "-P1D"). */
+  /** Reminder before the event (iCalendar duration, e.g. "-P1D"). */
   reminder?: string;
 };
 
@@ -20,7 +20,7 @@ export const icsDate = (iso: string) =>
     .replace(/[-:]/g, "")
     .replace(/\.\d{3}/, "");
 
-/** Las líneas de un .ics no deben pasar de 75 bytes: se continúan con un espacio. */
+/** .ics lines must not exceed 75 bytes: longer ones continue after a space. */
 export function foldLine(line: string) {
   const encoder = new TextEncoder();
   const out: string[] = [];

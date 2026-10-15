@@ -17,7 +17,7 @@ import type { ActionResult } from "@/lib/types";
 
 const typeSchema = z.enum(SECTION_TYPES);
 
-/** Secciones que se pueden reordenar (el sobre siempre va primero y la música no ocupa lugar). */
+/** Sections that can be reordered (the envelope always comes first and music takes no slot). */
 const ORDERABLE: SectionType[] = SECTION_TYPES.filter((t) => t !== "intro" && t !== "music");
 
 export async function saveSection(type: SectionType, data: unknown): Promise<ActionResult & { pending?: number }> {
@@ -96,7 +96,7 @@ export async function moveSection(type: SectionType, direction: -1 | 1): Promise
   if (from < 0 || to < 0 || to >= order.length) return { ok: true };
   [order[from], order[to]] = [order[to], order[from]];
 
-  // Posiciones desde 1 (el sobre ocupa la 0).
+  // Positions start at 1 (the envelope is 0).
   const results = await Promise.all(
     order.map((t, i) =>
       supabase
@@ -112,7 +112,7 @@ export async function moveSection(type: SectionType, direction: -1 | 1): Promise
   return { ok: true };
 }
 
-/** Corrección manual de un texto en inglés. Se respeta hasta que cambie el español. */
+/** Manual correction of an English text, kept until the Spanish text changes. */
 export async function saveTranslation(type: SectionType, path: string, english: string): Promise<ActionResult> {
   const { supabase, wedding, readOnly } = await getAdminContext();
   if (readOnly) return READ_ONLY_RESULT;

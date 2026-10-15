@@ -1,9 +1,9 @@
 /* =====================================================================
-   Invitación pública · motor de plantillas
-   Los valores por defecto son los de "Champagne Clásico". Cada plantilla
-   (src/lib/templates.ts) sobrescribe las variables en línea y activa sus
-   variantes con atributos data-* en la raíz: data-card, data-frame,
-   data-button, data-names, data-script, data-heading, data-tone y data-bg.
+   Public invitation · template engine
+   Defaults are those of "Champagne Clásico". Each template
+   (src/lib/templates.ts) overrides the variables inline and enables its
+   variants with data-* attributes on the root: data-card, data-frame,
+   data-button, data-names, data-script, data-heading, data-tone and data-bg.
    ===================================================================== */
 
 .invitation {
@@ -33,8 +33,8 @@
   position: relative;
   isolation: isolate;
   min-height: 100svh;
-  /* Las decoraciones asoman por los bordes: se recortan aquí para que la
-     página nunca sea más ancha que el celular (sin scroll horizontal). */
+  /* Decorations peek out of the edges: they are clipped here so the page
+     is never wider than the phone (no horizontal scroll). */
   overflow-x: hidden;
   overflow-x: clip;
   color: var(--inv-ink);
@@ -49,8 +49,8 @@
 }
 
 /* ---------------------------------------------------------------------
-   Fondo de la página: una capa fija detrás del contenido (y del sobre) con
-   imagen y un patrón en máscara que toma el color de la plantilla.
+   Page background: a fixed layer behind the content (and the envelope) with
+   an image and a masked pattern that takes the template's color.
    --------------------------------------------------------------------- */
 
 .inv-backdrop {
@@ -76,7 +76,7 @@
   mask-size: var(--inv-pattern-size, auto);
 }
 
-/* En las miniaturas del panel el fondo se queda dentro de la tarjeta. */
+/* In dashboard thumbnails the background stays inside the card. */
 .inv-backdrop-contained {
   position: absolute;
 }
@@ -197,10 +197,10 @@
 }
 
 /* ---------------------------------------------------------------------
-   Variantes de forma
+   Shape variants
    --------------------------------------------------------------------- */
 
-/* Tarjetas */
+/* Cards */
 .invitation[data-card="outline"] .inv-card,
 .invitation[data-card="outline"] .inv-card-strong {
   border-radius: 0.25rem;
@@ -228,12 +228,12 @@
     inset 0 0 0 1px var(--inv-line);
 }
 
-/* Botones */
+/* Buttons */
 .invitation[data-button="square"] .inv-button {
   border-radius: 0.25rem;
 }
 
-/* Nombres en dorado laminado */
+/* Gold-foil names */
 .invitation[data-names="foil"] .inv-names {
   background: linear-gradient(
     100deg,
@@ -259,7 +259,7 @@
   );
 }
 
-/* Tipografías */
+/* Typography */
 .invitation[data-script="italic"] .inv-script {
   font-style: italic;
   letter-spacing: 0.01em;
@@ -281,12 +281,12 @@
   letter-spacing: 0.24em;
 }
 
-/* Adornos */
+/* Ornaments */
 .invitation[data-ornaments="none"] .inv-deco {
   display: none !important;
 }
 
-/* Marco de la foto de portada (por defecto, polaroid con cinta y sello) */
+/* Cover photo frame (a polaroid with tape and seal by default) */
 .invitation[data-frame="arch"] .inv-polaroid,
 .invitation[data-frame="circle"] .inv-polaroid {
   background: linear-gradient(
@@ -362,7 +362,7 @@
   background: color-mix(in srgb, var(--inv-card) 80%, transparent);
 }
 
-/* Sello de lacre (portada y sobre) */
+/* Wax seal (cover and envelope) */
 .inv-wax,
 .inv-seal {
   background: radial-gradient(
@@ -374,7 +374,7 @@
   color: color-mix(in srgb, var(--inv-gold) 12%, #fff);
 }
 
-/* Idioma: el script inicial marca data-lang antes de pintar. */
+/* Language: the inline script sets data-lang before the first paint. */
 .invitation:not([data-lang="en"]) .l-en,
 .invitation[data-lang="en"] .l-es {
   display: none !important;
@@ -441,7 +441,7 @@
   box-shadow: inset 0 0 0 1px var(--inv-line);
 }
 
-/* Selector de app de mapas en iPhone, al estilo de las hojas de acción de iOS. */
+/* Map app chooser on iPhone, styled like an iOS action sheet. */
 .inv-sheet {
   inset: auto 0 0;
   width: min(100% - 1.5rem, 26rem);
@@ -503,7 +503,7 @@
   }
 }
 
-/* Aparición suave al hacer scroll (sin JS: animación al cargar). */
+/* Soft reveal on scroll (pure CSS; plays on load where unsupported). */
 @media (prefers-reduced-motion: no-preference) {
   .inv-reveal {
     animation: inv-rise 900ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
@@ -524,7 +524,7 @@
 }
 
 /* ---------------------------------------------------------------------
-   Sobre de bienvenida
+   Welcome envelope
    --------------------------------------------------------------------- */
 
 .inv-envelope-overlay {
@@ -636,7 +636,7 @@
   transform: translateY(-38%);
 }
 
-/* El contenido de la carta aparece solo al abrir el sobre. */
+/* The letter's content only appears once the envelope opens. */
 .inv-envelope-letter > * {
   opacity: 0;
   transition: opacity 400ms ease 550ms;
@@ -656,7 +656,7 @@
 }
 
 /* ---------------------------------------------------------------------
-   Caja de regalos
+   Gift box
    --------------------------------------------------------------------- */
 
 .inv-giftbox {
@@ -737,7 +737,7 @@
 }
 
 /* ---------------------------------------------------------------------
-   Botón de música
+   Music button
    --------------------------------------------------------------------- */
 
 .inv-music-bars span {
@@ -769,7 +769,7 @@
 }
 
 /* ---------------------------------------------------------------------
-   Galería 3D
+   3D gallery
    --------------------------------------------------------------------- */
 
 .inv-gallery .swiper {
@@ -813,7 +813,7 @@
 }
 
 /* ---------------------------------------------------------------------
-   Miniaturas del panel (Apariencia): textos y botones a escala
+   Dashboard thumbnails (Appearance): scaled text and buttons
    --------------------------------------------------------------------- */
 
 .invitation.inv-mini .inv-heading {

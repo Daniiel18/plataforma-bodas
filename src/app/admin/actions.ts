@@ -43,7 +43,7 @@ export async function requestPasswordReset(_prev: ActionResult | null, formData:
     redirectTo: `${origin}/auth/confirm?next=${encodeURIComponent("/admin/ajustes?recuperacion=1")}`,
   });
 
-  // Mismo mensaje exista o no la cuenta, para no revelar qué correos están registrados.
+  // Same message whether or not the account exists, so registered emails are never revealed.
   return { ok: true, message: "Si el correo está registrado, te llegará un enlace para crear una nueva contraseña." };
 }
 

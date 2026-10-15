@@ -22,9 +22,9 @@ const compactUtc = (iso: string) =>
     .replace(/\.\d{3}/, "");
 
 /**
- * "Añadir al calendario" en un solo toque, según el dispositivo del invitado:
- * iPhone/Mac abren el .ics en Calendario, Android abre Google Calendar y el resto
- * descarga el .ics (Outlook, Calendario de Windows…).
+ * One-tap "Add to calendar" that adapts to the guest's device: iPhone and Mac
+ * open the .ics in Calendar, Android opens Google Calendar and everything else
+ * downloads the .ics (Outlook, Windows Calendar…).
  */
 export function AddToCalendar({ slug, title, startsAt, location }: Props) {
   const lang = useLang();
@@ -45,7 +45,7 @@ export function AddToCalendar({ slug, title, startsAt, location }: Props) {
   return (
     <a
       href={href}
-      // En otra pestaña para que la invitación (y la música) sigan abiertas.
+      // New tab, so the invitation (and its music) stays open.
       target={device === "android" ? "_blank" : undefined}
       rel="noopener noreferrer"
       className="inline-flex items-center gap-2 text-sm underline decoration-[var(--inv-line)] underline-offset-4"

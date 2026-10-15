@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        // Service worker de las notificaciones: siempre la versión más reciente.
+        // Notifications service worker: always serve the latest version.
         source: "/sw.js",
         headers: [
           { key: "Content-Type", value: "application/javascript; charset=utf-8" },
@@ -26,7 +26,7 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
-    // Fotos, portada y QR que la novia sube a Supabase Storage.
+    // Photos, cover and QR the couple upload to Supabase Storage.
     remotePatterns: [{ protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/**" }],
   },
   turbopack: {

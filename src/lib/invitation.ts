@@ -47,7 +47,7 @@ export type InvitationData = {
   updatedAt: string;
   template: TemplateKey;
   accent: string | null;
-  /** Fondo de la página; `photo` solo cuando el fondo es "Tu foto". */
+  /** Page background; `photo` only when the background is "Tu foto". */
   background: { key: BackgroundKey; photo: string | null; veil: PhotoVeil };
   couple: { partner1: string; partner2: string };
   event: { startsAt: string; timeZone: string } | null;
@@ -95,7 +95,7 @@ const image = (m: MediaRow): MediaImage => ({
 const plainBi = (es: string | null, en: string | null): Bi | null =>
   es?.trim() ? { es: es.trim(), en: en?.trim() || es.trim() } : null;
 
-/** Arma los datos de la invitación con el cliente recibido (público o de los novios). */
+/** Builds the invitation data with the given client (public or the couple's). */
 export async function loadInvitation(supabase: SupabaseClient, wedding: Wedding): Promise<InvitationData> {
   const [{ data: sectionRows }, { data: mediaRows }, { data: giftRows }] = await Promise.all([
     supabase
@@ -278,7 +278,7 @@ export async function loadInvitation(supabase: SupabaseClient, wedding: Wedding)
         };
       }
       default:
-        return null; // intro y music no son bloques de contenido
+        return null; // intro and music are not content blocks
     }
   }
 
@@ -305,7 +305,7 @@ export async function loadInvitation(supabase: SupabaseClient, wedding: Wedding)
   };
 }
 
-/** Invitación publicada, cacheada hasta que la novia guarde un cambio. */
+/** Published invitation, cached until the couple saves a change. */
 export async function getPublicInvitation(slug: string): Promise<InvitationData | null> {
   "use cache";
   cacheLife("max");

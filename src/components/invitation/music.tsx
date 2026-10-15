@@ -14,9 +14,9 @@ export function useMusic() {
 }
 
 /**
- * Reproductor de fondo. La canción no se descarga hasta que el invitado
- * abre el sobre o toca el botón (los navegadores, sobre todo en iPhone,
- * solo permiten sonido después de un toque).
+ * Background player. The song is not downloaded until the guest opens the
+ * envelope or taps the button (browsers, especially on iPhone, only allow
+ * sound after a tap).
  */
 export function MusicProvider({ src, children }: { src: string | null; children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -38,7 +38,7 @@ export function MusicProvider({ src, children }: { src: string | null; children:
     else audio.pause();
   };
 
-  // Pausa cuando el invitado cambia de app o pestaña, y retoma al volver.
+  // Pauses when the guest switches apps or tabs, and resumes on return.
   useEffect(() => {
     const onVisibility = () => {
       const audio = audioRef.current;

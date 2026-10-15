@@ -34,7 +34,7 @@ export async function saveZelle(input: z.input<typeof zelleSchema>): Promise<Act
     .eq("type", "zelle")
     .single();
 
-  // Solo se traduce la nota si cambió.
+  // The note is only translated when it changed.
   let noteEn: string | null = current?.note === v.note ? (current?.note_en ?? null) : null;
   if (v.note && current?.note !== v.note) [noteEn] = await translateEsToEn([v.note]);
 

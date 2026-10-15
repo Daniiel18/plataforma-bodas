@@ -8,12 +8,12 @@ type ExportRow = Omit<RsvpWithDetails, "wishes"> & {
 
 const csvCell = (value: string | number) => {
   const text = String(value);
-  // Evita que Excel interprete el texto como fórmula.
+  // Keeps Excel from interpreting the text as a formula.
   const safe = /^[=+\-@]/.test(text) ? `'${text}` : text;
   return `"${safe.replace(/"/g, '""')}"`;
 };
 
-/** Descarga un CSV con una fila por persona (titulares y acompañantes). */
+/** Downloads a CSV with one row per person (guests and companions). */
 export async function GET() {
   const { supabase, wedding } = await getAdminContext();
 
@@ -43,7 +43,7 @@ export async function GET() {
   }
 
   const fileName = `invitados-${wedding.slug}-${new Date().toISOString().slice(0, 10)}.csv`;
-  // BOM para que Excel reconozca acentos y ñ.
+  // BOM so Excel reads accents and ñ correctly.
   return new Response(`﻿${lines.join("\r\n")}`, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",

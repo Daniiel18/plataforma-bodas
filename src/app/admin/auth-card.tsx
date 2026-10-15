@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-/** Tarjeta centrada para las pantallas de acceso (login, recuperar, sin acceso). */
+/** Centered card for the access screens (login, recovery, no access). */
 export function AuthCard({
   title,
   description,

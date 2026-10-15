@@ -13,7 +13,7 @@ const subscriptionSchema = z.object({
   label: z.string().max(40),
 });
 
-/** Guarda este dispositivo para recibir avisos de la boda. */
+/** Saves this device to receive the wedding's notifications. */
 export async function savePushSubscription(input: z.input<typeof subscriptionSchema>): Promise<ActionResult> {
   const { supabase, wedding, userId, readOnly } = await getAdminContext();
   if (readOnly) return READ_ONLY_RESULT;

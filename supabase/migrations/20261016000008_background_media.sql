@@ -1,7 +1,7 @@
 -- =====================================================================
--- Foto de fondo de la invitación ("Tu foto" en Apariencia).
--- Una por boda: el trigger de límites ya permite 1 para todo lo que no es
--- galería, y las políticas de Storage ya cubren la carpeta de la boda.
+-- Invitation background photo ("Tu foto" in Appearance).
+-- One per wedding: the limits trigger already allows 1 for everything but the
+-- gallery, and the Storage policies already cover the wedding's folder.
 -- =====================================================================
 
 alter type public.media_kind add value if not exists 'background';

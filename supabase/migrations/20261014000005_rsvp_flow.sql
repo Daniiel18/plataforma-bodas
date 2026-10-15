@@ -1,10 +1,10 @@
 -- =====================================================================
--- Etapa 4: flujo público de RSVP y deseos
+-- Public RSVP and wishes flow
 -- =====================================================================
 
 -- ---------------------------------------------------------------------
--- 1. Datos privados de la boda (fuera de `weddings`, que es pública).
---    El correo de avisos no debe poder leerse con la clave pública.
+-- 1. Private wedding data (outside `weddings`, which is public).
+--    The notification email must never be readable with the public key.
 -- ---------------------------------------------------------------------
 
 create table public.wedding_private (
@@ -33,16 +33,16 @@ create policy "Novios gestionan sus datos privados" on public.wedding_private
   with check (public.is_wedding_member(wedding_id));
 
 -- ---------------------------------------------------------------------
--- 2. Control de abuso: huella anónima (hash) de la conexión.
+-- 2. Abuse control: anonymous (hashed) fingerprint of the connection.
 -- ---------------------------------------------------------------------
 
 alter table public.rsvps add column ip_hash text;
 create index rsvps_ip_recent_idx on public.rsvps (wedding_id, ip_hash, created_at desc);
 
 -- ---------------------------------------------------------------------
--- 3. Funciones del flujo público. Solo las llama el servidor de la app
---    (service_role); el navegador nunca escribe directo en las tablas.
---    Los errores usan códigos que la app traduce a mensajes ES/EN.
+-- 3. Public flow functions. Only the app server calls them
+--    (service_role); the browser never writes to the tables directly.
+--    Errors use codes the app turns into ES/EN messages.
 -- ---------------------------------------------------------------------
 
 create or replace function public.rsvp_open_wedding(p_slug text)
@@ -63,7 +63,7 @@ begin
 end;
 $$;
 
--- Nueva respuesta.
+-- New answer.
 create or replace function public.rsvp_submit(
   p_slug text,
   p_full_name text,
@@ -116,7 +116,7 @@ begin
 end;
 $$;
 
--- Estado de la respuesta propia (para quien vuelve con su enlace o dispositivo).
+-- Status of the guest's own answer (for returning visits by link or device).
 create or replace function public.rsvp_status(p_slug text, p_token_hash text)
 returns table (
   rsvp_id uuid,
@@ -147,7 +147,7 @@ begin
 end;
 $$;
 
--- Cambiar Sí ↔ No (solo antes de la fecha límite).
+-- Switch Yes ↔ No (only before the deadline).
 create or replace function public.rsvp_change(
   p_slug text,
   p_token_hash text,
@@ -184,7 +184,7 @@ begin
     raise exception 'TOO_MANY_COMPANIONS';
   end if;
 
-  -- El trigger borra los acompañantes al pasar a "No".
+  -- The trigger deletes the companions when switching to "No".
   update public.rsvps set attending = p_attending, change_count = change_count + 1 where id = r.id;
 
   if p_attending then
@@ -198,7 +198,7 @@ begin
 end;
 $$;
 
--- Un único deseo por respuesta.
+-- A single wish per answer.
 create or replace function public.wish_submit(
   p_slug text,
   p_token_hash text,

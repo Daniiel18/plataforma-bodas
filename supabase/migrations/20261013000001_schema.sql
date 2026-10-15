@@ -1,17 +1,17 @@
 -- =====================================================================
--- Esquema base de la plataforma de bodas
--- Todas las tablas cuelgan de `weddings` para soportar varias bodas.
+-- Base schema of the wedding platform
+-- Every table hangs off `weddings` so the platform can host many weddings.
 -- =====================================================================
 
 create extension if not exists unaccent with schema extensions;
 create extension if not exists pg_trgm with schema extensions;
 
 -- ---------------------------------------------------------------------
--- Utilidades
+-- Helpers
 -- ---------------------------------------------------------------------
 
--- Normaliza un nombre para comparar duplicados:
--- sin acentos, sin signos, minúsculas y con espacios simples.
+-- Normalizes a name to compare duplicates:
+-- no accents, no punctuation, lowercase and single spaces.
 create or replace function public.normalize_name(value text)
 returns text
 language sql
@@ -38,21 +38,21 @@ end;
 $$;
 
 -- ---------------------------------------------------------------------
--- Tipos
+-- Types
 -- ---------------------------------------------------------------------
 
 create type public.section_type as enum (
-  'intro',        -- sobre con botón "Abrir"
-  'hero',         -- portada con foto y nombres
-  'parents',      -- padres de los novios
-  'celebration',  -- fecha, hora, cuenta regresiva y calendario
-  'gallery',      -- carrusel 3D
-  'location',     -- lugar + mapa + cómo llegar
+  'intro',        -- envelope with an "Open" button
+  'hero',         -- cover with photo and names
+  'parents',      -- the couple's parents
+  'celebration',  -- date, time, countdown and calendar
+  'gallery',      -- 3D carousel
+  'location',     -- venue + map + directions
   'dress_code',
-  'program',      -- programa del día
+  'program',      -- schedule of the day
   'rsvp',
-  'gifts',        -- caja de regalos / Zelle
-  'music'         -- configuración del reproductor
+  'gifts',        -- gift box / Zelle
+  'music'         -- music player settings
 );
 
 create type public.media_kind as enum ('gallery', 'cover', 'audio', 'qr', 'og');
@@ -60,7 +60,7 @@ create type public.media_kind as enum ('gallery', 'cover', 'audio', 'qr', 'og');
 create type public.gift_type as enum ('zelle');
 
 -- ---------------------------------------------------------------------
--- Bodas
+-- Weddings
 -- ---------------------------------------------------------------------
 
 create table public.weddings (
@@ -68,7 +68,7 @@ create table public.weddings (
   slug             text not null unique check (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'),
   partner1_name    text not null check (char_length(trim(partner1_name)) between 1 and 80),
   partner2_name    text not null check (char_length(trim(partner2_name)) between 1 and 80),
-  -- Fecha y zona horaria las define la novia desde el panel.
+  -- Date and time zone are set by the couple from the dashboard.
   event_starts_at  timestamptz,
   timezone         text,
   rsvp_deadline    timestamptz,
@@ -84,7 +84,7 @@ create table public.weddings (
 create trigger weddings_updated_at before update on public.weddings
   for each row execute function public.set_updated_at();
 
--- Cuenta(s) que administran cada boda (hoy: una cuenta compartida por los novios).
+-- Account(s) that manage each wedding (today: one account shared by the couple).
 create table public.wedding_members (
   wedding_id  uuid not null references public.weddings(id) on delete cascade,
   user_id     uuid not null references auth.users(id) on delete cascade,
@@ -95,11 +95,11 @@ create table public.wedding_members (
 create index wedding_members_user_idx on public.wedding_members (user_id);
 
 -- ---------------------------------------------------------------------
--- Contenido de la invitación
+-- Invitation content
 -- ---------------------------------------------------------------------
 
--- `content` guarda los textos en español y los ajustes de la sección.
--- `content_en` guarda la traducción al inglés (automática o corregida).
+-- `content` stores the Spanish texts and the section settings.
+-- `content_en` stores the English translation (automatic or corrected).
 create table public.sections (
   id          uuid primary key default gen_random_uuid(),
   wedding_id  uuid not null references public.weddings(id) on delete cascade,
@@ -139,7 +139,7 @@ create table public.gift_methods (
   wedding_id   uuid not null references public.weddings(id) on delete cascade,
   type         public.gift_type not null default 'zelle',
   holder_name  text,
-  handle       text,  -- email o teléfono registrado en Zelle
+  handle       text,  -- email or phone registered with Zelle
   qr_media_id  uuid references public.media(id) on delete set null,
   note         text,
   note_en      text,
@@ -155,7 +155,7 @@ create trigger gift_methods_updated_at before update on public.gift_methods
   for each row execute function public.set_updated_at();
 
 -- ---------------------------------------------------------------------
--- RSVP, acompañantes y deseos
+-- RSVPs, companions and wishes
 -- ---------------------------------------------------------------------
 
 create table public.rsvps (
@@ -165,8 +165,8 @@ create table public.rsvps (
   name_normalized  text generated always as (public.normalize_name(full_name)) stored,
   attending        boolean not null,
   locale           text not null default 'es' check (locale in ('es', 'en')),
-  -- Hash del enlace personal con el que el invitado puede cambiar Sí/No.
-  -- Nulo si la respuesta la creó la novia desde el panel.
+  -- Hash of the personal link the guest can use to switch Yes/No.
+  -- Null when the couple created the answer from the dashboard.
   edit_token_hash  text unique,
   change_count     integer not null default 0,
   admin_note       text,
@@ -194,7 +194,7 @@ create table public.rsvp_companions (
 create index rsvp_companions_rsvp_idx on public.rsvp_companions (rsvp_id, position);
 create index rsvp_companions_name_trgm_idx on public.rsvp_companions using gin (name_normalized extensions.gin_trgm_ops);
 
--- Un solo deseo por respuesta; el nombre del autor sale del RSVP.
+-- One wish per answer; the author's name comes from the RSVP.
 create table public.wishes (
   id          uuid primary key default gen_random_uuid(),
   wedding_id  uuid not null references public.weddings(id) on delete cascade,
@@ -208,10 +208,10 @@ create table public.wishes (
 create index wishes_wedding_created_idx on public.wishes (wedding_id, created_at desc);
 
 -- ---------------------------------------------------------------------
--- Reglas de integridad del RSVP
+-- RSVP integrity rules
 -- ---------------------------------------------------------------------
 
--- Acompañantes: heredan la boda del RSVP, solo si asiste y sin pasar el máximo.
+-- Companions inherit the RSVP's wedding, only when attending and within the limit.
 create or replace function public.enforce_companion_rules()
 returns trigger
 language plpgsql
@@ -245,7 +245,7 @@ $$;
 create trigger rsvp_companions_rules before insert on public.rsvp_companions
   for each row execute function public.enforce_companion_rules();
 
--- Si una respuesta pasa a "No asiste", se eliminan sus acompañantes.
+-- When an answer changes to "Not attending", its companions are removed.
 create or replace function public.clear_companions_when_declined()
 returns trigger
 language plpgsql
@@ -262,7 +262,7 @@ $$;
 create trigger rsvps_clear_companions after update of attending on public.rsvps
   for each row execute function public.clear_companions_when_declined();
 
--- Los deseos heredan la boda del RSVP.
+-- Wishes inherit the RSVP's wedding.
 create or replace function public.set_wish_wedding()
 returns trigger
 language plpgsql

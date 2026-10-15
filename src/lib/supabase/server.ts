@@ -3,7 +3,7 @@ import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-/** Cliente de Supabase para Server Components, Server Actions y Route Handlers. */
+/** Supabase client for Server Components, Server Actions and Route Handlers. */
 export async function createClient() {
   const cookieStore = await cookies();
 
@@ -21,8 +21,8 @@ export async function createClient() {
               cookieStore.set(name, value, options);
             }
           } catch {
-            // Llamado desde un Server Component: no puede escribir cookies.
-            // El proxy se encarga de refrescar la sesión.
+            // Called from a Server Component, which cannot write cookies.
+            // The proxy takes care of refreshing the session.
           }
         },
       },

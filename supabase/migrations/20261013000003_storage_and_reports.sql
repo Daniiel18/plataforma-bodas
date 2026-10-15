@@ -1,10 +1,10 @@
 -- =====================================================================
--- Almacenamiento de archivos + funciones de reporte para el panel
+-- File storage + reporting functions for the dashboard
 -- =====================================================================
 
 -- ---------------------------------------------------------------------
--- Bucket público de archivos (fotos, música, QR).
--- Ruta obligatoria: {wedding_id}/{tipo}/{archivo}
+-- Public file bucket (photos, music, QR).
+-- Required path: {wedding_id}/{kind}/{file}
 -- ---------------------------------------------------------------------
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
@@ -56,7 +56,7 @@ create policy "Novios borran archivos de su boda" on storage.objects
   using (bucket_id = 'wedding-media' and public.can_manage_storage_object(name));
 
 -- ---------------------------------------------------------------------
--- Reportes del panel (security invoker: respetan RLS del usuario)
+-- Dashboard reports (security invoker: they respect the user's RLS)
 -- ---------------------------------------------------------------------
 
 create or replace function public.wedding_stats(p_wedding_id uuid)
@@ -95,8 +95,8 @@ as $$
     (select count(*)::integer from public.wishes w join active a on a.id = w.rsvp_id where not w.is_read);
 $$;
 
--- Posibles duplicados: compara titulares y acompañantes de respuestas
--- distintas (no archivadas) por similitud de nombre normalizado.
+-- Possible duplicates: compares guests and companions across different
+-- (non-archived) answers by normalized name similarity.
 create or replace function public.rsvp_duplicate_matches(
   p_wedding_id uuid,
   p_threshold real default 0.6

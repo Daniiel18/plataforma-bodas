@@ -3,9 +3,9 @@
 import { startTransition, useActionState, type FormEvent } from "react";
 
 /**
- * Igual que `useActionState`, pero envía el formulario desde `onSubmit`.
- * Así React no vacía los campos al terminar la acción, y si hay un error
- * de validación la persona no pierde lo que escribió.
+ * Like `useActionState`, but submits the form from `onSubmit`, so React does
+ * not reset the fields when the action finishes and a validation error never
+ * wipes what the person typed.
  */
 export function useFormAction<State>(
   action: (prev: Awaited<State>, formData: FormData) => State | Promise<State>,
