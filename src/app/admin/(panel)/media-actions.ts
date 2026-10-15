@@ -12,11 +12,12 @@ const MIME_BY_KIND: Record<MediaKind, RegExp> = {
   gallery: /^image\/(webp|jpeg|png)$/,
   cover: /^image\/(webp|jpeg|png)$/,
   qr: /^image\/(png|jpeg|webp)$/,
+  background: /^image\/(webp|jpeg|png)$/,
   audio: /^audio\/(mpeg|mp4|aac|ogg|x-m4a)$/,
 };
 
 const registerSchema = z.object({
-  kind: z.enum(["gallery", "cover", "audio", "qr"]),
+  kind: z.enum(["gallery", "cover", "audio", "qr", "background"]),
   path: z.string().min(10).max(300),
   mime: z.string().max(60),
   size: z.number().int().positive(),
@@ -29,7 +30,7 @@ export type RegisteredMedia = { id: string; storage_path: string; width: number 
 
 /**
  * Registra un archivo que el navegador ya subió a Storage. Para portada,
- * canción y QR reemplaza el anterior (y lo borra del almacenamiento).
+ * canción, QR y fondo reemplaza el anterior (y lo borra del almacenamiento).
  */
 export async function registerMedia(
   input: z.input<typeof registerSchema>,

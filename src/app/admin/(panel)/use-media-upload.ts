@@ -7,7 +7,12 @@ import { createClient } from "@/lib/supabase/client";
 
 import { registerMedia, type RegisteredMedia } from "./media-actions";
 
-const MAX_SIDE: Record<Exclude<MediaKind, "audio">, number> = { gallery: 2000, cover: 1600, qr: 1200 };
+const MAX_SIDE: Record<Exclude<MediaKind, "audio">, number> = {
+  gallery: 2000,
+  cover: 1600,
+  qr: 1200,
+  background: 2000,
+};
 const AUDIO_TYPES = /^audio\/(mpeg|mp4|aac|ogg|x-m4a)$/;
 
 type Prepared = {

@@ -1,6 +1,9 @@
 /* =====================================================================
-   Invitación pública · plantilla base "Champagne Clásico"
-   Cada plantilla (Etapa 4) redefine estas variables y sus decoraciones.
+   Invitación pública · motor de plantillas
+   Los valores por defecto son los de "Champagne Clásico". Cada plantilla
+   (src/lib/templates.ts) sobrescribe las variables en línea y activa sus
+   variantes con atributos data-* en la raíz: data-card, data-frame,
+   data-button, data-names, data-script, data-heading, data-tone y data-bg.
    ===================================================================== */
 
 .invitation {
@@ -15,8 +18,20 @@
   --inv-gold: #c5a572;
   --inv-line: #dccdb8;
   --inv-shadow: 0 18px 40px -24px rgb(74 63 55 / 0.45);
+  --inv-danger: #8f362e;
+  --inv-zelle: #6d1ed4;
+  --inv-orn-petal: #dcc7a2;
+  --inv-orn-petal-alt: #ead9bd;
+  --inv-orn-leaf: #d8ccb4;
+  --inv-orn-leaf-alt: #e5dac6;
+  --inv-orn-stem: #a88e6c;
+  --inv-orn-center: #a8865a;
+  --inv-font-script: var(--font-great-vibes);
+  --inv-font-heading: var(--font-serif);
+  --inv-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.38 0 0 0 0 0.3 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 
   position: relative;
+  isolation: isolate;
   min-height: 100svh;
   /* Las decoraciones asoman por los bordes: se recortan aquí para que la
      página nunca sea más ancha que el celular (sin scroll horizontal). */
@@ -25,120 +40,338 @@
   color: var(--inv-ink);
   font-family: var(--font-serif), Georgia, serif;
   background-color: var(--inv-bg);
-  background-image:
-    radial-gradient(ellipse at 15% 0%, rgb(255 255 255 / 0.7), transparent 55%),
-    radial-gradient(ellipse at 90% 40%, rgb(233 220 202 / 0.6), transparent 60%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.38 0 0 0 0 0.3 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.invitation[data-tone="dark"] {
+  --inv-danger: #f2a49b;
+  --inv-zelle: #b99af5;
+  color-scheme: dark;
 }
 
 /* ---------------------------------------------------------------------
-   Plantilla "Beige Minimal": plano, líneas finas, sin flores.
+   Fondo de la página: una capa fija detrás del contenido (y del sobre) con
+   imagen y un patrón en máscara que toma el color de la plantilla.
    --------------------------------------------------------------------- */
 
-.invitation.tpl-beige-minimal {
-  --inv-bg: #f8f5f0;
-  --inv-paper: #fffdf9;
-  --inv-card: #f1ebe2;
-  --inv-card-strong: #3d3833;
-  --inv-ink: #2f2a26;
-  --inv-ink-soft: #7a7068;
-  --inv-accent: #3d3833;
-  --inv-gold: #b9a58a;
-  --inv-line: #ddd3c5;
-  --inv-shadow: none;
-  background-image: none;
+.inv-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: var(--inv-bg);
+  background-image: var(--inv-bg-image, none);
+  background-position: center;
+  background-size: var(--inv-bg-size, auto);
 }
 
-.tpl-beige-minimal .inv-deco {
-  display: none !important;
+.inv-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--inv-pattern-color, var(--inv-gold));
+  opacity: var(--inv-pattern-opacity, 0);
+  -webkit-mask-image: var(--inv-pattern, none);
+  mask-image: var(--inv-pattern, none);
+  -webkit-mask-size: var(--inv-pattern-size, auto);
+  mask-size: var(--inv-pattern-size, auto);
 }
 
-.tpl-beige-minimal .inv-script {
-  font-family: var(--font-serif), Georgia, serif;
-  font-style: italic;
-  font-weight: 400;
-  letter-spacing: 0.01em;
+/* En las miniaturas del panel el fondo se queda dentro de la tarjeta. */
+.inv-backdrop-contained {
+  position: absolute;
 }
 
-.tpl-beige-minimal .inv-card,
-.tpl-beige-minimal .inv-card-strong {
+.invitation[data-bg="papel"] {
+  --inv-bg-image:
+    radial-gradient(ellipse at 15% 0%, color-mix(in srgb, var(--inv-paper) 75%, transparent), transparent 55%),
+    radial-gradient(ellipse at 90% 40%, color-mix(in srgb, var(--inv-card) 65%, transparent), transparent 60%),
+    var(--inv-noise);
+}
+
+.invitation[data-bg="lino"] {
+  --inv-bg-image: var(--inv-noise);
+  --inv-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='7'%3E%3Cpath d='M0 .5h7M.5 0v7' stroke='black' stroke-opacity='.8'/%3E%3Cpath d='M0 4h7M4 0v7' stroke='black' stroke-opacity='.25'/%3E%3C/svg%3E");
+  --inv-pattern-color: var(--inv-ink);
+  --inv-pattern-opacity: 0.07;
+}
+
+.invitation[data-bg="seda"] {
+  --inv-bg-image:
+    linear-gradient(
+      118deg,
+      transparent 6%,
+      color-mix(in srgb, var(--inv-paper) 80%, transparent) 18%,
+      transparent 30%,
+      color-mix(in srgb, var(--inv-card) 85%, transparent) 46%,
+      transparent 58%,
+      color-mix(in srgb, var(--inv-paper) 70%, transparent) 72%,
+      transparent 86%
+    ),
+    linear-gradient(160deg, var(--inv-paper), var(--inv-bg) 42%, color-mix(in srgb, var(--inv-card) 70%, var(--inv-bg)));
+}
+
+.invitation[data-bg="acuarela"] {
+  --inv-bg-image:
+    radial-gradient(38% 26% at 6% 8%, color-mix(in srgb, var(--inv-orn-petal-alt) 60%, transparent), transparent 72%),
+    radial-gradient(30% 22% at 98% 20%, color-mix(in srgb, var(--inv-orn-leaf) 50%, transparent), transparent 72%),
+    radial-gradient(44% 30% at 92% 94%, color-mix(in srgb, var(--inv-orn-petal-alt) 55%, transparent), transparent 72%),
+    radial-gradient(34% 24% at 4% 82%, color-mix(in srgb, var(--inv-gold) 32%, transparent), transparent 72%),
+    radial-gradient(30% 20% at 60% 48%, color-mix(in srgb, var(--inv-paper) 60%, transparent), transparent 72%),
+    var(--inv-noise);
+}
+
+.invitation[data-bg="marmol"] {
+  --inv-bg-image:
+    linear-gradient(
+      150deg,
+      var(--inv-paper),
+      var(--inv-bg) 55%,
+      color-mix(in srgb, var(--inv-card) 60%, var(--inv-bg))
+    ),
+    var(--inv-noise);
+  --inv-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900'%3E%3Cfilter id='m' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.0032 0.0085' numOctaves='5' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -7 0 0 0 1.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)'/%3E%3C/svg%3E");
+  --inv-pattern-size: 900px;
+  --inv-pattern-color: var(--inv-ink-soft);
+  --inv-pattern-opacity: 0.22;
+}
+
+.invitation[data-bg="destellos"] {
+  --inv-bg-image:
+    radial-gradient(60% 40% at 50% 0%, color-mix(in srgb, var(--inv-gold) 22%, transparent), transparent 70%),
+    radial-gradient(50% 35% at 100% 100%, color-mix(in srgb, var(--inv-gold) 16%, transparent), transparent 70%);
+  --inv-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='560'%3E%3CradialGradient id='g'%3E%3Cstop offset='0' stop-opacity='.9'/%3E%3Cstop offset='.55' stop-opacity='.45'/%3E%3Cstop offset='1' stop-opacity='0'/%3E%3C/radialGradient%3E%3Cg fill='url(%23g)'%3E%3Ccircle cx='42' cy='58' r='30'/%3E%3Ccircle cx='160' cy='26' r='12'/%3E%3Ccircle cx='300' cy='90' r='38'/%3E%3Ccircle cx='392' cy='210' r='16'/%3E%3Ccircle cx='96' cy='230' r='20'/%3E%3Ccircle cx='230' cy='300' r='9'/%3E%3Ccircle cx='350' cy='380' r='28'/%3E%3Ccircle cx='30' cy='420' r='14'/%3E%3Ccircle cx='150' cy='480' r='34'/%3E%3Ccircle cx='270' cy='520' r='11'/%3E%3Ccircle cx='210' cy='160' r='6'/%3E%3Ccircle cx='60' cy='330' r='7'/%3E%3Ccircle cx='400' cy='500' r='8'/%3E%3C/g%3E%3C/svg%3E");
+  --inv-pattern-color: var(--inv-gold);
+  --inv-pattern-opacity: 0.55;
+}
+
+.invitation[data-bg="damasco"] {
+  --inv-bg-image: var(--inv-noise);
+  --inv-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='150'%3E%3Cg fill='black'%3E%3Cpath d='M60 16C71 33 75 50 60 72C45 50 49 33 60 16Z'/%3E%3Cpath d='M60 72C67 87 79 93 92 88C82 99 67 97 60 85C53 97 38 99 28 88C41 93 53 87 60 72Z'/%3E%3Cpath d='M60 98l6 10-6 10-6-10Z'/%3E%3Ccircle cx='60' cy='8' r='2.4'/%3E%3Ccircle cx='60' cy='126' r='2.4'/%3E%3Cpath d='M0 67l6 8-6 8-6-8ZM120 67l6 8-6 8-6-8Z'/%3E%3Ccircle cx='0' cy='0' r='3'/%3E%3Ccircle cx='120' cy='0' r='3'/%3E%3Ccircle cx='0' cy='150' r='3'/%3E%3Ccircle cx='120' cy='150' r='3'/%3E%3C/g%3E%3Cg fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M60 72C80 70 92 56 88 44C85 36 76 38 78 46M60 72C40 70 28 56 32 44C35 36 44 38 42 46'/%3E%3Cpath d='M60 118C70 128 84 130 92 124M60 118C50 128 36 130 28 124'/%3E%3Cpath d='M0 40C12 46 14 58 8 66M120 40C108 46 106 58 112 66M0 110C12 104 14 92 8 84M120 110C108 104 106 92 112 84'/%3E%3C/g%3E%3C/svg%3E");
+  --inv-pattern-color: var(--inv-gold);
+  --inv-pattern-opacity: 0.16;
+}
+
+.invitation[data-bg="encaje"] {
+  --inv-bg-image: var(--inv-noise);
+  --inv-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Cg fill='none' stroke='black'%3E%3Cpath d='M0 8a9 9 0 0 0 18 0a9 9 0 0 0 18 0' stroke-width='1.2'/%3E%3Ccircle cx='9' cy='9' r='2'/%3E%3Ccircle cx='27' cy='9' r='2'/%3E%3Cpath d='M0 26a9 9 0 0 1 18 0a9 9 0 0 1 18 0' stroke-dasharray='1.5 2.5'/%3E%3C/g%3E%3Cg fill='black'%3E%3Ccircle cx='18' cy='20' r='1.3'/%3E%3Ccircle cx='15.6' cy='22' r='1'/%3E%3Ccircle cx='20.4' cy='22' r='1'/%3E%3Ccircle cx='18' cy='24.2' r='1'/%3E%3C/g%3E%3C/svg%3E");
+  --inv-pattern-color: var(--inv-gold);
+  --inv-pattern-opacity: 0.28;
+}
+
+.invitation[data-bg="art-deco"] {
+  --inv-bg-image: var(--inv-noise);
+  --inv-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Cg fill='none' stroke='black' stroke-width='1'%3E%3Cpath d='M0 24A24 24 0 0 1 48 24M8 24A16 16 0 0 1 40 24M16 24A8 8 0 0 1 32 24'/%3E%3Cpath d='M-24 48A24 24 0 0 1 24 48M-16 48A16 16 0 0 1 16 48M-8 48A8 8 0 0 1 8 48'/%3E%3Cpath d='M24 48A24 24 0 0 1 72 48M32 48A16 16 0 0 1 64 48M40 48A8 8 0 0 1 56 48'/%3E%3C/g%3E%3C/svg%3E");
+  --inv-pattern-color: var(--inv-gold);
+  --inv-pattern-opacity: 0.3;
+}
+
+.invitation[data-bg="botanico"] {
+  --inv-bg-image: var(--inv-noise);
+  --inv-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Cg fill='black'%3E%3Cg transform='translate(24 34) rotate(-35)'%3E%3Crect x='-.5' y='-16' width='1' height='32'/%3E%3Cellipse cx='-5' cy='-8' rx='5' ry='2.4' transform='rotate(-30 -5 -8)'/%3E%3Cellipse cx='5' cy='-2' rx='5' ry='2.4' transform='rotate(30 5 -2)'/%3E%3Cellipse cx='-5' cy='4' rx='5' ry='2.4' transform='rotate(-30 -5 4)'/%3E%3Cellipse cx='5' cy='10' rx='5' ry='2.4' transform='rotate(30 5 10)'/%3E%3Cellipse cx='0' cy='-18' rx='2.4' ry='4'/%3E%3C/g%3E%3Cg transform='translate(70 74) rotate(40) scale(.8)'%3E%3Crect x='-.5' y='-16' width='1' height='32'/%3E%3Cellipse cx='-5' cy='-8' rx='5' ry='2.4' transform='rotate(-30 -5 -8)'/%3E%3Cellipse cx='5' cy='-2' rx='5' ry='2.4' transform='rotate(30 5 -2)'/%3E%3Cellipse cx='-5' cy='4' rx='5' ry='2.4' transform='rotate(-30 -5 4)'/%3E%3Cellipse cx='5' cy='10' rx='5' ry='2.4' transform='rotate(30 5 10)'/%3E%3Cellipse cx='0' cy='-18' rx='2.4' ry='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  --inv-pattern-color: var(--inv-orn-stem);
+  --inv-pattern-opacity: 0.16;
+}
+
+.invitation[data-bg="lunares"] {
+  --inv-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26'%3E%3Ccircle cx='6.5' cy='6.5' r='1.5'/%3E%3Ccircle cx='19.5' cy='19.5' r='1.5'/%3E%3C/svg%3E");
+  --inv-pattern-color: var(--inv-gold);
+  --inv-pattern-opacity: 0.5;
+}
+
+.invitation[data-bg="rayas"] {
+  --inv-bg-image: repeating-linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--inv-line) 75%, transparent) 0 1px,
+    transparent 1px 22px
+  );
+}
+
+.invitation[data-bg="foto"] {
+  --inv-bg-image:
+    linear-gradient(
+      color-mix(in srgb, var(--inv-bg) var(--inv-veil, 72%), transparent),
+      color-mix(in srgb, var(--inv-bg) var(--inv-veil, 72%), transparent)
+    ),
+    var(--inv-bg-photo, none);
+  --inv-bg-size: cover;
+}
+
+/* ---------------------------------------------------------------------
+   Variantes de forma
+   --------------------------------------------------------------------- */
+
+/* Tarjetas */
+.invitation[data-card="outline"] .inv-card,
+.invitation[data-card="outline"] .inv-card-strong {
   border-radius: 0.25rem;
   box-shadow: inset 0 0 0 1px var(--inv-line);
 }
 
-.tpl-beige-minimal .inv-card {
+.invitation[data-card="outline"] .inv-card {
   background: var(--inv-paper);
 }
 
-.tpl-beige-minimal .inv-heading {
+.invitation[data-card="gold"] .inv-card {
+  box-shadow:
+    var(--inv-shadow),
+    inset 0 0 0 1px var(--inv-gold),
+    inset 0 0 0 5px var(--inv-card),
+    inset 0 0 0 6px color-mix(in srgb, var(--inv-gold) 45%, transparent);
+}
+
+.invitation[data-card="veil"] .inv-card {
+  background: color-mix(in srgb, var(--inv-card) 80%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow:
+    var(--inv-shadow),
+    inset 0 0 0 1px var(--inv-line);
+}
+
+/* Botones */
+.invitation[data-button="square"] .inv-button {
+  border-radius: 0.25rem;
+}
+
+/* Nombres en dorado laminado */
+.invitation[data-names="foil"] .inv-names {
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--inv-gold) 70%, #000) 0%,
+    color-mix(in srgb, var(--inv-gold) 65%, #fff) 35%,
+    color-mix(in srgb, var(--inv-gold) 85%, #000) 60%,
+    color-mix(in srgb, var(--inv-gold) 55%, #fff) 85%,
+    color-mix(in srgb, var(--inv-gold) 70%, #000) 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.invitation[data-tone="dark"][data-names="foil"] .inv-names {
+  background-image: linear-gradient(
+    100deg,
+    var(--inv-gold) 0%,
+    color-mix(in srgb, var(--inv-gold) 50%, #fff) 35%,
+    color-mix(in srgb, var(--inv-gold) 92%, #000) 60%,
+    color-mix(in srgb, var(--inv-gold) 45%, #fff) 85%,
+    var(--inv-gold) 100%
+  );
+}
+
+/* Tipografías */
+.invitation[data-script="italic"] .inv-script {
+  font-style: italic;
+  letter-spacing: 0.01em;
+}
+
+.invitation[data-script="italic"] .inv-heading {
   font-weight: 500;
   letter-spacing: 0.35em;
 }
 
-.tpl-beige-minimal .inv-button {
-  border-radius: 0.25rem;
+.invitation[data-heading="cinzel"] .inv-heading {
+  font-weight: 500;
+  letter-spacing: 0.16em;
 }
 
-.tpl-beige-minimal .inv-polaroid {
+.invitation[data-heading="playfair"] .inv-heading {
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+}
+
+/* Adornos */
+.invitation[data-ornaments="none"] .inv-deco {
+  display: none !important;
+}
+
+/* Marco de la foto de portada (por defecto, polaroid con cinta y sello) */
+.invitation[data-frame="arch"] .inv-polaroid,
+.invitation[data-frame="circle"] .inv-polaroid {
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--inv-gold) 55%, #fff),
+    color-mix(in srgb, var(--inv-gold) 85%, #000)
+  );
+}
+
+.invitation[data-frame="arch"] .inv-polaroid {
+  rotate: 0deg;
+  border-radius: 999px 999px 0.75rem 0.75rem;
+  padding: 0.6rem;
+}
+
+.invitation[data-frame="arch"] .inv-polaroid-photo {
+  border-radius: 999px 999px 0.5rem 0.5rem;
+}
+
+.invitation[data-frame="circle"] .inv-polaroid {
+  rotate: 0deg;
+  border-radius: 999px;
+  padding: 0.5rem;
+}
+
+.invitation[data-frame="circle"] .inv-polaroid-photo {
+  aspect-ratio: 1;
+  border-radius: 999px;
+}
+
+.invitation[data-frame="oval"] .inv-polaroid {
+  rotate: 0deg;
+  border-radius: 50%;
+  padding: 0.55rem;
+  background: var(--inv-paper);
+  box-shadow:
+    var(--inv-shadow),
+    inset 0 0 0 1px var(--inv-gold),
+    inset 0 0 0 4px var(--inv-paper),
+    inset 0 0 0 5px color-mix(in srgb, var(--inv-gold) 50%, transparent);
+}
+
+.invitation[data-frame="oval"] .inv-polaroid-photo {
+  border-radius: 50%;
+}
+
+.invitation[data-frame="deco"] .inv-polaroid {
+  rotate: 0deg;
+  border-radius: 0;
+  padding: 0.75rem;
+  background: var(--inv-paper);
+  box-shadow:
+    var(--inv-shadow),
+    inset 0 0 0 1px var(--inv-gold),
+    inset 0 0 0 5px var(--inv-paper),
+    inset 0 0 0 6px var(--inv-gold);
+}
+
+.invitation[data-frame="plain"] .inv-polaroid {
   padding: 0;
   rotate: 0deg;
   background: transparent;
   box-shadow: none;
 }
 
-.tpl-beige-minimal .inv-polaroid-tape,
-.tpl-beige-minimal .inv-polaroid-seal {
+.invitation:not([data-frame="polaroid"]) .inv-polaroid-tape,
+.invitation:is([data-frame="oval"], [data-frame="circle"], [data-frame="deco"], [data-frame="plain"])
+  .inv-polaroid-seal {
   display: none;
 }
 
-/* ---------------------------------------------------------------------
-   Plantilla "Dorado Elegante": detalles dorados y marcos en arco.
-   --------------------------------------------------------------------- */
-
-.invitation.tpl-dorado-elegante {
-  --inv-bg: #f4ead9;
-  --inv-paper: #fbf5ea;
-  --inv-card: #efe2c9;
-  --inv-card-strong: #5b4630;
-  --inv-ink: #3e3122;
-  --inv-ink-soft: #7d6a52;
-  --inv-accent: #8e6f3e;
-  --inv-gold: #c9a24d;
-  --inv-line: #d9c39a;
+.inv-polaroid-tape {
+  background: color-mix(in srgb, var(--inv-card) 80%, transparent);
 }
 
-.tpl-dorado-elegante .inv-card {
-  box-shadow:
-    var(--inv-shadow),
-    inset 0 0 0 1px var(--inv-gold),
-    inset 0 0 0 5px var(--inv-card),
-    inset 0 0 0 6px rgb(201 162 77 / 0.45);
-}
-
-.tpl-dorado-elegante .inv-names {
-  background: linear-gradient(100deg, #9c7a37 0%, #d9b968 35%, #a98436 60%, #e6cc85 85%, #9c7a37 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-}
-
-.tpl-dorado-elegante .inv-deco {
-  filter: sepia(0.7) saturate(1.8) hue-rotate(-6deg) brightness(0.95);
-}
-
-.tpl-dorado-elegante .inv-polaroid {
-  rotate: 0deg;
-  border-radius: 999px 999px 0.75rem 0.75rem;
-  padding: 0.6rem;
-  background: linear-gradient(160deg, #e8d29b, #b8913f);
-}
-
-.tpl-dorado-elegante .inv-polaroid-photo {
-  border-radius: 999px 999px 0.5rem 0.5rem;
-}
-
-.tpl-dorado-elegante .inv-polaroid-tape {
-  display: none;
+/* Sello de lacre (portada y sobre) */
+.inv-wax,
+.inv-seal {
+  background: radial-gradient(
+    circle at 35% 30%,
+    color-mix(in srgb, var(--inv-gold) 70%, #fff),
+    color-mix(in srgb, var(--inv-gold) 92%, #000) 60%,
+    color-mix(in srgb, var(--inv-gold) 72%, #000)
+  );
+  color: color-mix(in srgb, var(--inv-gold) 12%, #fff);
 }
 
 /* Idioma: el script inicial marca data-lang antes de pintar. */
@@ -148,11 +381,12 @@
 }
 
 .inv-script {
-  font-family: var(--font-script), "Brush Script MT", cursive;
+  font-family: var(--inv-font-script), "Brush Script MT", cursive;
   font-weight: 400;
 }
 
 .inv-heading {
+  font-family: var(--inv-font-heading), Georgia, serif;
   font-size: 0.95rem;
   font-weight: 600;
   letter-spacing: 0.22em;
@@ -300,7 +534,6 @@
   display: grid;
   place-items: center;
   padding: 1.5rem;
-  background: inherit;
   background-color: var(--inv-bg);
   transition:
     opacity 700ms ease 650ms,
@@ -323,17 +556,25 @@
   position: absolute;
   inset: 0;
   border-radius: 0.5rem;
-  background: linear-gradient(160deg, #fdfaf5, #efe4d4);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--inv-paper) 80%, #fff),
+    color-mix(in srgb, var(--inv-card) 85%, var(--inv-paper))
+  );
   box-shadow:
-    0 30px 60px -30px rgb(74 63 55 / 0.55),
-    inset 0 0 0 1px rgb(220 205 184 / 0.7);
+    0 30px 60px -30px color-mix(in srgb, var(--inv-ink) 55%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--inv-line) 70%, transparent);
 }
 
 .inv-envelope-pocket {
   position: absolute;
   inset: 0;
   border-radius: 0.5rem;
-  background: linear-gradient(200deg, #f6eee2, #eadcc8);
+  background: linear-gradient(
+    200deg,
+    color-mix(in srgb, var(--inv-paper) 55%, var(--inv-card)),
+    color-mix(in srgb, var(--inv-card) 95%, var(--inv-ink))
+  );
   clip-path: polygon(0 35%, 50% 72%, 100% 35%, 100% 100%, 0 100%);
   z-index: 3;
 }
@@ -343,7 +584,11 @@
   inset: 0 0 auto 0;
   height: 62%;
   transform-origin: top center;
-  background: linear-gradient(180deg, #f3e9db, #e6d6c0);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--inv-paper) 35%, var(--inv-card)),
+    color-mix(in srgb, var(--inv-card) 90%, var(--inv-ink))
+  );
   clip-path: polygon(0 0, 100% 0, 50% 100%);
   z-index: 4;
   transition:
@@ -356,7 +601,7 @@
   inset: 8% 7% 6% 7%;
   border-radius: 0.35rem;
   background: var(--inv-paper);
-  box-shadow: 0 4px 18px -8px rgb(74 63 55 / 0.4);
+  box-shadow: 0 4px 18px -8px color-mix(in srgb, var(--inv-ink) 40%, transparent);
   z-index: 2;
   transition: transform 750ms cubic-bezier(0.2, 0.8, 0.2, 1) 450ms;
 }
@@ -372,10 +617,8 @@
   height: 3.4rem;
   translate: -50% -50%;
   border-radius: 999px;
-  background: radial-gradient(circle at 35% 30%, #d9bf8f, #b08d55 60%, #8e6f3e);
-  color: #fdf6e6;
   box-shadow:
-    0 4px 10px -2px rgb(74 63 55 / 0.5),
+    0 4px 10px -2px color-mix(in srgb, var(--inv-ink) 50%, transparent),
     inset 0 0 0 3px rgb(255 255 255 / 0.15);
   transition: opacity 300ms ease;
 }
@@ -427,7 +670,11 @@
   position: absolute;
   inset: 2.4rem 0.6rem 0 0.6rem;
   border-radius: 0.4rem;
-  background: linear-gradient(160deg, #8a7564, #6f5b4e);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--inv-card-strong) 85%, #fff),
+    color-mix(in srgb, var(--inv-card-strong) 90%, #000)
+  );
   box-shadow: var(--inv-shadow);
 }
 
@@ -436,7 +683,7 @@
   inset: 1.4rem 0 auto 0;
   height: 1.4rem;
   border-radius: 0.35rem;
-  background: linear-gradient(160deg, #96806e, #7a6758);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--inv-card-strong) 78%, #fff), var(--inv-card-strong));
   transition: transform 600ms cubic-bezier(0.3, 1.4, 0.5, 1);
   transform-origin: left bottom;
 }
@@ -456,6 +703,14 @@
   translate: -50% 0;
   color: var(--inv-gold);
   transition: transform 600ms cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+.invitation[data-tone="dark"] .inv-giftbox-ribbon-v {
+  background: var(--inv-paper);
+}
+
+.invitation[data-tone="dark"] .inv-giftbox-bow {
+  color: var(--inv-paper);
 }
 
 .inv-giftbox[data-open="true"] .inv-giftbox-lid,
@@ -554,5 +809,30 @@
   overflow: hidden;
   border-radius: 0.75rem;
   backface-visibility: hidden;
-  box-shadow: 0 14px 30px -18px rgb(74 63 55 / 0.7);
+  box-shadow: 0 14px 30px -18px color-mix(in srgb, var(--inv-ink) 70%, transparent);
+}
+
+/* ---------------------------------------------------------------------
+   Miniaturas del panel (Apariencia): textos y botones a escala
+   --------------------------------------------------------------------- */
+
+.invitation.inv-mini .inv-heading {
+  font-size: 0.5rem;
+  letter-spacing: 0.2em;
+}
+
+.invitation.inv-mini .inv-button {
+  min-height: 0;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+}
+
+.invitation.inv-mini-lg .inv-heading {
+  font-size: 0.68rem;
+}
+
+.invitation.inv-mini-lg .inv-button {
+  padding: 0.55rem 1.4rem;
+  font-size: 0.65rem;
 }

@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- **Template engine**: templates are now data (palette, fonts, ornaments, photo frame, card and button styles) rendered through CSS variables, so a new template is a single catalog entry.
+- **11 new templates** (14 in total) in seven collections, inspired by champagne, ivory, cream, warm beige and soft-gold palettes: Champagne & Ivory, Romantic Beige, Champagne Satin, Art Déco Champagne, Candlelight, White & Gold, Sage Garden, Dusty Rose, Rustic Pampas, Burgundy & Champagne and the dark Champagne Night.
+- **14 page backgrounds** that work with any template — plain, cotton paper, linen, satin, watercolor, marble, bokeh, damask, lace, art déco, botanical, polka dots, pinstripes — and **"Your photo"**, with three veil strengths so text stays readable.
+- Original SVG ornaments: rose cluster, baby's breath, eucalyptus, pampas grass, art déco fan, laurel and satin bow.
+- Redesigned **Appearance** page with collection filters, background picker, live preview and an unsaved-changes bar.
+
 ### Changed
 
 - **Add to calendar** is now a single button that opens the right calendar for the guest's device (Apple Calendar on iPhone, Google Calendar on Android, an `.ics` file on computers) instead of a menu.

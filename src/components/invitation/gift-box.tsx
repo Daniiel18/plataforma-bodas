@@ -61,7 +61,7 @@ export function GiftBox({ zelle }: { zelle: ZelleInfo }) {
 
       {open && (
         <div className="inv-reveal grid w-full max-w-xs justify-items-center gap-3 rounded-2xl bg-[var(--inv-paper)] p-5 ring-1 ring-[var(--inv-line)]">
-          <p className="text-xs font-semibold tracking-[0.3em] text-[#6d1ed4] uppercase">Zelle</p>
+          <p className="text-xs font-semibold tracking-[0.3em] text-[var(--inv-zelle)] uppercase">Zelle</p>
           {zelle.qr && (
             <Image
               src={zelle.qr.url}

@@ -3,10 +3,11 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 
 import type { InvitationData, SectionView } from "@/lib/invitation";
+import { getTemplate, type OrnamentSet } from "@/lib/templates";
 
 import { AddToCalendar } from "./add-to-calendar";
 import { Countdown } from "./countdown";
-import { DriedFlowers, Flourish, LeafSprig } from "./decorations";
+import { Flourish, Ornament } from "./decorations";
 import { DirectionsButton } from "./directions-button";
 import { eventDateParts, formatClock } from "./format";
 import { Gallery3D } from "./gallery-3d";
@@ -32,9 +33,14 @@ function Heading({ children }: { children: ReactNode }) {
 
 export function HeroSection({ section, data }: { section: Of<"hero">; data: InvitationData }) {
   const first = (name: string) => name.trim().split(/\s+/)[0] ?? name;
+  const ornaments = getTemplate(data.template).ornaments;
   return (
     <Section className="overflow-hidden pt-16 text-center">
-      <LeafSprig className="pointer-events-none absolute -top-4 -left-6 w-24 rotate-[-20deg] opacity-70" />
+      <Ornament
+        set={ornaments}
+        variant="secondary"
+        className="pointer-events-none absolute -top-4 -left-6 w-24 rotate-[-20deg] opacity-70"
+      />
       <p className="inv-heading text-xs text-[var(--inv-ink-soft)]">
         <TB text={section.kicker} />
       </p>
@@ -46,7 +52,7 @@ export function HeroSection({ section, data }: { section: Of<"hero">; data: Invi
       {section.cover && (
         <div className="inv-polaroid relative mx-auto mt-10 w-[78%] max-w-xs rotate-[-2deg] bg-[var(--inv-paper)] p-3 pb-12 shadow-[var(--inv-shadow)]">
           <span
-            className="inv-polaroid-tape absolute -top-3 left-1/2 h-6 w-20 -translate-x-1/2 rotate-[3deg] bg-[#e8dcc4]/80"
+            className="inv-polaroid-tape absolute -top-3 left-1/2 h-6 w-20 -translate-x-1/2 rotate-[3deg]"
             aria-hidden
           />
           <div className="inv-polaroid-photo relative aspect-[4/5] overflow-hidden">
@@ -59,16 +65,16 @@ export function HeroSection({ section, data }: { section: Of<"hero">; data: Invi
               className="object-cover"
             />
           </div>
-          <DriedFlowers className="pointer-events-none absolute -bottom-10 -left-12 w-24 rotate-[-12deg]" />
+          <Ornament set={ornaments} className="pointer-events-none absolute -bottom-10 -left-12 w-24 rotate-[-12deg]" />
           <span
-            className="inv-polaroid-seal absolute -right-4 -bottom-4 grid size-14 place-items-center rounded-full bg-[radial-gradient(circle_at_35%_30%,#d9bf8f,#b08d55_60%,#8e6f3e)] text-[#fdf6e6] shadow-md"
+            className="inv-polaroid-seal inv-wax absolute -right-4 -bottom-4 grid size-14 place-items-center rounded-full shadow-md"
             aria-hidden
           >
             ♡
           </span>
         </div>
       )}
-      {!section.cover && <DriedFlowers className="mx-auto mt-8 w-20 opacity-90" />}
+      {!section.cover && <Ornament set={ornaments} className="mx-auto mt-8 w-20 opacity-90" />}
     </Section>
   );
 }
@@ -117,7 +123,10 @@ export function CelebrationSection({ section, data }: { section: Of<"celebration
   return (
     <Section>
       <div className="inv-card overflow-hidden px-5 py-8 text-center">
-        <DriedFlowers className="pointer-events-none absolute -right-6 bottom-24 w-20 rotate-[14deg] opacity-80" />
+        <Ornament
+          set={getTemplate(data.template).ornaments}
+          className="pointer-events-none absolute -right-6 bottom-24 w-20 rotate-[14deg] opacity-80"
+        />
         <Heading>
           <TB text={section.title} />
         </Heading>
@@ -208,7 +217,7 @@ export function LocationSection({ section }: { section: Of<"location"> }) {
   );
 }
 
-export function DressCodeSection({ section }: { section: Of<"dress_code"> }) {
+export function DressCodeSection({ section, ornaments }: { section: Of<"dress_code">; ornaments: OrnamentSet }) {
   return (
     <Section className="text-center">
       <ShirtIcon className="mx-auto mb-3 size-6 text-[var(--inv-gold)]" aria-hidden />
@@ -218,7 +227,11 @@ export function DressCodeSection({ section }: { section: Of<"dress_code"> }) {
       <p className="text-lg tracking-wide whitespace-pre-line">
         <TB text={section.description} />
       </p>
-      <LeafSprig className="pointer-events-none absolute top-6 -right-4 w-16 rotate-[18deg] opacity-60" />
+      <Ornament
+        set={ornaments}
+        variant="secondary"
+        className="pointer-events-none absolute top-6 -right-4 w-16 rotate-[18deg] opacity-60"
+      />
     </Section>
   );
 }

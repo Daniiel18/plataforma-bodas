@@ -38,7 +38,7 @@ export function MonthCalendar({ startsAt, timeZone }: Props) {
         return (
           <div key={lang} className={`l-${lang} inv-card-strong px-4 pt-5 pb-6`} lang={lang}>
             <p className="inv-script mb-3 text-center text-3xl capitalize">{title.replace(" de ", " ")}</p>
-            <div className="mb-2 grid grid-cols-7 border-b border-white/25 pb-2 text-center text-[0.7rem] tracking-wider text-white/70">
+            <div className="mb-2 grid grid-cols-7 border-b border-[var(--inv-on-strong)]/25 pb-2 text-center text-[0.7rem] tracking-wider text-[var(--inv-on-strong)]/70">
               {WEEKDAYS[lang].map((d) => (
                 <span key={d}>{d}</span>
               ))}
@@ -54,7 +54,7 @@ export function MonthCalendar({ startsAt, timeZone }: Props) {
                     <span className="relative">{value}</span>
                   </span>
                 ) : (
-                  <span key={i} className="grid h-7 place-items-center text-white/85">
+                  <span key={i} className="grid h-7 place-items-center text-[var(--inv-on-strong)]/85">
                     {value ?? ""}
                   </span>
                 ),

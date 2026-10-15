@@ -2,10 +2,12 @@ import "./invitation.css";
 
 import type { CSSProperties } from "react";
 
+import { veilStrength } from "@/lib/backgrounds";
 import type { InvitationData, SectionView } from "@/lib/invitation";
+import { getTemplate, themeAttributes, themeStyle } from "@/lib/templates";
 
 import { Envelope } from "./envelope";
-import { scriptFont } from "./fonts";
+import { invitationFonts } from "./fonts";
 import { eventDateParts } from "./format";
 import { LangScript } from "./lang";
 import { LanguageToggle } from "./language-toggle";
@@ -35,7 +37,7 @@ function renderSection(section: SectionView, data: InvitationData, preview: bool
     case "location":
       return <LocationSection section={section} />;
     case "dress_code":
-      return <DressCodeSection section={section} />;
+      return <DressCodeSection section={section} ornaments={getTemplate(data.template).ornaments} />;
     case "program":
       return <ProgramSection section={section} />;
     case "rsvp":
@@ -48,13 +50,21 @@ function renderSection(section: SectionView, data: InvitationData, preview: bool
 /** La invitación completa. La usan la página pública y la vista previa del panel. */
 export function InvitationView({ data, preview = false }: { data: InvitationData; preview?: boolean }) {
   const dateLabel = data.event ? eventDateParts(data.event.startsAt, data.event.timeZone).long : null;
+  const template = getTemplate(data.template);
+  const { photo, veil } = data.background;
+  const style = {
+    ...themeStyle(template, data.accent),
+    ...(photo ? { "--inv-bg-photo": `url("${photo}")`, "--inv-veil": veilStrength(veil) } : {}),
+  } as CSSProperties;
 
   return (
     <div
-      className={`invitation tpl-${data.template} ${scriptFont.variable} flex-1`}
-      style={data.accent ? ({ "--inv-accent": data.accent } as CSSProperties) : undefined}
+      className={`invitation tpl-${template.key} ${invitationFonts} flex-1`}
+      style={style}
+      {...themeAttributes(template, data.background.key)}
       suppressHydrationWarning
     >
+      <div className="inv-backdrop" aria-hidden />
       <LangScript />
       <MusicProvider src={data.music?.url ?? null}>
         {data.intro && (

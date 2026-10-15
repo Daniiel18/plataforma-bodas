@@ -43,7 +43,7 @@ erDiagram
   }
   media {
     uuid id PK
-    media_kind kind "gallery | cover | audio | qr"
+    media_kind kind "gallery | cover | audio | qr | background"
     text storage_path UK
     int position
   }

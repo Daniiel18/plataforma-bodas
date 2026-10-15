@@ -46,7 +46,8 @@ The couple manages every detail from a dashboard and gets a push notification on
 - **Guest list** with filters, accent-insensitive search, duplicate detection (fuzzy matching across guests *and* companions), notes, archiving, manual entries and **CSV export**.
 - **Content editor** for every section, with show/hide and reordering. Text written in Spanish is **auto-translated on save** and can be corrected by hand.
 - **Gallery manager**: up to 30 photos, compressed in the browser, drag-and-drop ordering and a live preview of every 3D style.
-- **Music, gifts and appearance**: upload the song and the QR, and switch between three templates with curated accent colors.
+- **Template studio**: 14 templates in seven collections (classic, romantic, glamour, minimal, botanical, boho and evening), 14 page backgrounds — from silk and marble to damask, lace and art déco, or the couple's own photo — and curated accent colors, all mixable with a live preview.
+- **Music and gifts**: upload the song and the Zelle QR.
 - **Push notifications** to the couple's phones (installable as an app) for every RSVP, change and wish.
 - **Live preview** of the invitation before publishing.
 
@@ -54,7 +55,7 @@ The couple manages every detail from a dashboard and gets a push notification on
   <img src="docs/screenshots/dashboard-overview.jpg" width="49%" alt="Dashboard overview" />
   <img src="docs/screenshots/dashboard-guests.jpg" width="49%" alt="Guest list with duplicate detection" />
   <img src="docs/screenshots/dashboard-gallery.jpg" width="49%" alt="Gallery manager" />
-  <img src="docs/screenshots/dashboard-appearance.jpg" width="49%" alt="Template picker" />
+  <img src="docs/screenshots/dashboard-appearance.jpg" width="49%" alt="Template studio with live preview" />
 </p>
 
 ## 👀 Try the dashboard

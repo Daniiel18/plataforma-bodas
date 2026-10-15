@@ -52,6 +52,7 @@ export function Envelope({ title, subtitle, button, couple, dateLabel, autoplayM
       aria-modal="true"
       aria-label={pick(lang, title.es, title.en)}
     >
+      <div className="inv-backdrop" aria-hidden />
       <div className="flex flex-col items-center gap-8 text-center">
         <div>
           <p className="inv-script text-5xl leading-tight text-[var(--inv-accent)] md:text-6xl">

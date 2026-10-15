@@ -15,15 +15,20 @@ export type CurrentMedia = { id: string; url: string; width: number | null; heig
 
 type Props = {
   weddingId: string;
-  kind: "cover" | "qr" | "audio";
+  kind: "cover" | "qr" | "audio" | "background";
   current: CurrentMedia;
   emptyLabel: string;
   hint?: string;
 };
 
-const ACCEPT = { cover: "image/*", qr: "image/*", audio: "audio/mpeg,audio/mp4,audio/x-m4a,audio/aac,.mp3,.m4a" };
+const ACCEPT = {
+  cover: "image/*",
+  qr: "image/*",
+  background: "image/*",
+  audio: "audio/mpeg,audio/mp4,audio/x-m4a,audio/aac,.mp3,.m4a",
+};
 
-/** Subir, reemplazar o quitar un archivo único (portada, QR o canción). */
+/** Subir, reemplazar o quitar un archivo único (portada, QR, canción o fondo). */
 export function SingleMediaField({ weddingId, kind, current, emptyLabel, hint }: Props) {
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);

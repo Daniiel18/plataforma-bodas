@@ -63,6 +63,22 @@ Content the couple writes in Spanish is translated **once, on save** (`syncTrans
 - editing the Spanish text automatically invalidates the old translation;
 - if the translation service is unavailable, the Spanish text is shown and the dashboard flags it as pending.
 
+## Template engine
+
+Templates are **data, not stylesheets**. Each entry in [`src/lib/templates.ts`](../src/lib/templates.ts) declares a palette, a script and a heading font, an ornament set, a photo frame, a card style, a button shape and a recommended background. The invitation turns that into CSS custom properties (`--inv-*`) and `data-*` attributes on its root, and [`invitation.css`](../src/components/invitation/invitation.css) styles every variant once:
+
+| Attribute | Variants |
+| --- | --- |
+| `data-card` | `soft`, `outline`, `gold`, `veil` |
+| `data-frame` | `polaroid`, `arch`, `oval`, `circle`, `deco`, `plain` |
+| `data-button` · `data-names` | `pill` / `square` · plain or gold-foil names |
+| `data-bg` | 14 backgrounds (see [`src/lib/backgrounds.ts`](../src/lib/backgrounds.ts)) |
+| `data-tone` | `dark` switches form controls, errors and the gift box to light-on-dark |
+
+Backgrounds are independent of templates: they are painted on a fixed layer (`.inv-backdrop`) from the template's own colors, with SVG patterns applied as CSS masks, so any template can be combined with any background. The envelope, wax seal and gift box derive their colors from the palette with `color-mix()`, and the botanical ornaments are original SVGs that read `--inv-orn-*` variables.
+
+Adding a template is one object in the catalog; adding a background is one entry plus one CSS rule. Fonts are loaded with `next/font` and only downloaded when a template uses them.
+
 ## RSVP flow
 
 ```mermaid

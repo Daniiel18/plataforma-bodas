@@ -3,6 +3,7 @@ import "server-only";
 import { createClient as createSupabaseClient, type SupabaseClient } from "@supabase/supabase-js";
 import { cacheLife, cacheTag } from "next/cache";
 
+import { resolveBackground, resolveVeil, type BackgroundKey, type PhotoVeil } from "@/lib/backgrounds";
 import { publicMediaUrl, type MediaImage } from "@/lib/media";
 import {
   bilingual,
@@ -13,7 +14,7 @@ import {
   type SectionType,
   type Translations,
 } from "@/lib/sections";
-import { resolveAccent, resolveTemplate, type TemplateKey } from "@/lib/templates";
+import { getTemplate, resolveAccent, resolveTemplate, type TemplateKey } from "@/lib/templates";
 import type { Wedding } from "@/lib/types";
 
 export const invitationTag = (slug: string) => `invitation:${slug}`;
@@ -46,6 +47,8 @@ export type InvitationData = {
   updatedAt: string;
   template: TemplateKey;
   accent: string | null;
+  /** Fondo de la página; `photo` solo cuando el fondo es "Tu foto". */
+  background: { key: BackgroundKey; photo: string | null; veil: PhotoVeil };
   couple: { partner1: string; partner2: string };
   event: { startsAt: string; timeZone: string } | null;
   intro: { title: Bi; subtitle: Bi | null; button: Bi } | null;
@@ -65,7 +68,7 @@ type SectionRow = {
 
 type MediaRow = {
   id: string;
-  kind: "gallery" | "cover" | "audio" | "qr" | "og";
+  kind: "gallery" | "cover" | "audio" | "qr" | "og" | "background";
   storage_path: string;
   width: number | null;
   height: number | null;
@@ -118,6 +121,12 @@ export async function loadInvitation(supabase: SupabaseClient, wedding: Wedding)
   const byKind = (kind: MediaRow["kind"]) => media.filter((m) => m.kind === kind);
   const coverRow = byKind("cover")[0];
   const audioRow = byKind("audio")[0];
+  const backgroundRow = byKind("background")[0];
+  const backgroundKey = resolveBackground(
+    wedding.theme_overrides,
+    getTemplate(wedding.template_key).background,
+    Boolean(backgroundRow),
+  );
   const sections = ((sectionRows ?? []) as SectionRow[]).filter((s) => s.is_visible);
   const find = (type: SectionType) => sections.find((s) => s.type === type);
 
@@ -278,6 +287,11 @@ export async function loadInvitation(supabase: SupabaseClient, wedding: Wedding)
     updatedAt: wedding.updated_at,
     template: resolveTemplate(wedding.template_key),
     accent: resolveAccent(wedding.theme_overrides),
+    background: {
+      key: backgroundKey,
+      photo: backgroundKey === "foto" && backgroundRow ? publicMediaUrl(backgroundRow.storage_path) : null,
+      veil: resolveVeil(wedding.theme_overrides),
+    },
     couple: { partner1: wedding.partner1_name, partner2: wedding.partner2_name },
     event,
     intro,

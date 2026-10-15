@@ -369,7 +369,10 @@ function CompanionFields({
 
 function ErrorText({ code }: { code: RsvpErrorCode }) {
   return (
-    <p role="alert" className="rounded-xl bg-[#b4463c]/10 px-4 py-3 text-center text-sm text-[#8f362e]">
+    <p
+      role="alert"
+      className="rounded-xl bg-[var(--inv-danger)]/10 px-4 py-3 text-center text-sm text-[var(--inv-danger)]"
+    >
       <TB text={ERRORS[code]} />
     </p>
   );
