@@ -1,9 +1,18 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
 
 import { InvitationView } from "@/components/invitation/invitation-view";
-import { getPublicInvitation } from "@/lib/invitation";
+import { getPublicInvitation, getPublishedSlugs } from "@/lib/invitation";
+
+/**
+ * Published invitations are prerendered at build time; any other slug renders
+ * on its first visit and is then served from the cache. Cache Components needs
+ * at least one param, so "demo" stands in when nothing is published yet.
+ */
+export async function generateStaticParams() {
+  const slugs = await getPublishedSlugs();
+  return (slugs.length ? slugs : ["demo"]).map((slug) => ({ slug }));
+}
 
 export async function generateMetadata({ params }: PageProps<"/[slug]">): Promise<Metadata> {
   const { slug } = await params;
@@ -24,25 +33,10 @@ export async function generateMetadata({ params }: PageProps<"/[slug]">): Promis
   };
 }
 
-export default function InvitationPage({ params }: PageProps<"/[slug]">) {
-  return (
-    <Suspense fallback={<InvitationFallback />}>
-      <Invitation params={params} />
-    </Suspense>
-  );
-}
-
-async function Invitation({ params }: Pick<PageProps<"/[slug]">, "params">) {
+export default async function InvitationPage({ params }: PageProps<"/[slug]">) {
   const { slug } = await params;
   const data = await getPublicInvitation(slug);
+  // Checked before anything streams, so unknown or unpublished slugs get a real 404.
   if (!data) notFound();
   return <InvitationView data={data} />;
-}
-
-function InvitationFallback() {
-  return (
-    <div className="grid flex-1 place-items-center bg-[#f6efe6] text-3xl text-[#a88e6c]" aria-busy="true">
-      ❦
-    </div>
-  );
 }

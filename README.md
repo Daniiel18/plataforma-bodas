@@ -72,7 +72,7 @@ You can explore every screen; the database rejects any change made with this acc
 
 | Layer | Technology |
 | --- | --- |
-| Framework | [Next.js 16](https://nextjs.org) App Router with Cache Components, Partial Prefetching and Server Actions |
+| Framework | [Next.js 16](https://nextjs.org) App Router with Cache Components, ISR and Server Actions |
 | UI | React 19, TypeScript (strict), Tailwind CSS 4, [shadcn/ui](https://ui.shadcn.com) on Radix |
 | Data | [Supabase](https://supabase.com): Postgres with Row Level Security, Auth and Storage |
 | Guest experience | Swiper (3D effects), custom CSS 3D ring, `next/image`, HTML5 audio |

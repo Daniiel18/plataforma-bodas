@@ -15,6 +15,9 @@ All notable changes to this project are documented here. The format follows [Kee
 ### Changed
 
 - **Add to calendar** is now a single button that opens the right calendar for the guest's device (Apple Calendar on iPhone, Google Calendar on Android, an `.ics` file on computers) instead of a menu.
+- Unknown or unpublished invitation URLs now answer with a real **404** status: published invitations are prerendered at build time and Partial Prefetching is off, so the page checks the invitation before streaming.
+- The 3D gallery mounts its carousel on the guest's device and shows the first photo until then, so invitations can be fully prerendered.
+- Every code comment is now in English.
 - **Get directions** is now a single button: Android opens the system's map app chooser, iPhone shows a native-style sheet with Apple Maps, Google Maps and Waze, and computers open Google Maps.
 
 ## [1.0.0] — 2026-10-15

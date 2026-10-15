@@ -9,7 +9,7 @@ import "swiper/css/pagination";
 
 import { ChevronLeftIcon, ChevronRightIcon, XIcon } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { A11y, Autoplay, EffectCards, EffectCoverflow, EffectCube, EffectFlip, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 
@@ -19,6 +19,16 @@ import type { GalleryStyle } from "@/lib/sections";
 import { pick, useLang } from "./use-lang";
 
 type Props = { photos: Photo[]; style: GalleryStyle; autoplay: boolean };
+
+const noopSubscribe = () => () => {};
+
+/** False while prerendering and hydrating, true once running on the guest's device. */
+const useMounted = () =>
+  useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  );
 
 /** 3D photo carousel in the style the couple picked. */
 export function Gallery3D({ photos, style, autoplay }: Props) {
@@ -43,7 +53,32 @@ function SwiperGallery({
   onOpen,
 }: Props & { style: Exclude<GalleryStyle, "ring">; onOpen: (index: number) => void }) {
   const lang = useLang();
+  const mounted = useMounted();
   const square = style === "cube" || style === "flip";
+  const frame = style === "coverflow" ? "mx-auto w-[72%] max-w-[320px]" : "mx-auto w-[78%] max-w-[340px]";
+  const photoBox = `relative block w-full overflow-hidden rounded-2xl bg-[var(--inv-card)] ${square ? "aspect-square" : "aspect-[4/5]"}`;
+
+  // Swiper reads the clock while rendering, so it only mounts on the device;
+  // until then the first photo holds its place.
+  if (!mounted) {
+    const first = photos[0];
+    return (
+      <div className={frame}>
+        <div className={photoBox}>
+          {first && (
+            <Image
+              src={first.url}
+              alt=""
+              fill
+              sizes="(max-width: 480px) 80vw, 340px"
+              className="object-cover"
+              priority
+            />
+          )}
+        </div>
+      </div>
+    );
+  }
 
   const effectProps = {
     coverflow: {
@@ -80,7 +115,7 @@ function SwiperGallery({
           <button
             type="button"
             onClick={() => onOpen(index)}
-            className={`relative block w-full overflow-hidden rounded-2xl bg-[var(--inv-card)] ${square ? "aspect-square" : "aspect-[4/5]"}`}
+            className={photoBox}
             aria-label={pick(lang, `Ver foto ${index + 1} en grande`, `View photo ${index + 1}`)}
           >
             <Image

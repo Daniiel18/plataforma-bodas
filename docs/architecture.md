@@ -43,11 +43,11 @@ flowchart LR
 
 ## Rendering and caching
 
-Next.js 16 runs with **Cache Components** and **Partial Prefetching** enabled.
+Next.js 16 runs with **Cache Components**. Partial Prefetching is deliberately **off**: without it, the first request for an invitation that was not prerendered waits for its data instead of receiving a generic App Shell, which lets unknown or unpublished slugs answer with a real `404` status.
 
 | Route | Strategy | Why |
 | --- | --- | --- |
-| `/[slug]` | `getPublicInvitation()` is a `"use cache"` function with `cacheLife("max")` and `cacheTag("invitation:<slug>")`. The page awaits `params` inside `<Suspense>` so the App Shell is served instantly and the full page is stored after the first visit (ISR). | Every guest gets a static page from the CDN. |
+| `/[slug]` | `getPublicInvitation()` is a `"use cache"` function with `cacheLife("max")` and `cacheTag("invitation:<slug>")`. `generateStaticParams` prerenders every published invitation at build time; any other slug is rendered on its first visit and stored (ISR). The page awaits `params` and the data before streaming, so a missing invitation returns `404`. | Every guest gets a static page from the CDN. |
 | `/admin/*` | Each page renders a static header and streams its data behind `<Suspense>`. `getAdminContext()` calls `connection()` and is memoized per request with React `cache()`. | Session-dependent data can never be prerendered or shared. |
 | Server Actions | Every mutation re-checks the session, the wedding membership and the role, then calls `updateTag("invitation:<slug>")`. | The couple sees their change on the public invitation immediately (read-your-own-writes). |
 

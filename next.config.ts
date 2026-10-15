@@ -3,7 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   agentRules: false,
   cacheComponents: true,
-  partialPrefetching: true,
+  // Off on purpose: the first visit to an invitation that was not prerendered
+  // waits for its data, so unknown or unpublished slugs return a real 404
+  // instead of a 200 App Shell.
+  partialPrefetching: false,
   async headers() {
     return [
       {

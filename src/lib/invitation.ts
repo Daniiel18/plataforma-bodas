@@ -311,12 +311,7 @@ export async function getPublicInvitation(slug: string): Promise<InvitationData 
   cacheLife("max");
   cacheTag(invitationTag(slug));
 
-  const supabase = createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    { auth: { persistSession: false, autoRefreshToken: false } },
-  );
-
+  const supabase = publicClient();
   const { data: wedding } = await supabase
     .from("weddings")
     .select("*")
@@ -326,4 +321,21 @@ export async function getPublicInvitation(slug: string): Promise<InvitationData 
   if (!wedding) return null;
 
   return loadInvitation(supabase, wedding);
+}
+
+/** Slugs of the published invitations, prerendered at build time. */
+export async function getPublishedSlugs(): Promise<string[]> {
+  const { data } = await publicClient().from("weddings").select("slug").eq("is_published", true).limit(500);
+  return (data ?? []).map((wedding: { slug: string }) => wedding.slug);
+}
+
+/** Anonymous client: Row Level Security only exposes published weddings. */
+function publicClient() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      auth: { persistSession: false, autoRefreshToken: false },
+    },
+  );
 }

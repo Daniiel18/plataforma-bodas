@@ -22,7 +22,7 @@ const WEEKDAYS = {
 export function MonthCalendar({ startsAt, timeZone }: Props) {
   const { year, month, day } = eventDay(startsAt, timeZone);
   const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
-  const firstWeekday = new Date(Date.UTC(year, month - 1, 1)).getUTCDay(); // 0 = domingo
+  const firstWeekday = new Date(Date.UTC(year, month - 1, 1)).getUTCDay(); // 0 = Sunday
 
   return (
     <>
