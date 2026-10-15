@@ -7,11 +7,11 @@ import type { InvitationData, SectionView } from "@/lib/invitation";
 import { AddToCalendar } from "./add-to-calendar";
 import { Countdown } from "./countdown";
 import { DriedFlowers, Flourish, LeafSprig } from "./decorations";
+import { DirectionsButton } from "./directions-button";
 import { eventDateParts, formatClock } from "./format";
 import { Gallery3D } from "./gallery-3d";
 import { GiftBox } from "./gift-box";
 import { T, TB } from "./lang";
-import { MapButtons } from "./map-buttons";
 import { MonthCalendar } from "./month-calendar";
 import { RsvpForm } from "./rsvp-form";
 
@@ -202,7 +202,7 @@ export function LocationSection({ section }: { section: Of<"location"> }) {
         />
       </div>
       <div className="mt-6">
-        <MapButtons query={query} />
+        <DirectionsButton query={query} />
       </div>
     </Section>
   );

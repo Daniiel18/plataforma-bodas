@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- **Add to calendar** is now a single button that opens the right calendar for the guest's device (Apple Calendar on iPhone, Google Calendar on Android, an `.ics` file on computers) instead of a menu.
+- **Get directions** is now a single button: Android opens the system's map app chooser, iPhone shows a native-style sheet with Apple Maps, Google Maps and Waze, and computers open Google Maps.
+
 ## [1.0.0] — 2026-10-15
 
 ### Added

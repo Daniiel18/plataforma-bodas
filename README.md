@@ -33,9 +33,9 @@ The couple manages every detail from a dashboard and gets a push notification on
 
 - **Animated envelope** that opens the invitation and starts the background music (the tap browsers require for audio).
 - **Live countdown** (days, hours, minutes, seconds) computed in the wedding's time zone, plus a month calendar.
-- **Add to calendar** for iPhone (`.ics`), Android / Google Calendar and Outlook, with a reminder the day before.
+- **One-tap add to calendar** that picks the right app for the guest's device — Apple Calendar on iPhone, Google Calendar on Android, an `.ics` file on computers — with a reminder the day before.
 - **3D photo gallery** in five styles — coverflow, cube, stacked cards, flip and a custom 3D ring — with swipe and full-screen viewer.
-- **Venue map** with one-tap directions in Google Maps, Waze and, on Apple devices, Apple Maps.
+- **Venue map** with a single *Get directions* button: Android shows the system's app chooser (Google Maps, Waze…), iPhone gets a native-style sheet with Apple Maps, Google Maps and Waze.
 - **Gift box** that opens to reveal a Zelle QR code and a copy-to-clipboard handle.
 - **RSVP in three steps**: attendance, named companions and an optional private wish. A personal link lets guests change *Yes ↔ No* from any device until the deadline.
 - **Spanish and English**, picked from the phone's language with a flicker-free toggle that never interrupts the music.
