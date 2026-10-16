@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { bilingual, collectTexts, parseContent, syncTranslations, type Translations } from "./sections";
+import { bilingual, cleanContent, collectTexts, parseContent, syncTranslations, type Translations } from "./sections";
 
 describe("parseContent", () => {
   it("fills defaults and tolerates missing or invalid data", () => {
@@ -94,5 +94,35 @@ describe("bilingual", () => {
     const fallback = { es: "Galería de fotos", en: "Photo gallery" };
     expect(bilingual("   ", "title", {}, fallback)).toBe(fallback);
     expect(bilingual(undefined, "title", {})).toBeNull();
+  });
+});
+
+describe("cleanContent", () => {
+  it("keeps a family while its second name is still empty", () => {
+    const raw = {
+      title: "",
+      intro: "",
+      families: [
+        { title: "Sr. y Sra.", names: ["Ana", ""] },
+        { title: "", names: [""] },
+      ],
+    };
+    expect(parseContent("parents", cleanContent("parents", raw)).families).toEqual([
+      { title: "Sr. y Sra.", names: ["Ana"] },
+    ]);
+  });
+
+  it("skips activities that are still missing their time or title", () => {
+    const raw = {
+      title: "",
+      items: [
+        { time: "16:00", title: "Ceremonia" },
+        { time: "", title: "Cena" },
+        { time: "20:00", title: " " },
+      ],
+    };
+    expect(parseContent("program", cleanContent("program", raw)).items).toEqual([
+      { time: "16:00", title: "Ceremonia" },
+    ]);
   });
 });

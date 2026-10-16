@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import type { Coords } from "@/lib/section-view";
 
-import { geocodeAddress, reverseGeocode } from "./geocode";
+import { useEditorBackend } from "./editor-backend";
 
 /** OpenStreetMap tiles: free and keyless; swap the URL here for another provider. */
 const TILES = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
@@ -39,6 +39,7 @@ type Props = {
  * to the exact entrance. Guests' map and directions use this point.
  */
 export function LocationMap({ address, value, onChange, onUseAddress }: Props) {
+  const { geocode } = useEditorBackend();
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<LeafletMap | null>(null);
   const marker = useRef<Marker | null>(null);
@@ -50,7 +51,7 @@ export function LocationMap({ address, value, onChange, onUseAddress }: Props) {
 
   const lookUp = (coords: Coords) => {
     setSuggestion(null);
-    void reverseGeocode(coords.lat, coords.lng).then((result) => {
+    void geocode.reverse(coords.lat, coords.lng).then((result) => {
       if (result.ok) setSuggestion(result.label);
     });
   };
@@ -109,7 +110,7 @@ export function LocationMap({ address, value, onChange, onUseAddress }: Props) {
 
   const search = () =>
     startSearch(async () => {
-      const result = await geocodeAddress(address);
+      const result = await geocode.search(address);
       if (!result.ok) {
         toast.error(result.error);
         return;

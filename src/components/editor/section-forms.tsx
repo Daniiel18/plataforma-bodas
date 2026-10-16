@@ -1,7 +1,6 @@
 "use client";
 
 import { ArrowDownIcon, ArrowUpIcon, PlusIcon, Trash2Icon } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState, useTransition, type ReactNode } from "react";
 import { toast } from "sonner";
 
@@ -12,16 +11,13 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { DEFAULT_TEXT, type SectionContent, type SectionType } from "@/lib/sections";
 
-import { SingleMediaField, type CurrentMedia } from "../single-media-field";
-import { saveSection } from "./actions";
+import { useEditorBackend } from "./editor-backend";
 import { LocationMap } from "./location-map";
 
 type FormProps = {
   type: SectionType;
   content: SectionContent<SectionType>;
-  weddingId: string;
-  cover: CurrentMedia;
-  /** Receives every edit, so the live preview can follow the typing. */
+  /** Receives every edit, so the live preview (or the builder's draft) can follow the typing. */
   onDraft?: (content: unknown) => void;
 };
 
@@ -35,12 +31,12 @@ export function SectionForm({ onDraft, ...props }: FormProps) {
   );
 }
 
-function SectionFields({ type, content, weddingId, cover }: Omit<FormProps, "onDraft">) {
+function SectionFields({ type, content }: Omit<FormProps, "onDraft">) {
   switch (type) {
     case "intro":
       return <IntroForm initial={content as SectionContent<"intro">} />;
     case "hero":
-      return <HeroForm initial={content as SectionContent<"hero">} weddingId={weddingId} cover={cover} />;
+      return <HeroForm initial={content as SectionContent<"hero">} />;
     case "parents":
       return <ParentsForm initial={content as SectionContent<"parents">} />;
     case "celebration":
@@ -58,17 +54,17 @@ function SectionFields({ type, content, weddingId, cover }: Omit<FormProps, "onD
   }
 }
 
-/** Shared form: saves the section, translates it and refreshes the view. */
+/** Shared form: saves the section (dashboard) or does nothing (builder: edits are already kept). */
 function useSectionSave<T extends SectionType>(type: T) {
-  const router = useRouter();
+  const { saveSection } = useEditorBackend();
   const [pending, startTransition] = useTransition();
   const save = (data: SectionContent<T>) =>
     startTransition(async () => {
+      if (!saveSection) return;
       const result = await saveSection(type, data);
       if (result.ok) {
         if (result.pending) toast.warning(result.message);
         else toast.success(result.message);
-        router.refresh();
       } else {
         toast.error(result.error);
       }
@@ -77,6 +73,8 @@ function useSectionSave<T extends SectionType>(type: T) {
 }
 
 function FormShell({ onSubmit, pending, children }: { onSubmit: () => void; pending: boolean; children: ReactNode }) {
+  const { saveSection } = useEditorBackend();
+  if (!saveSection) return <div className="grid gap-4">{children}</div>;
   return (
     <form
       className="grid gap-4"
@@ -181,15 +179,8 @@ function IntroForm({ initial }: { initial: SectionContent<"intro"> }) {
   );
 }
 
-function HeroForm({
-  initial,
-  weddingId,
-  cover,
-}: {
-  initial: SectionContent<"hero">;
-  weddingId: string;
-  cover: CurrentMedia;
-}) {
+function HeroForm({ initial }: { initial: SectionContent<"hero"> }) {
+  const { coverField, hints } = useEditorBackend();
   const { values, set } = useFields(initial);
   const { pending, save } = useSectionSave("hero");
   return (
@@ -203,17 +194,11 @@ function HeroForm({
           placeholder={DEFAULT_TEXT.hero.kicker.es}
           max={60}
         />
-        <p className="text-sm text-muted-foreground">Los nombres se cambian en Ajustes.</p>
+        <p className="text-sm text-muted-foreground">{hints.names}</p>
       </FormShell>
       <div className="grid gap-2">
         <Label>Foto de portada (opcional)</Label>
-        <SingleMediaField
-          weddingId={weddingId}
-          kind="cover"
-          current={cover}
-          emptyLabel="Subir foto de portada"
-          hint="Se muestra como una foto polaroid."
-        />
+        {coverField}
       </div>
     </div>
   );
@@ -313,13 +298,13 @@ function ParentsForm({ initial }: { initial: SectionContent<"parents"> }) {
 }
 
 function CelebrationForm({ initial }: { initial: SectionContent<"celebration"> }) {
+  const { hints } = useEditorBackend();
   const { values, set } = useFields(initial);
   const { pending, save } = useSectionSave("celebration");
   return (
     <FormShell onSubmit={() => save(values)} pending={pending}>
       <p className="text-sm text-muted-foreground">
-        Incluye la hora, la fecha, la cuenta regresiva, el calendario y &quot;Añadir al calendario&quot;. La fecha se
-        toma de Ajustes.
+        Incluye la hora, la fecha, la cuenta regresiva, el calendario y &quot;Añadir al calendario&quot;. {hints.date}
       </p>
       <TextField
         id="celebration-title"
@@ -518,13 +503,13 @@ function ProgramForm({ initial }: { initial: SectionContent<"program"> }) {
 }
 
 function RsvpForm({ initial }: { initial: SectionContent<"rsvp"> }) {
+  const { hints } = useEditorBackend();
   const { values, set } = useFields(initial);
   const { pending, save } = useSectionSave("rsvp");
   return (
     <FormShell onSubmit={() => save(values)} pending={pending}>
       <p className="text-sm text-muted-foreground">
-        Los invitados escriben su nombre, si asisten y los nombres de sus acompañantes. La fecha límite y el máximo de
-        acompañantes se cambian en Ajustes.
+        Los invitados escriben su nombre, si asisten y quién los acompaña. {hints.rsvpSettings}
       </p>
       <TextField
         id="rsvp-title"

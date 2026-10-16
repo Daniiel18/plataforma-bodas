@@ -3,11 +3,9 @@ import "server-only";
 import { createClient as createSupabaseClient, type SupabaseClient } from "@supabase/supabase-js";
 import { cacheLife, cacheTag } from "next/cache";
 
-import { resolveBackground, resolveVeil } from "@/lib/backgrounds";
 import { publicMediaUrl, type MediaImage } from "@/lib/media";
-import { buildSectionView, locationCoords, type InvitationData, type ViewContext } from "@/lib/section-view";
-import { bilingual, DEFAULT_TEXT, parseContent, type Bi, type SectionType, type Translations } from "@/lib/sections";
-import { getTemplate, resolveAccent, resolveTemplate } from "@/lib/templates";
+import { assembleInvitation, type InvitationData, type ViewContext } from "@/lib/section-view";
+import type { Bi, SectionType, Translations } from "@/lib/sections";
 import type { Wedding } from "@/lib/types";
 import { zelleLink } from "@/lib/zelle";
 
@@ -87,50 +85,30 @@ export async function loadInvitationParts(
   const coverRow = byKind("cover")[0];
   const audioRow = byKind("audio")[0];
   const backgroundRow = byKind("background")[0];
-  const backgroundKey = resolveBackground(
-    wedding.theme_overrides,
-    getTemplate(wedding.template_key).background,
-    Boolean(backgroundRow),
-  );
-  const sections = ((sectionRows ?? []) as SectionRow[]).filter((s) => s.is_visible);
-  const find = (type: SectionType) => sections.find((s) => s.type === type);
-
-  const introRow = find("intro");
-  const intro = introRow
-    ? (() => {
-        const c = parseContent("intro", introRow.content);
-        const tr = introRow.content_en ?? {};
-        return {
-          title: bilingual(c.title, "title", tr, DEFAULT_TEXT.intro.title)!,
-          subtitle: bilingual(c.subtitle, "subtitle", tr),
-          button: bilingual(c.button, "button", tr, DEFAULT_TEXT.intro.button)!,
-        };
-      })()
-    : null;
-
-  const musicRow = find("music");
-  const music =
-    musicRow && audioRow
-      ? {
-          url: publicMediaUrl(audioRow.storage_path),
-          autoplayOnOpen: parseContent("music", musicRow.content).autoplay_on_open,
-        }
-      : null;
-
-  const locationContent = parseContent("location", find("location")?.content);
-  const event =
-    wedding.event_starts_at && wedding.timezone
-      ? { startsAt: wedding.event_starts_at, timeZone: wedding.timezone }
-      : null;
-
   const gift = (giftRows ?? [])[0] as GiftRow | undefined;
   const qrRow = gift?.qr_media_id ? media.find((m) => m.id === gift.qr_media_id) : undefined;
 
-  const ctx: ViewContext = {
+  return assembleInvitation({
+    slug: wedding.slug,
+    updatedAt: wedding.updated_at,
+    templateKey: wedding.template_key,
+    themeOverrides: wedding.theme_overrides,
+    backgroundPhoto: backgroundRow ? publicMediaUrl(backgroundRow.storage_path) : null,
+    couple: { partner1: wedding.partner1_name, partner2: wedding.partner2_name },
+    event:
+      wedding.event_starts_at && wedding.timezone
+        ? { startsAt: wedding.event_starts_at, timeZone: wedding.timezone }
+        : null,
+    rsvp: { deadline: wedding.rsvp_deadline, timeZone: wedding.timezone, maxCompanions: wedding.max_companions },
+    sections: ((sectionRows ?? []) as SectionRow[]).map((row) => ({
+      type: row.type,
+      visible: row.is_visible,
+      content: row.content,
+      translations: row.content_en ?? {},
+    })),
     cover: coverRow ? image(coverRow) : null,
     photos: byKind("gallery").map((m) => ({ ...image(m), id: m.id, caption: plainBi(m.caption, m.caption_en) })),
-    event,
-    rsvp: { deadline: wedding.rsvp_deadline, timeZone: wedding.timezone, maxCompanions: wedding.max_companions },
+    audioUrl: audioRow ? publicMediaUrl(audioRow.storage_path) : null,
     zelle:
       gift?.is_visible && (gift.handle || qrRow)
         ? {
@@ -141,34 +119,7 @@ export async function loadInvitationParts(
             link: gift.handle ? zelleLink(gift.holder_name ?? "", gift.handle) : null,
           }
         : null,
-  };
-
-  const views = sections
-    .map((row) => buildSectionView(row.type, row.content, row.content_en ?? {}, ctx))
-    .filter((view) => view !== null);
-
-  const data: InvitationData = {
-    slug: wedding.slug,
-    updatedAt: wedding.updated_at,
-    template: resolveTemplate(wedding.template_key),
-    accent: resolveAccent(wedding.theme_overrides),
-    background: {
-      key: backgroundKey,
-      photo: backgroundKey === "foto" && backgroundRow ? publicMediaUrl(backgroundRow.storage_path) : null,
-      veil: resolveVeil(wedding.theme_overrides),
-    },
-    couple: { partner1: wedding.partner1_name, partner2: wedding.partner2_name },
-    event,
-    intro,
-    music,
-    location:
-      locationContent.venue || locationContent.address
-        ? { venue: locationContent.venue, address: locationContent.address, coords: locationCoords(locationContent) }
-        : null,
-    cover: coverRow ? image(coverRow) : null,
-    sections: views,
-  };
-  return { data, ctx };
+  });
 }
 
 /** Published invitation, cached until the couple saves a change. */

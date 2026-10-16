@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition, type ReactNode } from "react";
 import { toast } from "sonner";
 
+import { EditorBackendProvider, type EditorBackend } from "@/components/editor/editor-backend";
+import { SectionForm } from "@/components/editor/section-forms";
 import { EnvelopePreview, SectionPreview } from "@/components/invitation/section-preview";
 
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +20,7 @@ import { Switch } from "@/components/ui/switch";
 import { buildSectionView, type InvitationData, type ViewContext } from "@/lib/section-view";
 import {
   bilingual,
+  cleanContent,
   DEFAULT_TEXT,
   parseContent,
   SECTION_LABELS,
@@ -26,9 +29,9 @@ import {
 } from "@/lib/sections";
 import { cn } from "@/lib/utils";
 
-import type { CurrentMedia } from "../single-media-field";
-import { moveSection, saveTranslation, setSectionVisible } from "./actions";
-import { SectionForm } from "./section-forms";
+import { SingleMediaField, type CurrentMedia } from "../single-media-field";
+import { moveSection, saveSection, saveTranslation, setSectionVisible } from "./actions";
+import { geocodeAddress, reverseGeocode } from "./geocode";
 
 export type TranslationRow = { path: string; es: string; en: string | null; manual: boolean };
 
@@ -66,6 +69,32 @@ const EMPTY_HINT: Partial<Record<SectionType, string>> = {
 };
 
 export function ContentEditor({ weddingId, sections, cover, hasEventDate, invitation, ctx }: Props) {
+  const router = useRouter();
+  const backend = useMemo<EditorBackend>(
+    () => ({
+      saveSection: async (type, data) => {
+        const result = await saveSection(type, data);
+        if (result.ok) router.refresh();
+        return result;
+      },
+      geocode: { search: geocodeAddress, reverse: reverseGeocode },
+      coverField: (
+        <SingleMediaField
+          weddingId={weddingId}
+          kind="cover"
+          current={cover}
+          emptyLabel="Subir foto de portada"
+          hint="Se muestra como una foto polaroid."
+        />
+      ),
+      hints: {
+        names: "Los nombres se cambian en Ajustes.",
+        date: "La fecha se toma de Ajustes.",
+        rsvpSettings: "La fecha límite y el máximo de acompañantes se cambian en Ajustes.",
+      },
+    }),
+    [router, weddingId, cover],
+  );
   const orderable = sections.filter((s) => !FIXED.includes(s.type));
   const ordered = [
     ...sections.filter((s) => s.type === "intro"),
@@ -74,34 +103,34 @@ export function ContentEditor({ weddingId, sections, cover, hasEventDate, invita
   ];
 
   return (
-    <div className="grid gap-3">
-      {ordered.map((section) => {
-        const index = orderable.findIndex((s) => s.type === section.type);
-        return (
-          <SectionCard
-            key={section.type}
-            section={section}
-            invitation={invitation}
-            ctx={ctx}
-            weddingId={weddingId}
-            cover={cover}
-            canMoveUp={index > 0}
-            canMoveDown={index >= 0 && index < orderable.length - 1}
-            fixed={FIXED.includes(section.type)}
-            warning={
-              section.type === "celebration" && !hasEventDate ? (
-                <>
-                  Sin fecha de boda esta sección no se muestra.{" "}
-                  <Link href="/admin/ajustes" className="underline">
-                    Definir en Ajustes
-                  </Link>
-                </>
-              ) : null
-            }
-          />
-        );
-      })}
-    </div>
+    <EditorBackendProvider value={backend}>
+      <div className="grid gap-3">
+        {ordered.map((section) => {
+          const index = orderable.findIndex((s) => s.type === section.type);
+          return (
+            <SectionCard
+              key={section.type}
+              section={section}
+              invitation={invitation}
+              ctx={ctx}
+              canMoveUp={index > 0}
+              canMoveDown={index >= 0 && index < orderable.length - 1}
+              fixed={FIXED.includes(section.type)}
+              warning={
+                section.type === "celebration" && !hasEventDate ? (
+                  <>
+                    Sin fecha de boda esta sección no se muestra.{" "}
+                    <Link href="/admin/ajustes" className="underline">
+                      Definir en Ajustes
+                    </Link>
+                  </>
+                ) : null
+              }
+            />
+          );
+        })}
+      </div>
+    </EditorBackendProvider>
   );
 }
 
@@ -109,8 +138,6 @@ function SectionCard({
   section,
   invitation,
   ctx,
-  weddingId,
-  cover,
   canMoveUp,
   canMoveDown,
   fixed,
@@ -119,8 +146,6 @@ function SectionCard({
   section: EditorSection;
   invitation: InvitationData;
   ctx: ViewContext;
-  weddingId: string;
-  cover: CurrentMedia;
   canMoveUp: boolean;
   canMoveDown: boolean;
   fixed: boolean;
@@ -221,13 +246,7 @@ function SectionCard({
         <CardContent className={cn("grid gap-6 border-t py-5", editable && "lg:grid-cols-[minmax(0,1fr)_380px]")}>
           <div className="grid content-start gap-4">
             {editable ? (
-              <SectionForm
-                type={section.type}
-                content={section.content}
-                weddingId={weddingId}
-                cover={cover}
-                onDraft={setDraft}
-              />
+              <SectionForm type={section.type} content={section.content} onDraft={setDraft} />
             ) : (
               <p className="text-sm text-muted-foreground">{MANAGED_NOTE[section.type]}</p>
             )}
@@ -263,7 +282,7 @@ function LivePreview({
   invitation: InvitationData;
   ctx: ViewContext;
 }) {
-  const view = useMemo(() => buildSectionView(type, draft, {}, ctx), [type, draft, ctx]);
+  const view = useMemo(() => buildSectionView(type, cleanContent(type, draft), {}, ctx), [type, draft, ctx]);
   const frame = "mx-auto w-full max-w-[380px] rounded-xl border";
 
   if (type === "intro") {

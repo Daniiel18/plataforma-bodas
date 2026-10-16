@@ -11,17 +11,20 @@ function subscribe(onChange: () => void) {
   return () => window.removeEventListener(EVENT, onChange);
 }
 
+/** The element whose `data-lang` drives the page: the invitation or the platform site. */
+const root = () => document.querySelector("[data-lang-root]");
+
 function getSnapshot(): Lang {
-  return document.querySelector(".invitation")?.getAttribute("data-lang") === "en" ? "en" : "es";
+  return root()?.getAttribute("data-lang") === "en" ? "en" : "es";
 }
 
-/** The invitation's active language (for attributes such as alt or aria-label). */
+/** The page's active language (for attributes such as alt or aria-label). */
 export function useLang(): Lang {
   return useSyncExternalStore(subscribe, getSnapshot, () => "es");
 }
 
 export function setLang(lang: Lang) {
-  document.querySelector(".invitation")?.setAttribute("data-lang", lang);
+  root()?.setAttribute("data-lang", lang);
   document.documentElement.lang = lang;
   try {
     localStorage.setItem("inv-lang", lang);

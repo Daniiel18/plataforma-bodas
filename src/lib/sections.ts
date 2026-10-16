@@ -147,6 +147,43 @@ export function parseContent<T extends SectionType>(type: T, raw: unknown): Sect
   return parsed.success ? parsed.data : (schema.parse({}) as SectionContent<T>);
 }
 
+/**
+ * Drops half-filled entries (an empty name, an activity without time or title)
+ * so content being typed still validates: previews and the builder's draft
+ * keep showing everything that is complete.
+ */
+export function cleanContent(type: SectionType, raw: unknown): unknown {
+  if (!raw || typeof raw !== "object") return raw;
+  const value = raw as Record<string, unknown>;
+  if (type === "parents" && Array.isArray(value.families)) {
+    return {
+      ...value,
+      families: (value.families as { title?: unknown; names?: unknown }[])
+        .map((f) => ({
+          title: typeof f.title === "string" ? f.title : "",
+          names: (Array.isArray(f.names) ? f.names : [])
+            .filter((n): n is string => typeof n === "string")
+            .map((n) => n.trim())
+            .filter(Boolean),
+        }))
+        .filter((f) => f.names.length > 0),
+    };
+  }
+  if (type === "program" && Array.isArray(value.items)) {
+    return {
+      ...value,
+      items: (value.items as { time?: unknown; title?: unknown }[]).filter(
+        (item) =>
+          typeof item.time === "string" &&
+          /^\d{2}:\d{2}$/.test(item.time) &&
+          typeof item.title === "string" &&
+          item.title.trim(),
+      ),
+    };
+  }
+  return raw;
+}
+
 // ---------------------------------------------------------------------
 // Translations
 // ---------------------------------------------------------------------

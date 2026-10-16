@@ -1,4 +1,4 @@
-import type { BackgroundKey, PhotoVeil } from "./backgrounds";
+import { resolveBackground, resolveVeil, type BackgroundKey, type PhotoVeil } from "./backgrounds";
 import type { MediaImage } from "./media";
 import {
   bilingual,
@@ -9,7 +9,7 @@ import {
   type SectionType,
   type Translations,
 } from "./sections";
-import type { TemplateKey } from "./templates";
+import { getTemplate, resolveAccent, resolveTemplate, type TemplateKey } from "./templates";
 
 /**
  * Turns a section's saved (or draft) content into what the invitation renders.
@@ -183,4 +183,91 @@ export function buildSectionView(
     default:
       return null; // intro and music are not content blocks
   }
+}
+
+/**
+ * Everything an invitation is made of, already resolved to URLs. The public
+ * page builds it from the database and the builder from the browser draft.
+ */
+export type InvitationSource = {
+  slug: string;
+  updatedAt: string;
+  templateKey: string | null;
+  /** Saved appearance choices: accent, background and photo veil. */
+  themeOverrides: unknown;
+  /** URL of the "Tu foto" background, when uploaded. */
+  backgroundPhoto: string | null;
+  couple: { partner1: string; partner2: string };
+  event: { startsAt: string; timeZone: string } | null;
+  rsvp: ViewContext["rsvp"];
+  /** In display order. */
+  sections: { type: SectionType; visible: boolean; content: unknown; translations: Translations }[];
+  cover: MediaImage | null;
+  photos: Photo[];
+  audioUrl: string | null;
+  zelle: ZelleInfo | null;
+};
+
+/** Builds the invitation data plus the context that lets an editor preview any section. */
+export function assembleInvitation(source: InvitationSource): { data: InvitationData; ctx: ViewContext } {
+  const visible = source.sections.filter((s) => s.visible);
+  const find = (type: SectionType) => visible.find((s) => s.type === type);
+  const backgroundKey = resolveBackground(
+    source.themeOverrides,
+    getTemplate(source.templateKey).background,
+    Boolean(source.backgroundPhoto),
+  );
+
+  const introSection = find("intro");
+  const intro = introSection
+    ? (() => {
+        const c = parseContent("intro", introSection.content);
+        const tr = introSection.translations;
+        return {
+          title: bilingual(c.title, "title", tr, DEFAULT_TEXT.intro.title)!,
+          subtitle: bilingual(c.subtitle, "subtitle", tr),
+          button: bilingual(c.button, "button", tr, DEFAULT_TEXT.intro.button)!,
+        };
+      })()
+    : null;
+
+  const musicSection = find("music");
+  const music =
+    musicSection && source.audioUrl
+      ? { url: source.audioUrl, autoplayOnOpen: parseContent("music", musicSection.content).autoplay_on_open }
+      : null;
+
+  const ctx: ViewContext = {
+    cover: source.cover,
+    photos: source.photos,
+    event: source.event,
+    rsvp: source.rsvp,
+    zelle: source.zelle,
+  };
+
+  const locationContent = parseContent("location", find("location")?.content);
+  const data: InvitationData = {
+    slug: source.slug,
+    updatedAt: source.updatedAt,
+    template: resolveTemplate(source.templateKey),
+    accent: resolveAccent(source.themeOverrides),
+    background: {
+      key: backgroundKey,
+      photo: backgroundKey === "foto" ? source.backgroundPhoto : null,
+      veil: resolveVeil(source.themeOverrides),
+    },
+    couple: source.couple,
+    event: source.event,
+    intro,
+    music,
+    location:
+      locationContent.venue || locationContent.address
+        ? { venue: locationContent.venue, address: locationContent.address, coords: locationCoords(locationContent) }
+        : null,
+    cover: source.cover,
+    sections: visible
+      .map((s) => buildSectionView(s.type, s.content, s.translations, ctx))
+      .filter((view) => view !== null),
+  };
+  return { data, ctx };
 }
