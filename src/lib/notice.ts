@@ -23,7 +23,7 @@ export function composeNotice(notice: CoupleNotice): NoticePayload {
           ? `${answer}
 💌 “${truncate(notice.wish, 140)}”`
           : answer,
-        url: notice.wish ? "/admin/deseos" : "/admin/invitados",
+        url: notice.wish ? "/panel/deseos" : "/panel/invitados",
         tag: "rsvp",
       };
     }
@@ -33,14 +33,14 @@ export function composeNotice(notice: CoupleNotice): NoticePayload {
         body: notice.attending
           ? `Ahora asistirá${notice.companions.length ? ` con ${notice.companions.join(", ")}` : ""}`
           : "Ahora no asistirá",
-        url: "/admin/invitados",
+        url: "/panel/invitados",
         tag: "rsvp",
       };
     case "test":
       return {
         title: "🔔 Notificaciones activadas",
         body: "Así te avisaremos cuando alguien confirme o deje un deseo.",
-        url: "/admin",
+        url: "/panel",
         tag: "test",
       };
   }

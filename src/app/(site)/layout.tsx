@@ -23,7 +23,7 @@ export default function SiteLayout({ children }: LayoutProps<"/">) {
               <T es="Ver demo" en="See demo" />
             </Link>
             <Link
-              href="/admin/login"
+              href="/entrar"
               className="rounded-full px-3 py-2 text-[var(--site-ink-soft)] hover:text-[var(--site-ink)]"
             >
               <T es="Entrar" en="Sign in" />
@@ -56,7 +56,7 @@ export default function SiteLayout({ children }: LayoutProps<"/">) {
             <Link href="/demo" className="text-[var(--site-ink-soft)] hover:text-[var(--site-ink)]">
               <T es="Ver demo" en="See demo" />
             </Link>
-            <Link href="/admin/login" className="text-[var(--site-ink-soft)] hover:text-[var(--site-ink)]">
+            <Link href="/panel" className="text-[var(--site-ink-soft)] hover:text-[var(--site-ink)]">
               <T es="Panel de los novios" en="Couple's dashboard" />
             </Link>
           </nav>

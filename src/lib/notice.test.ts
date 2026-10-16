@@ -13,14 +13,14 @@ describe("couple notifications", () => {
     });
     expect(notice.title).toBe("✅ Ana Pérez confirmó");
     expect(notice.body).toBe("2 personas: Ana Pérez, Luis Gómez\n💌 “¡Que sean muy felices!”");
-    expect(notice.url).toBe("/admin/deseos");
+    expect(notice.url).toBe("/panel/deseos");
   });
 
   it("opens the guest list when there is no wish", () => {
     const notice = composeNotice({ kind: "rsvp", name: "Carlos", attending: false, companions: [], wish: null });
     expect(notice.title).toBe("✉️ Carlos no podrá asistir");
     expect(notice.body).toBe("Respondió que no asistirá");
-    expect(notice.url).toBe("/admin/invitados");
+    expect(notice.url).toBe("/panel/invitados");
   });
 
   it("shortens long wishes", () => {

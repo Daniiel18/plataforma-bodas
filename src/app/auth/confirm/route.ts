@@ -1,16 +1,17 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { safeNext } from "@/lib/auth-redirect";
 import { createClient } from "@/lib/supabase/server";
 
 /**
- * Target of the links Supabase sends by email (e.g. password recovery).
- * Exchanges the code for a session and redirects inside the dashboard.
+ * Target of the sign-in links (email code links, Google, password recovery).
+ * Exchanges the code or token for a session and continues to the dashboard or
+ * to publishing the builder's draft.
  */
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;
-  const next = searchParams.get("next") ?? "/admin";
-  const safeNext = next.startsWith("/admin") ? next : "/admin";
+  const next = safeNext(searchParams.get("next"));
 
   const supabase = await createClient();
   const code = searchParams.get("code");
@@ -23,6 +24,6 @@ export async function GET(request: NextRequest) {
       ? await supabase.auth.verifyOtp({ token_hash: tokenHash, type })
       : { error: new Error("Enlace incompleto") };
 
-  if (error) return NextResponse.redirect(`${origin}/admin/login?error=enlace`);
-  return NextResponse.redirect(`${origin}${safeNext}`);
+  if (error) return NextResponse.redirect(`${origin}/entrar?error=enlace&next=${encodeURIComponent(next)}`);
+  return NextResponse.redirect(`${origin}${next}`);
 }

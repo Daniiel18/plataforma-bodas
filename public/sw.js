@@ -4,7 +4,7 @@ self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim()));
 
 self.addEventListener("push", (event) => {
-  let data = { title: "Panel de la boda", body: "", url: "/admin", tag: "aviso" };
+  let data = { title: "Panel de la boda", body: "", url: "/panel", tag: "aviso" };
   try {
     data = { ...data, ...event.data.json() };
   } catch {
@@ -24,7 +24,7 @@ self.addEventListener("push", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const url = new URL(event.notification.data?.url || "/admin", self.location.origin).href;
+  const url = new URL(event.notification.data?.url || "/panel", self.location.origin).href;
 
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((windows) => {

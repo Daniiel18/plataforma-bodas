@@ -5,6 +5,7 @@ import { createHash } from "node:crypto";
 import { headers } from "next/headers";
 
 import { slugProblem } from "@/lib/builder/draft";
+import { findSlug } from "@/lib/builder/slugs";
 import { addressOf, searchAddress, type GeocodeResult } from "@/lib/geocode";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -56,10 +57,8 @@ export async function checkSlug(slug: string): Promise<SlugCheck> {
   if (problem) return { status: "invalid", problem };
   if (!(await allow("slug", 60))) return { status: "error" };
 
-  const candidates = [slug, ...Array.from({ length: 8 }, (_, i) => `${slug.slice(0, 57)}-${i + 2}`)];
-  const { data, error } = await createAdminClient().from("weddings").select("slug").in("slug", candidates);
-  if (error) return { status: "error" };
-  const taken = new Set((data ?? []).map((row: { slug: string }) => row.slug));
-  if (!taken.has(slug)) return { status: "available" };
-  return { status: "taken", suggestion: candidates.find((c) => !taken.has(c)) ?? null };
+  const result = await findSlug(createAdminClient(), slug);
+  if (!result) return { status: "error" };
+  if (result.available) return { status: "available" };
+  return { status: "taken", suggestion: result.suggestion };
 }

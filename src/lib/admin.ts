@@ -19,7 +19,7 @@ export const getAdminContext = cache(async () => {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const claims = data?.claims;
-  if (!claims?.sub) redirect("/admin/login");
+  if (!claims?.sub) redirect("/entrar");
 
   const { data: membership } = await supabase
     .from("wedding_members")
@@ -27,14 +27,14 @@ export const getAdminContext = cache(async () => {
     .eq("user_id", claims.sub)
     .limit(1)
     .maybeSingle();
-  if (!membership) redirect("/admin/sin-acceso");
+  if (!membership) redirect("/panel/sin-acceso");
 
   const { data: wedding, error } = await supabase
     .from("weddings")
     .select("*")
     .eq("id", membership.wedding_id)
     .single<Wedding>();
-  if (error || !wedding) redirect("/admin/sin-acceso");
+  if (error || !wedding) redirect("/panel/sin-acceso");
 
   return {
     supabase,

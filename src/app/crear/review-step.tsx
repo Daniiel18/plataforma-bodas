@@ -1,18 +1,10 @@
 "use client";
 
 import { AlertCircleIcon, CheckCircle2Icon, ExternalLinkIcon, PencilIcon, SparklesIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { LazoMark } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { track } from "@/lib/analytics";
 import {
@@ -48,12 +40,12 @@ const stepTitle = (key: StepKey) => STEPS[stepIndex(key)].title;
 
 /** Last step: what is missing, the invitation's link and "Publicar". */
 export function ReviewStep({ draft }: { draft: BuilderDraft }) {
+  const router = useRouter();
   const goTo = useBuilder((s) => s.goTo);
   const setSlug = useBuilder((s) => s.setSlug);
   const missing = missingForPublish(draft);
   const examples = sectionsWithExamples(draft);
   const [check, setCheck] = useState<SlugCheck | null>(null);
-  const [publishing, setPublishing] = useState(false);
   const host = SITE_URL.replace(/^https?:\/\//, "");
 
   // Ask the server whether the link is free, a moment after the couple stops typing.
@@ -137,7 +129,7 @@ export function ReviewStep({ draft }: { draft: BuilderDraft }) {
           disabled={!ready}
           onClick={() => {
             track("publish_click");
-            setPublishing(true);
+            router.push("/crear/publicar");
           }}
         >
           <SparklesIcon /> Publicar mi invitación
@@ -149,25 +141,9 @@ export function ReviewStep({ draft }: { draft: BuilderDraft }) {
         </Button>
         <p className="text-xs text-muted-foreground">
           Su invitación está guardada en este dispositivo. Para publicarla les pediremos entrar con Google o con un
-          enlace a su correo.
+          código que les enviamos por correo.
         </p>
       </section>
-
-      <Dialog open={publishing} onOpenChange={setPublishing}>
-        <DialogContent>
-          <DialogHeader className="items-center text-center">
-            <LazoMark className="size-12" />
-            <DialogTitle className="font-heading text-2xl">¡Ya casi!</DialogTitle>
-            <DialogDescription>
-              Muy pronto podrán publicarla entrando con Google o con un enlace a su correo. Mientras tanto, su
-              invitación queda guardada en este dispositivo: vuelvan cuando quieran y la encontrarán tal cual.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button onClick={() => setPublishing(false)}>Entendido</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

@@ -7,6 +7,13 @@ const nextConfig: NextConfig = {
   // waits for its data, so unknown or unpublished slugs return a real 404
   // instead of a 200 App Shell.
   partialPrefetching: false,
+  async redirects() {
+    return [
+      // The couple's dashboard moved from /admin to /panel (old links and installed apps).
+      { source: "/admin", destination: "/panel", permanent: false },
+      { source: "/admin/:path*", destination: "/panel/:path*", permanent: false },
+    ];
+  },
   async headers() {
     return [
       {

@@ -9,7 +9,7 @@ import type { BuilderDraft, LocalMedia } from "./draft";
 const PREVIEW_SLUG = "vista-previa";
 
 /** Instant of a local date and time in the wedding's zone, or null while incomplete. */
-export function draftStartsAt(draft: BuilderDraft): string | null {
+export function draftStartsAt(draft: Pick<BuilderDraft, "event">): string | null {
   const { date, time, timeZone } = draft.event;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) return null;
   try {
@@ -20,7 +20,7 @@ export function draftStartsAt(draft: BuilderDraft): string | null {
 }
 
 /** End of the reply deadline day in the wedding's zone. */
-export function draftDeadline(draft: BuilderDraft): string | null {
+export function draftDeadline(draft: Pick<BuilderDraft, "event" | "rsvp">): string | null {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(draft.rsvp.deadline)) return null;
   try {
     return zonedInputToDate(`${draft.rsvp.deadline}T23:59`, draft.event.timeZone).toISOString();

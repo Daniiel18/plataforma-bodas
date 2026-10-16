@@ -1,12 +1,16 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_ADMIN_PATHS = ["/admin/login", "/admin/recuperar"];
+import { safeNext } from "@/lib/auth-redirect";
+
+/** Dashboard pages that work without a session (password sign-in and recovery). */
+const PUBLIC_PANEL_PATHS = ["/panel/login", "/panel/recuperar"];
 
 /**
- * Refreshes the Supabase session on every dashboard visit and runs an
- * optimistic check: no session → login. Real authorization (being a member
- * of the wedding) is verified in every page and action.
+ * Refreshes the Supabase session and runs an optimistic check on the pages
+ * that need an account: no session → /entrar, which brings the couple back
+ * afterwards. Real authorization (being a member of the wedding) is verified
+ * in every page and action.
  */
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -32,26 +36,27 @@ export async function proxy(request: NextRequest) {
 
   const { data } = await supabase.auth.getClaims();
   const isLoggedIn = Boolean(data?.claims);
-  const { pathname } = request.nextUrl;
-  const isPublicAdminPath = PUBLIC_ADMIN_PATHS.some((p) => pathname.startsWith(p));
-
-  if (!isLoggedIn && !isPublicAdminPath) {
+  const { pathname, search } = request.nextUrl;
+  const redirectTo = (path: string) => {
     const url = request.nextUrl.clone();
-    url.pathname = "/admin/login";
-    url.search = "";
+    const [pathOnly, query] = path.split("?");
+    url.pathname = pathOnly;
+    url.search = query ? `?${query}` : "";
     return NextResponse.redirect(url);
+  };
+
+  if (pathname === "/entrar" || pathname === "/panel/login") {
+    return isLoggedIn ? redirectTo(safeNext(request.nextUrl.searchParams.get("next"))) : response;
   }
 
-  if (isLoggedIn && pathname === "/admin/login") {
-    const url = request.nextUrl.clone();
-    url.pathname = "/admin";
-    url.search = "";
-    return NextResponse.redirect(url);
+  const isPublic = PUBLIC_PANEL_PATHS.some((p) => pathname.startsWith(p));
+  if (!isLoggedIn && !isPublic) {
+    return redirectTo(`/entrar?next=${encodeURIComponent(`${pathname}${search}`)}`);
   }
 
   return response;
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/panel/:path*", "/crear/publicar", "/entrar"],
 };
