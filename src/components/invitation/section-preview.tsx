@@ -65,10 +65,8 @@ export function EnvelopePreview({
 
   return (
     <div className="flex flex-col items-center gap-6 px-6 py-10 text-center">
-      <p className="inv-script text-4xl leading-tight text-[var(--inv-accent)]">
-        {p1}
-        <span className="mx-2 align-middle text-2xl">&amp;</span>
-        {p2}
+      <p className="inv-script text-4xl leading-tight text-balance text-[var(--inv-accent)]">
+        {p1} <span className="align-middle text-[0.6em]">&amp;</span> {p2}
       </p>
       <span className="inv-envelope pointer-events-none !w-64" aria-hidden>
         <span className="inv-envelope-body" />

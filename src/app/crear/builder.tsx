@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "reac
 
 import { Logo } from "@/components/brand/logo";
 import { EditorBackendProvider, type EditorBackend } from "@/components/editor/editor-backend";
+import { PhoneFrame } from "@/components/site/phone-frame";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -207,15 +208,7 @@ function StepDots({ step, onPick }: { step: number; onPick: (step: number) => vo
 
 /** The whole invitation, with envelope and music, in a phone frame. */
 function PhonePreview() {
-  return (
-    <div className="mx-auto w-full max-w-[320px] rounded-[2.5rem] bg-[#2b241f] p-2.5 shadow-xl">
-      <iframe
-        src="/crear/vista-previa"
-        title="Vista previa de la invitación"
-        className="block aspect-[9/19] w-full rounded-[2rem] bg-white"
-      />
-    </div>
-  );
+  return <PhoneFrame src="/crear/vista-previa" title="Vista previa de la invitación" width={300} />;
 }
 
 function StartOver() {

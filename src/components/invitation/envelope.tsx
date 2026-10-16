@@ -55,10 +55,8 @@ export function Envelope({ title, subtitle, button, couple, dateLabel, autoplayM
       <div className="inv-backdrop" aria-hidden />
       <div className="flex flex-col items-center gap-8 text-center">
         <div>
-          <p className="inv-script text-5xl leading-tight text-[var(--inv-accent)] md:text-6xl">
-            {first(couple.partner1)}
-            <span className="mx-2 align-middle text-3xl">&amp;</span>
-            {first(couple.partner2)}
+          <p className="inv-script text-[clamp(2.4rem,12vw,3rem)] leading-tight text-balance text-[var(--inv-accent)] md:text-6xl">
+            {first(couple.partner1)} <span className="align-middle text-[0.6em]">&amp;</span> {first(couple.partner2)}
           </p>
           <p className="mt-2 text-lg text-[var(--inv-ink-soft)]">❦</p>
           {dateLabel && (

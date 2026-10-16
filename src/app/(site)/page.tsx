@@ -5,6 +5,7 @@ import Link from "next/link";
 import { LazoMark } from "@/components/brand/logo";
 import { T } from "@/components/invitation/lang";
 import { FAQ } from "@/components/site/faq";
+import { PhoneFrame } from "@/components/site/phone-frame";
 import { TrackView } from "@/components/site/track-view";
 import { BRAND, SITE_URL } from "@/lib/site";
 
@@ -223,20 +224,9 @@ export default function Home() {
 /** A real invitation (the demo) running inside a phone frame. */
 function PhoneDemo() {
   return (
-    <div className="mx-auto w-full max-w-[300px]">
-      <div className="relative rounded-[2.75rem] bg-[#2b241f] p-2.5 shadow-[var(--site-gold)]/30 shadow-2xl ring-1 ring-black/10">
-        <div
-          aria-hidden
-          className="absolute top-3.5 left-1/2 z-10 h-5 w-24 -translate-x-1/2 rounded-full bg-[#2b241f]"
-        />
-        <iframe
-          src="/demo"
-          title="Demo de invitación · Invitation demo"
-          loading="lazy"
-          className="block aspect-[9/19] w-full rounded-[2.2rem] bg-[var(--site-paper)]"
-        />
-      </div>
-      <p className="mt-4 text-center text-sm text-[var(--site-ink-soft)]">
+    <div className="mx-auto grid w-full max-w-[300px] justify-items-center gap-4">
+      <PhoneFrame src="/demo" title="Demo de invitación · Invitation demo" />
+      <p className="text-center text-sm text-[var(--site-ink-soft)]">
         <T es="Tócala: es una invitación de verdad." en="Tap it: it's a real invitation." />
       </p>
     </div>
