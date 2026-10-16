@@ -4,8 +4,13 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-10-15
+
 ### Added
 
+- **Venue picker**: the content editor shows a map (OpenStreetMap) where the couple searches the address and drags the pin to the exact entrance. The guest's map, *Get directions* and the calendar event (`GEO`) use that point; without one, the written address is used.
+- **Backups**: `npm run db:backup` saves every table and uploaded file under `backups/`.
+- **Documentation**: [operations guide](docs/operations.md) (onboarding, backups, key rotation, monitoring, releases, incidents), [roadmap](docs/roadmap.md), recommended Vercel and Supabase settings in the [deployment guide](docs/deployment.md).
 - **Single reply with wish**: the form asks for attendance and companions, then the optional wish, and saves everything in one transaction (`rsvp_reply`), so the couple gets one notification with the wish included.
 - **Live dashboard** with Supabase Realtime: new answers and wishes appear as in-app notifications and pages update without reloading.
 - **Share dialog** right after publishing (and from the overview): link, ready-made invitation message with optional English version, and one-tap sharing to Messages/iMessage, WhatsApp, Messenger, Telegram, Facebook, email and the native share sheet.
@@ -20,12 +25,18 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Changed
 
+- **Content previews** are shown only for the sections guests see; gallery, gifts and music — managed on their own pages — are just ordered and shown/hidden in the content editor.
 - **Add to calendar** is now a single button that opens the right calendar for the guest's device (Apple Calendar on iPhone, Google Calendar on Android, an `.ics` file on computers) instead of a menu.
 - Unknown or unpublished invitation URLs now answer with a real **404** status: published invitations are prerendered at build time and Partial Prefetching is off, so the page checks the invitation before streaming.
 - The 3D gallery mounts its carousel on the guest's device and shows the first photo until then, so invitations can be fully prerendered.
 - Every code comment is now in English.
 - The template comes first in the dashboard menu (renamed *Plantilla*), and the content editor no longer repeats links to the Gallery, Gifts and Music pages.
 - **Get directions** is now a single button: Android opens the system's map app chooser, iPhone shows a native-style sheet with Apple Maps, Google Maps and Waze, and computers open Google Maps.
+
+### Security
+
+- Supabase's security and performance advisors are clean: the RLS helper functions moved to a `private` schema that the Data API does not expose, every table has one permissive policy per role and action (same permissions as before), the event-trigger function `rls_auto_enable` can no longer be called by clients, and every foreign key is indexed.
+- Server-only secrets on Vercel are limited to the Production environment, and production is promoted only after CI passes (Deployment Checks).
 
 ## [1.0.0] — 2026-10-15
 
@@ -39,3 +50,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - **Push notifications** to the couple's phones (installable dashboard app) for every RSVP, change and wish.
 - **Read-only demo role** and a reproducible demo wedding (`npm run demo:seed`).
 - Daily keep-alive job so the free Supabase project is never paused.
+
+[Unreleased]: https://github.com/Daniiel18/plataforma-bodas/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/Daniiel18/plataforma-bodas/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/Daniiel18/plataforma-bodas/releases/tag/v1.0.0
