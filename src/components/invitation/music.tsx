@@ -77,7 +77,7 @@ export function MusicProvider({ src, children }: { src: string | null; children:
               playing ? "Pausar música" : "Reproducir música",
               playing ? "Pause music" : "Play music",
             )}
-            className="fixed right-4 bottom-4 z-50 grid size-12 place-items-center rounded-full bg-[var(--inv-accent)] text-[var(--inv-on-strong)] shadow-lg transition hover:brightness-110"
+            className="inv-music-button fixed right-4 bottom-4 z-50 grid size-12 place-items-center rounded-full bg-[var(--inv-accent)] text-[var(--inv-on-strong)] shadow-lg transition hover:brightness-110"
           >
             {playing ? (
               <span className="inv-music-bars flex h-4 items-end gap-[3px]" data-playing="true" aria-hidden>

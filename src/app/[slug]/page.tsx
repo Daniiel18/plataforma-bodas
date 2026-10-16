@@ -6,12 +6,14 @@ import { getPublicInvitation, getPublishedSlugs } from "@/lib/invitation";
 
 /**
  * Published invitations are prerendered at build time; any other slug renders
- * on its first visit and is then served from the cache. Cache Components needs
- * at least one param, so "demo" stands in when nothing is published yet.
+ * on its first visit and is then served from the cache. The demo wedding has
+ * its own route (/demo). Cache Components needs at least one param, so a slug
+ * that can never exist stands in when nothing else is published (it renders
+ * the 404 page).
  */
 export async function generateStaticParams() {
-  const slugs = await getPublishedSlugs();
-  return (slugs.length ? slugs : ["demo"]).map((slug) => ({ slug }));
+  const slugs = (await getPublishedSlugs()).filter((slug) => slug !== "demo");
+  return (slugs.length ? slugs : ["_"]).map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: PageProps<"/[slug]">): Promise<Metadata> {

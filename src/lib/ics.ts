@@ -43,7 +43,7 @@ export function buildIcs(event: IcsEvent) {
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Plataforma de Bodas//ES",
+    "PRODID:-//Lazo de Oro//ES",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",

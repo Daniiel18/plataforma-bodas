@@ -18,6 +18,16 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // The landing page shows the demo inside a phone frame (same origin only).
+        source: "/demo/:path*",
+        headers: [{ key: "X-Frame-Options", value: "SAMEORIGIN" }],
+      },
+      {
+        // The builder's review step shows the draft inside a phone frame.
+        source: "/crear/vista-previa",
+        headers: [{ key: "X-Frame-Options", value: "SAMEORIGIN" }],
+      },
+      {
         // Notifications service worker: always serve the latest version.
         source: "/sw.js",
         headers: [
