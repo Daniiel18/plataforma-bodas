@@ -1,7 +1,8 @@
 # Architecture
 
-The platform is a single Next.js 16 application backed by Supabase. It serves two very different audiences from the same codebase:
+The platform (**Lazo de Oro**) is a single Next.js 16 application backed by Supabase. It serves three audiences from the same codebase:
 
+- **Couples discovering it** land on the platform site (`/`), browse one demo per template (`/demo/<template>`) and design their invitation in the builder (`/crear`) without an account.
 - **Guests** open a public, cached, mobile-first invitation (`/<slug>`). It must load instantly on mobile data and work without an account.
 - **The couple** use a private dashboard (`/admin`) that is always rendered per request, behind authentication and Row Level Security.
 
@@ -137,11 +138,35 @@ The location section stores the written venue and address plus an optional exact
 
 Every section that the guest *sees* (envelope, cover, parents, celebration, venue, dress code, schedule, reply form) has a live preview in the content editor. It renders the real invitation component through the same `buildSectionView` the public page uses, with the draft values and the chosen template. Sections that are managed on their own page — gallery, gifts and music — are only ordered and shown/hidden there, without a preview.
 
+## Platform site and SEO
+
+- The landing page, legal pages and template demos are static and bilingual with the same `<T>` + inline language script as the invitations; `[data-lang-root]` marks the element whose `data-lang` drives the page.
+- Each template has an indexable demo page built from the fictional demo wedding redrawn with that template. The landing page shows `/demo` inside a phone frame (`X-Frame-Options: SAMEORIGIN` for `/demo/*` only; everything else stays `DENY`).
+- `sitemap.xml`, `robots.txt`, canonical URLs (`NEXT_PUBLIC_SITE_URL`), FAQ and web-app structured data, and a generated link-preview image. Couples' invitations stay `noindex`.
+
+## Builder
+
+The builder is a 14-step wizard that works without an account:
+
+- **Draft in the browser.** A Zustand store persisted to `localStorage` holds the versioned draft (`src/lib/builder/draft.ts`); photos, QR and music are compressed exactly like dashboard uploads (`src/lib/media-prepare.ts`) and kept in IndexedDB (`idb-keyval`). Nothing reaches the server until the couple publishes.
+- **One editor, two backends.** The section forms, the venue map and the template/background pickers live in `src/components/editor/` and are shared with the dashboard. An `EditorBackend` context decides what saving means: the dashboard saves and translates on the server; the builder keeps every edit as it is typed (`cleanContent` drops half-filled entries so drafts always validate).
+- **The real invitation as preview.** `assembleInvitation` turns either database rows or the browser draft into the same `InvitationData`, so each step previews its section with the chosen template and the review step shows the complete invitation (`/crear/vista-previa`) in a phone frame.
+- **Example texts** (with their English) make the invitation look complete from the first minute; the review step lists the sections that still carry them.
+- **Server help without an account** is read-only and rate limited per hashed IP: link availability (`checkSlug`, with a free alternative) and venue search.
+
+## Product analytics
+
+`/api/events` stores funnel events (`landing_view`, `demo_view`, `builder_start`, `builder_step`, `builder_review`, `publish_click`) in `analytics_events` with a random id kept in `localStorage`, the approximate country and the device type. No cookies, bots are ignored, and nothing is sent when the browser has *Do Not Track* or *Global Privacy Control* on.
+
 ## Project structure
 
 ```
 src/
 ├── app/
+│   ├── (site)/                 Landing page, privacy and terms
+│   ├── demo/                   Demo invitation, one page per template
+│   ├── crear/                  Builder without an account + full-size preview
+│   ├── api/events/             Product analytics
 │   ├── [slug]/                 Public invitation, RSVP actions, .ics route
 │   ├── admin/
 │   │   ├── (panel)/            Dashboard pages (overview, guests, wishes, content,
@@ -151,6 +176,9 @@ src/
 │   ├── api/keep-alive/         Daily cron endpoint
 │   └── auth/confirm/           Email link handler (password recovery)
 ├── components/
+│   ├── brand/                  Lazo de Oro logo
+│   ├── editor/                 Forms and pickers shared by the dashboard and the builder
+│   ├── site/                   Landing, demo bar, legal page layout
 │   ├── invitation/             Guest experience (envelope, gallery, RSVP form, …)
 │   └── ui/                     shadcn/ui primitives
 ├── lib/                        Data access, translations, templates, dates, ICS, push

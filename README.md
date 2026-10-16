@@ -1,8 +1,8 @@
 <div align="center">
 
-# Plataforma de Bodas
+# Lazo de Oro
 
-**A customizable wedding invitation platform with a private dashboard for the couple.**
+**Free wedding websites: couples design their invitation without an account, publish it and follow every reply from their dashboard.**
 
 Guests get a fast, bilingual, mobile-first invitation with RSVP, music, a 3D photo gallery and a gift box.
 The couple manages every detail from a dashboard and gets a push notification on their phone for every answer.
@@ -15,7 +15,7 @@ The couple manages every detail from a dashboard and gets a push notification on
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38bdf8?logo=tailwindcss&logoColor=white)
 ![License](https://img.shields.io/badge/license-proprietary-6f5b4e)
 
-**[Live demo](https://invitacion-bodas.vercel.app/demo)** · **[Dashboard demo](#-try-the-dashboard)** · **[Architecture](docs/architecture.md)** · **[Deployment](docs/deployment.md)**
+**[Website](https://lazodoro.vercel.app)** · **[Live demo](https://lazodoro.vercel.app/demo)** · **[Create one](https://lazodoro.vercel.app/crear)** · **[Dashboard demo](#-try-the-dashboard)** · **[Architecture](docs/architecture.md)** · **[Deployment](docs/deployment.md)**
 
 </div>
 
@@ -28,6 +28,12 @@ The couple manages every detail from a dashboard and gets a push notification on
 </p>
 
 ## ✨ Features
+
+### For couples discovering it
+
+- **Landing page** in Spanish or English (picked from the phone), with a real invitation running inside a phone, how it works and an FAQ.
+- **One indexable demo per template** (`/demo/<template>`) with a *Create yours with this template* button.
+- **Builder without an account** (`/crear`): a 14-step guide — names, date, template, envelope and cover, parents, venue map, schedule, dress code, photos, music, Zelle, replies — with a live preview of every step. Everything is saved on the device (photos and music in IndexedDB) until the couple signs in to publish.
 
 ### For guests
 
@@ -63,13 +69,13 @@ The couple manages every detail from a dashboard and gets a push notification on
 
 ## 👀 Try the dashboard
 
-Open **[invitacion-bodas.vercel.app/admin](https://invitacion-bodas.vercel.app/admin)** and sign in with the read-only demo account:
+Open **[lazodoro.vercel.app/admin](https://lazodoro.vercel.app/admin)** and sign in with the read-only demo account:
 
 | Email | Password |
 | --- | --- |
 | `demo@plataforma-bodas.app` | `VerLaDemo2026!` |
 
-You can explore every screen; the database rejects any change made with this account. The guest side is at **[/demo](https://invitacion-bodas.vercel.app/demo)** — try confirming attendance from your phone.
+You can explore every screen; the database rejects any change made with this account. The guest side is at **[/demo](https://lazodoro.vercel.app/demo)** — try confirming attendance from your phone.
 
 ## 🧱 Tech stack
 

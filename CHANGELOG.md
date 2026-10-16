@@ -6,10 +6,20 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- **Lazo de Oro platform site**: landing page (live demo in a phone, how it works, FAQ), privacy policy and terms in Spanish and English, original gold-bow logo and app icons, sitemap, robots and link previews.
+- **One indexable demo per template** (`/demo/<template>`) with a *Create yours with this template* bar.
+- **Builder without an account** (`/crear`): a 14-step guide with live previews, example texts, photos and music kept on the device, venue map, link availability check and a full-size preview. Publishing arrives with sign-in in the next stage.
+- **Product analytics** without cookies (`/api/events`), respecting *Do Not Track*.
+- More Latin American time zones.
 - **Platform foundation (Lazo de Oro)**: account profiles created on sign-up, platform administrators, plans (a free plan with every feature, ready for paid plans), product analytics and an audit log.
 - **Wedding lifecycle** enforced by the database: draft → active on first publish → read-only 30 days after the event → archived, plus suspension by the platform. Guests only see active or read-only weddings, replies close outside draft/active, and couples cannot change the lifecycle themselves.
 - Per-wedding settings for **companions** (names or just a number) and a **public guestbook** (private by default) with hideable wishes.
 - Reserved slugs and a per-plan limit of live weddings per account.
+
+### Changed
+
+- The section forms, venue map and template pickers are shared between the dashboard and the builder (`src/components/editor`), and the invitation is assembled by one function for both the public page and the builder.
+- Live previews keep showing a family or an activity while it is still being typed.
 
 ## [1.1.0] — 2026-10-15
 
