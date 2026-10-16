@@ -1,35 +1,28 @@
 # Roadmap
 
-The platform already serves one wedding end to end and the schema is multi-wedding from day one (every row hangs from `weddings`). These are the next steps toward a product that many couples can use on their own, roughly in order.
+**Lazo de Oro** turns the platform into a self-service product: couples build their wedding website without an account, sign in to publish, and manage it from their own dashboard. It is free for every couple — with optional donations — and stays on free tiers ($0). The database is ready for paid plans if that ever changes.
 
-## Now — first couple
+## Stages
 
-- [x] Guest invitation with templates, backgrounds, gallery, music, venue map, calendar and Zelle
-- [x] Two-step reply with private wish, duplicate detection and deadline
-- [x] Live dashboard, push notifications and share-on-publish
-- [x] Hardened database (one policy per action, private helpers, indexed foreign keys)
-- [ ] Couple's real account and first publication
+| Stage | Scope | Status |
+| --- | --- | --- |
+| 1 | Architecture and database: accounts, plans, wedding lifecycle, per-wedding settings, analytics, audit log | ✅ Done |
+| 2 | Landing page, indexable demo, builder without an account (settings in the browser, photos and music in IndexedDB) | Next |
+| 3 | Sign-in with Google or an email link, moving the browser draft to the database, publishing | Planned |
+| 4 | Couple's dashboard: companions mode, public guestbook, "Made with Lazo de Oro" credit, lifecycle jobs (read-only, archive, draft cleanup) | Planned |
+| 5 | Super admin: accounts, weddings, conversion funnel, free-tier usage, errors, audit log, suspensions | Planned |
+| 6 | Excel export of the guest list and a donations button | Planned |
 
-## Next — more couples, still operated by hand
+## Decisions
 
-- **Staging environment**: a second Supabase project for Vercel previews.
-- **Operator console** (`/ops`): list weddings, create one and invite the couple by email, instead of the CLI scripts.
-- **Custom SMTP** for password recovery and invitations to the dashboard.
-- **Guest list import** (CSV) and named invitation links that know how many companions each guest may bring.
-- **More gift options**: bank transfer details, PayPal, a registry link.
-- **More sections**: accommodation, FAQ, story timeline, livestream link.
+- **No payments for now.** Vercel's Hobby plan does not allow requesting or processing payments; donations are allowed. Turning on paid plans later means Vercel Pro, a checkout (PayPal Advanced Checkout keeps every method in one PayPal balance) and an orders table.
+- **Everything included** for every couple, with a small "Made with Lazo de Oro" credit.
+- **No custom domain**: weddings live at `lazodoro.vercel.app/<slug>`.
+- **Market**: Hispanic couples in the US and Latin America, in Spanish and English.
+- **Retention**: read-only 30 days after the event, archived 12 months after it; unpublished drafts are deleted after 30 days.
 
-## Later — self-service product
+## Later
 
-- **Sign-up and onboarding wizard** for couples, with a free preview and paid publication.
-- **Payments** (Stripe) and plans; move to Vercel Pro and Supabase Pro.
-- **Custom domains** per wedding (`anayluis.com`).
-- **Template marketplace**: templates and backgrounds are already data (`src/lib/templates.ts`, `src/lib/backgrounds.ts`), so new collections can ship without code changes to the invitation.
-- **More languages** beyond Spanish and English (the translation layer already stores per-field overrides).
-- **Analytics for the couple**: invitation opens, replies over time.
-
-## Ideas
-
-- Seating plan with drag-and-drop tables.
-- Shared photo album where guests upload pictures after the wedding.
-- WhatsApp reminders before the reply deadline.
+- Sign in with Apple (needs the Apple Developer Program).
+- Moving media to a zero-egress store if the free Supabase bandwidth becomes the bottleneck.
+- More gift options, more sections (accommodation, FAQ, story), guest list import.

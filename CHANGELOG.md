@@ -4,6 +4,13 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- **Platform foundation (Lazo de Oro)**: account profiles created on sign-up, platform administrators, plans (a free plan with every feature, ready for paid plans), product analytics and an audit log.
+- **Wedding lifecycle** enforced by the database: draft → active on first publish → read-only 30 days after the event → archived, plus suspension by the platform. Guests only see active or read-only weddings, replies close outside draft/active, and couples cannot change the lifecycle themselves.
+- Per-wedding settings for **companions** (names or just a number) and a **public guestbook** (private by default) with hideable wishes.
+- Reserved slugs and a per-plan limit of live weddings per account.
+
 ## [1.1.0] — 2026-10-15
 
 ### Added

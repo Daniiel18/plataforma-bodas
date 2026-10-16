@@ -1,9 +1,11 @@
 # Database
 
-PostgreSQL on Supabase. Every table hangs from `weddings`, so one deployment can host many weddings. The schema lives in versioned migrations under [`supabase/migrations`](../supabase/migrations) and is applied with `npm run db:migrate`.
+PostgreSQL on Supabase. Every table hangs from `weddings`, so one deployment hosts every couple of the platform (Lazo de Oro); accounts, plans and platform analytics sit beside them. The schema lives in versioned migrations under [`supabase/migrations`](../supabase/migrations) and is applied with `npm run db:migrate`.
 
 ```mermaid
 erDiagram
+  plans ||--o{ weddings : "plan"
+  profiles ||--o{ wedding_members : "account"
   weddings ||--o{ wedding_members : "managed by"
   weddings ||--|| wedding_private : has
   weddings ||--o{ sections : has
@@ -27,6 +29,21 @@ erDiagram
     text template_key
     jsonb theme_overrides
     bool is_published
+    text status "draft | active | read_only | archived | suspended"
+    text plan_code FK
+    uuid created_by FK
+    text companions_mode "names | count"
+    bool guestbook_public
+  }
+  plans {
+    text code PK
+    int price_cents
+    jsonb features
+  }
+  profiles {
+    uuid id PK "auth.users"
+    text display_name
+    text locale
   }
   wedding_members {
     uuid wedding_id PK
@@ -66,18 +83,47 @@ erDiagram
     uuid rsvp_id FK,UK
     text message
     bool is_read
+    bool is_hidden
   }
 ```
+
+Platform tables outside the diagram: `platform_admins` (super admins), `analytics_events` (product funnel, no cookies) and `audit_log` (sensitive actions).
+
+## Wedding lifecycle
+
+`weddings.status` drives what guests see and what the couple can change. Only the platform (server role) moves a wedding between states; the database rejects any attempt from the couple's session.
+
+| Status | When | Guests | Couple |
+| --- | --- | --- | --- |
+| `draft` | Created from an account, never published | — | edits |
+| `active` | Published at least once — publishing a draft activates it automatically and stamps `published_at` | see it while `is_published` | edits, can unpublish |
+| `read_only` | 30 days after the event | see it; replies closed | reads and exports only |
+| `archived` | 12 months after the event (30-day notice) | — | reads; media is removed |
+| `suspended` | Hidden by the platform (abuse) | — | reads |
+
+Other rules enforced by the database:
+
+- **Replies** are only accepted while the wedding is `draft` or `active` (`RSVP_CLOSED` otherwise).
+- **Accounts** can own as many live weddings as their plan allows (`features.max_weddings`, 3 on the free plan).
+- **Slugs** are 3–60 characters and cannot take a reserved app path (`panel`, `crear`, `admin`, …).
+- **Settings per wedding:** `companions_mode` (`names` asks for each companion's name; `count` stores only `rsvps.companions_count`) and `guestbook_public` (private by default; hidden wishes never show).
+
+## Plans
+
+Every wedding points to a plan. Today the only one is `free`, with every feature included; paid plans are new rows in `plans` plus an orders table, without changing weddings.
 
 ## Access control (Row Level Security)
 
 | Table | Anonymous guest | `viewer` (demo) | `owner` (couple) | Server role |
 | --- | --- | --- | --- | --- |
-| `weddings` | read if published | read own | read + update own | all |
+| `weddings` | read if published and active or read-only | read own | read + update own while open | all |
 | `sections`, `media`, `gift_methods` | read visible, published | read own | full | all |
 | `rsvps`, `rsvp_companions`, `wishes` | — | read own | full | all (via RPC) |
 | `wedding_private`, `push_subscriptions` | — | read own / — | full | all |
-| Storage `wedding-media` | public read | — | write own folder | all |
+| Storage `wedding-media` | public read | — | write own folder while open | all |
+| `plans` | read active | read active | read active | all |
+| `profiles`, `platform_admins` | — | read own | read own, update own profile | all |
+| `analytics_events`, `audit_log` | — | — | — | all (server only) |
 
 Each table has **one permissive policy per role and action** (for example *Members read sections* and *Owners insert / update / delete sections*), so Postgres evaluates a single policy per query.
 
@@ -86,13 +132,14 @@ The policies rely on small `SECURITY DEFINER` helpers that live in the **`privat
 | Helper | Meaning |
 | --- | --- |
 | `private.is_wedding_member(id)` | The signed-in account belongs to the wedding (any role) — reads |
-| `private.is_wedding_editor(id)` | The account is an `owner` of the wedding — writes |
-| `private.is_published_wedding(id)` | The wedding is published — public reads |
-| `private.can_manage_storage_object(name)` | The file lives in a folder of a wedding the account owns |
+| `private.is_wedding_editor(id)` | The account is an `owner` of the wedding — notification devices |
+| `private.can_edit_wedding(id)` | The account is an `owner` and the wedding is `draft` or `active` — writes |
+| `private.is_published_wedding(id)` | The wedding is published and `active` or `read_only` — public reads |
+| `private.can_manage_storage_object(name)` | The file lives in the folder of a wedding the account can edit |
 
 `anon` and `authenticated` have `USAGE` on `private` only to evaluate these helpers; no table there is readable (it also holds `schema_migrations`).
 
-**New tables** must enable RLS, add one policy per action using these helpers, and index every foreign key.
+**New tables** must enable RLS, grant privileges explicitly (the project exposes nothing by default), add one policy per action using these helpers, and index every foreign key. Tables only the server uses (`analytics_events`, `audit_log`) have RLS on and no client policies on purpose — the security advisor lists them as *RLS enabled, no policy* (info).
 
 ## Server-only functions
 
@@ -111,7 +158,7 @@ Guests never write to tables directly. The RSVP Server Actions call these functi
 
 ## Indexes
 
-Every foreign key is indexed. `rsvps.name_normalized` and `rsvp_companions.name_normalized` carry trigram (`gin_trgm_ops`) indexes for duplicate detection; Supabase's performance advisor lists them as unused until a wedding has enough guests for the planner to choose them — keep them.
+Every foreign key is indexed. `rsvps.name_normalized` and `rsvp_companions.name_normalized` carry trigram (`gin_trgm_ops`) indexes for duplicate detection; Supabase's performance advisor lists them — and the indexes of young tables such as `analytics_events` — as *unused* until there is enough data for the planner to choose them. Keep them.
 
 ## Advisors
 
