@@ -28,6 +28,7 @@
     "format:check": "prettier --check .",
     "check": "npm run lint && npm run typecheck && npm run test && npm run format:check",
     "db:migrate": "node --env-file=.env.local scripts/db-migrate.mjs",
+    "db:backup": "node --env-file=.env.local scripts/db-backup.mjs",
     "wedding:create": "node --env-file=.env.local scripts/create-wedding.mjs",
     "admin:link": "node --env-file=.env.local scripts/link-admin.mjs",
     "demo:seed": "node --env-file=.env.local scripts/seed-demo.mjs",
