@@ -5,7 +5,7 @@ import { cacheLife, cacheTag } from "next/cache";
 
 import { resolveBackground, resolveVeil } from "@/lib/backgrounds";
 import { publicMediaUrl, type MediaImage } from "@/lib/media";
-import { buildSectionView, type InvitationData, type ViewContext } from "@/lib/section-view";
+import { buildSectionView, locationCoords, type InvitationData, type ViewContext } from "@/lib/section-view";
 import { bilingual, DEFAULT_TEXT, parseContent, type Bi, type SectionType, type Translations } from "@/lib/sections";
 import { getTemplate, resolveAccent, resolveTemplate } from "@/lib/templates";
 import type { Wedding } from "@/lib/types";
@@ -163,7 +163,7 @@ export async function loadInvitationParts(
     music,
     location:
       locationContent.venue || locationContent.address
-        ? { venue: locationContent.venue, address: locationContent.address }
+        ? { venue: locationContent.venue, address: locationContent.address, coords: locationCoords(locationContent) }
         : null,
     cover: coverRow ? image(coverRow) : null,
     sections: views,

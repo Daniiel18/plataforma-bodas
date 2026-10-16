@@ -20,6 +20,7 @@ export async function GET(request: NextRequest, { params }: RouteContext<"/[slug
     startsAt: data.event.startsAt,
     stampedAt: data.updatedAt,
     location: data.location ? [data.location.venue, data.location.address].filter(Boolean).join(", ") : undefined,
+    geo: data.location?.coords ?? undefined,
     url: new URL(`/${slug}`, request.nextUrl.origin).toString(),
     reminder: "-P1D",
   });

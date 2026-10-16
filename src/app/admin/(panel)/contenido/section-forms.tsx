@@ -14,6 +14,7 @@ import { DEFAULT_TEXT, type SectionContent, type SectionType } from "@/lib/secti
 
 import { SingleMediaField, type CurrentMedia } from "../single-media-field";
 import { saveSection } from "./actions";
+import { LocationMap } from "./location-map";
 
 type FormProps = {
   type: SectionType;
@@ -342,7 +343,7 @@ function CelebrationForm({ initial }: { initial: SectionContent<"celebration"> }
 }
 
 function LocationForm({ initial }: { initial: SectionContent<"location"> }) {
-  const { values, set } = useFields(initial);
+  const { values, setValues, set } = useFields(initial);
   const { pending, save } = useSectionSave("location");
   return (
     <FormShell onSubmit={() => save(values)} pending={pending}>
@@ -369,6 +370,12 @@ function LocationForm({ initial }: { initial: SectionContent<"location"> }) {
         onChange={set("address")}
         placeholder="123 Main St, Miami, FL"
         max={200}
+      />
+      <LocationMap
+        address={values.address}
+        value={values.lat !== null && values.lng !== null ? { lat: values.lat, lng: values.lng } : null}
+        onChange={(coords) => setValues((v) => ({ ...v, lat: coords?.lat ?? null, lng: coords?.lng ?? null }))}
+        onUseAddress={set("address")}
       />
       <TextField
         id="location-note"

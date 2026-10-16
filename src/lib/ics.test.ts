@@ -40,6 +40,19 @@ describe("buildIcs", () => {
   });
 });
 
+describe("venue position", () => {
+  it("adds the exact spot when the couple pinned it on the map", () => {
+    const ics = buildIcs({
+      uid: "geo@test",
+      summary: "Boda",
+      startsAt: "2026-12-19T20:00:00Z",
+      stampedAt: "2026-01-01T00:00:00Z",
+      geo: { lat: 25.744279, lng: -80.211922 },
+    });
+    expect(ics).toContain("GEO:25.744279;-80.211922");
+  });
+});
+
 describe("text helpers", () => {
   it("escapes special characters", () => {
     expect(icsText("a;b,c\\d\ne")).toBe("a\\;b\\,c\\\\d\\ne");

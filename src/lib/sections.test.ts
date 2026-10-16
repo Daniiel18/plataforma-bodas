@@ -14,6 +14,16 @@ describe("parseContent", () => {
   });
 });
 
+describe("location", () => {
+  it("keeps the pinned spot and treats older content as not pinned", () => {
+    expect(parseContent("location", { venue: "Salón", address: "Calle 1" })).toMatchObject({ lat: null, lng: null });
+    expect(parseContent("location", { venue: "Salón", lat: 25.7, lng: -80.2 })).toMatchObject({
+      lat: 25.7,
+      lng: -80.2,
+    });
+  });
+});
+
 describe("collectTexts", () => {
   it("collects translatable texts, including items inside lists", () => {
     const content = {

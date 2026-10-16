@@ -50,18 +50,19 @@ type Props = {
 };
 
 const FIXED: SectionType[] = ["intro", "music"];
-/** Sections whose content is managed on their own page: here they are only ordered, hidden and previewed. */
+/**
+ * Sections managed on their own page (photos, Zelle, song): here they are only
+ * ordered and hidden, without a preview.
+ */
 const MANAGED_ELSEWHERE: SectionType[] = ["gallery", "gifts", "music"];
 
 /** Why a section has no preview yet. */
 const EMPTY_HINT: Partial<Record<SectionType, string>> = {
   parents: "Escribe al menos un nombre para ver esta sección.",
   celebration: "Define la fecha de la boda en Ajustes para ver esta sección.",
-  gallery: "Sube fotos en Galería para ver el carrusel.",
   location: "Escribe el lugar o la dirección para ver esta sección.",
   dress_code: "Escribe la descripción para ver esta sección.",
   program: "Agrega al menos un momento del día para ver esta sección.",
-  gifts: "Agrega tus datos de Zelle en Regalos para ver esta sección.",
 };
 
 export function ContentEditor({ weddingId, sections, cover, hasEventDate, invitation, ctx }: Props) {
@@ -151,7 +152,7 @@ function SectionCard({
       router.refresh();
     });
 
-  const preview = <LivePreview type={section.type} draft={draft} invitation={invitation} ctx={ctx} />;
+  const preview = editable && <LivePreview type={section.type} draft={draft} invitation={invitation} ctx={ctx} />;
 
   return (
     <Card className={cn("gap-0 overflow-hidden py-0", !visible && "opacity-70")}>
@@ -197,7 +198,7 @@ function SectionCard({
       </div>
       {warning && <p className="border-t bg-amber-50 px-4 py-2 text-sm text-amber-900">{warning}</p>}
 
-      {!open && (
+      {!open && editable && (
         // Thumbnail of the section with the chosen template; tapping it opens the editor.
         <div className="relative h-44 overflow-hidden border-t bg-muted/30">
           <div
@@ -217,7 +218,7 @@ function SectionCard({
       )}
 
       {open && (
-        <CardContent className="grid gap-6 border-t py-5 lg:grid-cols-[minmax(0,1fr)_380px]">
+        <CardContent className={cn("grid gap-6 border-t py-5", editable && "lg:grid-cols-[minmax(0,1fr)_380px]")}>
           <div className="grid content-start gap-4">
             {editable ? (
               <SectionForm
@@ -232,10 +233,12 @@ function SectionCard({
             )}
             {section.translations.length > 0 && <TranslationReview type={section.type} rows={section.translations} />}
           </div>
-          <div className="grid content-start gap-2 lg:sticky lg:top-6">
-            <p className="text-xs tracking-wide text-muted-foreground uppercase">Así se verá</p>
-            {preview}
-          </div>
+          {editable && (
+            <div className="grid content-start gap-2 lg:sticky lg:top-6">
+              <p className="text-xs tracking-wide text-muted-foreground uppercase">Así se verá</p>
+              {preview}
+            </div>
+          )}
         </CardContent>
       )}
     </Card>
@@ -273,21 +276,6 @@ function LivePreview({
           subtitle={bilingual(c.subtitle, "subtitle", {})}
           button={bilingual(c.button, "button", {}, DEFAULT_TEXT.intro.button)!}
         />
-      </SectionPreview>
-    );
-  }
-
-  if (type === "music") {
-    return (
-      <SectionPreview data={invitation} className={frame}>
-        <div className="grid justify-items-center gap-3 px-6 py-10 text-center">
-          <span className="inv-button" aria-hidden>
-            ♪
-          </span>
-          <p className="text-sm text-[var(--inv-ink-soft)]">
-            {invitation.music ? "La música suena de fondo en toda la invitación." : "Aún no has subido una canción."}
-          </p>
-        </div>
       </SectionPreview>
     );
   }

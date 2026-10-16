@@ -6,6 +6,8 @@ export type IcsEvent = {
   startsAt: string;
   stampedAt: string;
   location?: string;
+  /** Exact venue position (iCalendar GEO). */
+  geo?: { lat: number; lng: number };
   url?: string;
   /** Reminder before the event (iCalendar duration, e.g. "-P1D"). */
   reminder?: string;
@@ -50,6 +52,7 @@ export function buildIcs(event: IcsEvent) {
     `DTSTART:${icsDate(event.startsAt)}`,
     `SUMMARY:${icsText(event.summary)}`,
     event.location && `LOCATION:${icsText(event.location)}`,
+    event.geo && `GEO:${event.geo.lat.toFixed(6)};${event.geo.lng.toFixed(6)}`,
     event.url && `DESCRIPTION:${icsText(event.url)}`,
     event.url && `URL:${event.url}`,
     ...(event.reminder

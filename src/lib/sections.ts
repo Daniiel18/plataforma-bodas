@@ -111,7 +111,15 @@ export const sectionSchemas = {
     style: z.enum(GALLERY_STYLES.map((s) => s.value) as [GalleryStyle, ...GalleryStyle[]]).default("coverflow"),
     autoplay: z.boolean().default(true),
   }),
-  location: z.object({ title: text(120), venue: text(120), address: text(200), note: text(200) }),
+  location: z.object({
+    title: text(120),
+    venue: text(120),
+    address: text(200),
+    note: text(200),
+    /** Exact spot chosen on the map; when empty the address is used. */
+    lat: z.number().min(-90).max(90).nullable().default(null),
+    lng: z.number().min(-180).max(180).nullable().default(null),
+  }),
   dress_code: z.object({ title: text(120), description: text(400) }),
   program: z.object({
     title: text(120),

@@ -189,6 +189,8 @@ export function GallerySection({ section }: { section: Of<"gallery"> }) {
 
 export function LocationSection({ section }: { section: Of<"location"> }) {
   const query = [section.venue, section.address].filter(Boolean).join(", ");
+  // The exact spot from the map, when set, is more precise than the address.
+  const mapQuery = section.coords ? `${section.coords.lat},${section.coords.lng}` : query;
   return (
     <Section className="text-center">
       <Heading>
@@ -204,14 +206,14 @@ export function LocationSection({ section }: { section: Of<"location"> }) {
       <div className="mt-6 overflow-hidden rounded-2xl shadow-[var(--inv-shadow)] ring-1 ring-[var(--inv-line)]">
         <iframe
           title={query}
-          src={`https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`}
+          src={`https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&z=16&output=embed`}
           className="h-64 w-full grayscale-[35%] sepia-[15%]"
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
         />
       </div>
       <div className="mt-6">
-        <DirectionsButton query={query} />
+        <DirectionsButton query={query} coords={section.coords} venue={section.venue} />
       </div>
     </Section>
   );

@@ -3,21 +3,27 @@
 import { NavigationIcon } from "lucide-react";
 import { useRef } from "react";
 
+import type { Coords } from "@/lib/section-view";
+
 import { T } from "./lang";
 import { useDevice } from "./use-device";
 
 /**
  * Single "Get directions" button. On Android the system asks which app to use
  * (Google Maps, Waze…). iPhone has no such chooser, so we show our own with
- * Apple Maps, Google Maps and Waze. Computers open Google Maps directly.
+ * Apple Maps, Google Maps and Waze. Computers open Google Maps directly. When
+ * the couple pinned the venue on the map, every app gets the exact spot.
  */
-export function DirectionsButton({ query }: { query: string }) {
+export function DirectionsButton({ query, coords, venue }: { query: string; coords: Coords | null; venue: string }) {
   const device = useDevice();
   const sheet = useRef<HTMLDialogElement>(null);
-  if (!query) return null;
+  if (!query && !coords) return null;
 
-  const q = encodeURIComponent(query);
+  const point = coords ? `${coords.lat},${coords.lng}` : null;
+  const q = encodeURIComponent(point ?? query);
   const googleMaps = `https://www.google.com/maps/dir/?api=1&destination=${q}`;
+  const waze = point ? `https://waze.com/ul?ll=${q}&navigate=yes` : `https://waze.com/ul?q=${q}&navigate=yes`;
+  const geo = point ? `geo:${point}?q=${point}(${encodeURIComponent(venue || query)})` : `geo:0,0?q=${q}`;
   const label = (
     <>
       <NavigationIcon className="size-4" aria-hidden />
@@ -31,7 +37,7 @@ export function DirectionsButton({ query }: { query: string }) {
     const apps = [
       { label: "Apple Maps", href: `https://maps.apple.com/?daddr=${q}`, newTab: false },
       { label: "Google Maps", href: googleMaps, newTab: true },
-      { label: "Waze", href: `https://waze.com/ul?q=${q}&navigate=yes`, newTab: true },
+      { label: "Waze", href: waze, newTab: true },
     ];
     return (
       <>
@@ -72,7 +78,7 @@ export function DirectionsButton({ query }: { query: string }) {
   return (
     <a
       // geo: makes Android show its map app chooser.
-      href={device === "android" ? `geo:0,0?q=${q}` : googleMaps}
+      href={device === "android" ? geo : googleMaps}
       target={device === "android" ? undefined : "_blank"}
       rel="noopener noreferrer"
       className="inv-button"

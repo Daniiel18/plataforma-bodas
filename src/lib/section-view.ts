@@ -18,6 +18,12 @@ import type { TemplateKey } from "./templates";
 
 export type Photo = MediaImage & { id: string; caption: Bi | null };
 
+export type Coords = { lat: number; lng: number };
+
+/** The exact spot when the couple set one on the map. */
+export const locationCoords = (c: { lat: number | null; lng: number | null }): Coords | null =>
+  c.lat !== null && c.lng !== null ? { lat: c.lat, lng: c.lng } : null;
+
 export type ZelleInfo = {
   holderName: string;
   handle: string;
@@ -32,7 +38,7 @@ export type SectionView =
   | { type: "parents"; title: Bi; intro: Bi | null; families: { title: Bi | null; names: string[] }[] }
   | { type: "celebration"; title: Bi; message: Bi | null }
   | { type: "gallery"; title: Bi; style: GalleryStyle; autoplay: boolean; photos: Photo[] }
-  | { type: "location"; title: Bi; venue: string; address: string; note: Bi | null }
+  | { type: "location"; title: Bi; venue: string; address: string; note: Bi | null; coords: Coords | null }
   | { type: "dress_code"; title: Bi; description: Bi }
   | { type: "program"; title: Bi; items: { time: string; title: Bi }[] }
   | {
@@ -57,7 +63,7 @@ export type InvitationData = {
   event: { startsAt: string; timeZone: string } | null;
   intro: { title: Bi; subtitle: Bi | null; button: Bi } | null;
   music: { url: string; autoplayOnOpen: boolean } | null;
-  location: { venue: string; address: string } | null;
+  location: { venue: string; address: string; coords: Coords | null } | null;
   cover: MediaImage | null;
   sections: SectionView[];
 };
@@ -126,6 +132,7 @@ export function buildSectionView(
         venue: c.venue,
         address: c.address,
         note: bilingual(c.note, "note", tr),
+        coords: locationCoords(c),
       };
     }
     case "dress_code": {
