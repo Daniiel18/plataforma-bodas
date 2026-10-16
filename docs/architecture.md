@@ -26,6 +26,7 @@ flowchart LR
   end
   PUSH[[Web Push services<br/>FCM / APNs / Mozilla]]
   MM[[MyMemory translation API]]
+  OSM[[OpenStreetMap tiles + Nominatim]]
 
   G -->|HTML from CDN| INV
   G -->|submit| RSVP
@@ -36,6 +37,7 @@ flowchart LR
   ADM -->|user session + RLS| DB
   ADM -->|direct upload| ST
   ADM -->|translate on save| MM
+  ADM -->|venue search| OSM
   ADM -->|updateTag| INV
   INV -->|anon key, published only| DB
   CRON --> DB
@@ -122,6 +124,18 @@ While the dashboard is open it also listens to `rsvps` and `wishes` through **Su
 ## Sharing
 
 Publishing the invitation opens a share dialog: the link, a ready-made invitation message in Spanish (English optional) built by [`src/lib/share.ts`](../src/lib/share.ts), and one-tap links for Messages/iMessage (`sms:`), WhatsApp, Messenger, Telegram, Facebook, email and the native share sheet. Link previews use the couple's cover photo.
+
+## Venue location
+
+The location section stores the written venue and address plus an optional exact point (`lat`, `lng`).
+
+- **Picking the point.** The content editor shows a Leaflet map with OpenStreetMap tiles (free, no key). *Search the address* geocodes it with Nominatim; the couple then drags the pin — or taps the map — to the exact entrance, and can adopt the reverse-geocoded address of that point. Both lookups run in Server Actions (`geocode.ts`) that require a dashboard session, send an identifying `User-Agent` as Nominatim's usage policy asks, and only happen on demand.
+- **Using the point.** When it is set, the guest's embedded map, *Get directions* (Google Maps, Apple Maps, Waze or the Android chooser) and the calendar event (`GEO` property) use the coordinates instead of the text, so guests arrive at the right door even when the address is ambiguous. Without a point everything falls back to the written address.
+- **Providers.** Tiles and geocoding are isolated in `location-map.tsx` and `geocode.ts`. If traffic grows past the free OpenStreetMap services' fair-use limits, swap them for a commercial provider there; nothing else changes.
+
+## Content previews
+
+Every section that the guest *sees* (envelope, cover, parents, celebration, venue, dress code, schedule, reply form) has a live preview in the content editor. It renders the real invitation component through the same `buildSectionView` the public page uses, with the draft values and the chosen template. Sections that are managed on their own page — gallery, gifts and music — are only ordered and shown/hidden there, without a preview.
 
 ## Project structure
 

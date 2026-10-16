@@ -38,7 +38,7 @@ erDiagram
     section_type type
     smallint position
     bool is_visible
-    jsonb content "Spanish text + settings"
+    jsonb content "Spanish text + settings (venue: lat/lng)"
     jsonb content_en "path -> {src, en, manual}"
   }
   media {
@@ -79,7 +79,20 @@ erDiagram
 | `wedding_private`, `push_subscriptions` | — | read own / — | full | all |
 | Storage `wedding-media` | public read | — | write own folder | all |
 
-Helpers: `is_wedding_member(id)` (any role) for reads and `is_wedding_editor(id)` (`owner`) for writes. Both are `SECURITY DEFINER` and read `auth.uid()` once per query.
+Each table has **one permissive policy per role and action** (for example *Members read sections* and *Owners insert / update / delete sections*), so Postgres evaluates a single policy per query.
+
+The policies rely on small `SECURITY DEFINER` helpers that live in the **`private` schema**, which the Data API does not expose — they can be used inside policies but never called as RPCs:
+
+| Helper | Meaning |
+| --- | --- |
+| `private.is_wedding_member(id)` | The signed-in account belongs to the wedding (any role) — reads |
+| `private.is_wedding_editor(id)` | The account is an `owner` of the wedding — writes |
+| `private.is_published_wedding(id)` | The wedding is published — public reads |
+| `private.can_manage_storage_object(name)` | The file lives in a folder of a wedding the account owns |
+
+`anon` and `authenticated` have `USAGE` on `private` only to evaluate these helpers; no table there is readable (it also holds `schema_migrations`).
+
+**New tables** must enable RLS, add one policy per action using these helpers, and index every foreign key.
 
 ## Server-only functions
 
@@ -95,6 +108,14 @@ Guests never write to tables directly. The RSVP Server Actions call these functi
 ## Realtime
 
 `rsvps` and `wishes` belong to the `supabase_realtime` publication so the dashboard updates live. `rsvps` uses `REPLICA IDENTITY FULL`, which lets the dashboard see the previous answer in update events (to announce Yes ↔ No changes). Realtime evaluates Row Level Security with each subscriber's token, so a couple only receives their own wedding's changes.
+
+## Indexes
+
+Every foreign key is indexed. `rsvps.name_normalized` and `rsvp_companions.name_normalized` carry trigram (`gin_trgm_ops`) indexes for duplicate detection; Supabase's performance advisor lists them as unused until a wedding has enough guests for the planner to choose them — keep them.
+
+## Advisors
+
+Supabase's security and performance advisors report **no errors and no warnings** apart from *Leaked password protection*, which is only available on the Pro plan (see [Deployment](deployment.md#supabase-settings)). Run them again after every migration: **Advisors → Security / Performance → Rerun linter**.
 
 ## Integrity rules
 
