@@ -35,6 +35,8 @@ export const metadata: Metadata = {
   description:
     "Crea gratis la web de tu boda: invitación con confirmación de asistencia, cuenta regresiva, fotos en 3D, música, mapa y regalos. En español e inglés.",
   applicationName: BRAND,
+  // Google Search Console ownership of the domain (needed for Google sign-in brand verification).
+  verification: { google: "Dm-6L8QBbLLn6qD_Dv6v7vv_ELVBB_l-IHPnSqR4q3s" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
