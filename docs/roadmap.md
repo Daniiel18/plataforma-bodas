@@ -11,7 +11,7 @@
 | 3 | Sign-in with Google or an email code, moving the browser draft to the database, publishing | ✅ Done |
 | 4 | Couple's dashboard: companions mode, public guestbook, "Made with Lazo de Oro" credit, lifecycle jobs (read-only, archive, draft cleanup) | ✅ Done |
 | 5 | Super admin: accounts, weddings, conversion funnel, free-tier usage, errors, audit log, suspensions | ✅ Done |
-| 6 | Excel export of the guest list and a donations button | Next |
+| 6 | Excel export of the guest list and a donations button | ✅ Done |
 
 ## Decisions
 

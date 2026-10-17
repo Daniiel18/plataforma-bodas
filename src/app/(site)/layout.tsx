@@ -59,6 +59,9 @@ export default function SiteLayout({ children }: LayoutProps<"/">) {
             <Link href="/panel" className="text-[var(--site-ink-soft)] hover:text-[var(--site-ink)]">
               <T es="Panel de los novios" en="Couple's dashboard" />
             </Link>
+            <Link href="/donar" className="text-[var(--site-ink-soft)] hover:text-[var(--site-ink)]">
+              <T es="Apóyanos ♡" en="Support us ♡" />
+            </Link>
           </nav>
           <nav className="grid content-start gap-2 text-sm">
             <p className="font-medium">Legal</p>

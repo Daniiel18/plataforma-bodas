@@ -1,6 +1,7 @@
 "use client";
 
-import { BanIcon, RotateCcwIcon } from "lucide-react";
+import { BanIcon, RotateCcwIcon, Trash2Icon } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
@@ -13,9 +14,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-import { reactivateWedding, suspendWedding } from "../../actions";
+import { deleteWedding, reactivateWedding, suspendWedding } from "../../actions";
 
 /** Suspend (with a reason) or reactivate a wedding. */
 export function SuspendControls({ weddingId, suspended }: { weddingId: string; suspended: boolean }) {
@@ -72,6 +74,53 @@ export function SuspendControls({ weddingId, suspended }: { weddingId: string; s
               onClick={() => run(() => suspendWedding(weddingId, reason))}
             >
               Suspender
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+/** Deletes the wedding for good, after typing its link. */
+export function DeleteWedding({ weddingId, slug }: { weddingId: string; slug: string }) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [typed, setTyped] = useState("");
+  const [pending, startTransition] = useTransition();
+
+  const remove = () =>
+    startTransition(async () => {
+      const result = await deleteWedding(weddingId, typed);
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success(result.message);
+      router.push("/admin/bodas");
+    });
+
+  return (
+    <>
+      <Button variant="outline" className="text-destructive" onClick={() => setOpen(true)}>
+        <Trash2Icon /> Eliminar
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Eliminar esta boda para siempre</DialogTitle>
+            <DialogDescription>
+              Se borran la invitación, sus fotos y música, las respuestas, los deseos y el vínculo con su cuenta. No se
+              puede deshacer. Para confirmar, escribe su enlace: <strong>{slug}</strong>
+            </DialogDescription>
+          </DialogHeader>
+          <Input value={typed} onChange={(e) => setTyped(e.target.value)} placeholder={slug} autoComplete="off" />
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setOpen(false)}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" disabled={pending || typed.trim() !== slug} onClick={remove}>
+              {pending ? "Eliminando…" : "Eliminar"}
             </Button>
           </DialogFooter>
         </DialogContent>

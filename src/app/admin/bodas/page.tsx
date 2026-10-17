@@ -3,10 +3,11 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { BlockSkeleton, PageHeader } from "@/app/panel/(panel)/page-header";
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { getPlatformAdmin } from "@/lib/platform-admin";
+import { accountCategories, getPlatformAdmin } from "@/lib/platform-admin";
 
 import { formatBytes, formatDate, StatusBadge } from "../ui";
 
@@ -43,6 +44,7 @@ async function WeddingList({ searchParams }: { searchParams: PageProps<"/admin/b
   const params = await searchParams;
   const q = typeof params.q === "string" ? params.q.trim() : "";
   const status = typeof params.estado === "string" ? params.estado : "";
+  const kind = typeof params.tipo === "string" ? params.tipo : "";
 
   const [{ data: weddings }, { data: members }, users, { data: rsvps }, { data: storage }] = await Promise.all([
     db
@@ -54,6 +56,7 @@ async function WeddingList({ searchParams }: { searchParams: PageProps<"/admin/b
     db.from("rsvps").select("wedding_id, attending").eq("is_archived", false),
     db.rpc("storage_by_wedding"),
   ]);
+  const categories = await accountCategories(db);
 
   const emails = new Map((users.data?.users ?? []).map((u) => [u.id, u.email ?? ""]));
   const owner = new Map((members ?? []).map((m) => [m.wedding_id, emails.get(m.user_id) ?? ""]));
@@ -67,6 +70,7 @@ async function WeddingList({ searchParams }: { searchParams: PageProps<"/admin/b
   const rows = (weddings ?? []).filter(
     (w) =>
       (!status || w.status === status) &&
+      (!kind || (kind === "reales") === categories.isRealWedding(w)) &&
       (!needle ||
         normalize(`${w.slug} ${w.partner1_name} ${w.partner2_name} ${owner.get(w.id) ?? ""}`).includes(needle)),
   );
@@ -86,6 +90,16 @@ async function WeddingList({ searchParams }: { searchParams: PageProps<"/admin/b
               {s.label}
             </option>
           ))}
+        </select>
+        <select
+          name="tipo"
+          defaultValue={kind}
+          className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
+          aria-label="Tipo"
+        >
+          <option value="">Reales y de prueba</option>
+          <option value="reales">Solo reales</option>
+          <option value="prueba">Solo de prueba</option>
         </select>
         <button type="submit" className="h-9 rounded-md bg-primary px-4 text-sm text-primary-foreground">
           Filtrar
@@ -111,7 +125,14 @@ async function WeddingList({ searchParams }: { searchParams: PageProps<"/admin/b
                   <Link href={`/admin/bodas/${w.id}`} className="font-medium hover:underline">
                     {w.partner1_name.split(" ")[0]} & {w.partner2_name.split(" ")[0]}
                   </Link>
-                  <p className="text-xs text-muted-foreground">/{w.slug}</p>
+                  <p className="text-xs text-muted-foreground">
+                    /{w.slug}{" "}
+                    {!categories.isRealWedding(w) && (
+                      <Badge variant="secondary" className="ml-1">
+                        {w.slug === "demo" ? "Demo" : owner.get(w.id) ? "Prueba" : "Sin cuenta"}
+                      </Badge>
+                    )}
+                  </p>
                 </TableCell>
                 <TableCell>
                   <StatusBadge status={w.status} published={w.is_published} />

@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { BlockSkeleton, CardsSkeleton, PageHeader } from "@/app/panel/(panel)/page-header";
 import { PushNotificationsCard } from "@/components/push-notifications-card";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getPlatformAdmin } from "@/lib/platform-admin";
+import { accountCategories, getPlatformAdmin } from "@/lib/platform-admin";
 
 import { removeAdminPush, saveAdminPush, testAdminPush } from "./actions";
 import { BarRow, Stat } from "./ui";
@@ -33,7 +33,7 @@ export default function AdminHome() {
     <>
       <PageHeader
         title="Resumen"
-        description={`La plataforma de un vistazo y el embudo de los últimos ${DAYS} días.`}
+        description={`La plataforma de un vistazo (sin cuentas de prueba ni de administración) y el embudo de los últimos ${DAYS} días.`}
       />
       <Suspense
         fallback={
@@ -61,12 +61,12 @@ async function Overview() {
   const { db, userId } = await getPlatformAdmin();
   const since = periodStart();
 
-  const [{ data: weddings }, users, { count: replies }, { count: wishes }, { data: events }, { count: devices }] =
+  const [{ data: weddings }, users, { data: replyRows }, { data: wishRows }, { data: events }, { count: devices }] =
     await Promise.all([
-      db.from("weddings").select("status, is_published, created_at, published_at").neq("slug", "demo"),
+      db.from("weddings").select("id, slug, status, is_published, created_at, published_at"),
       db.auth.admin.listUsers({ perPage: 1000 }),
-      db.from("rsvps").select("id", { count: "exact", head: true }),
-      db.from("wishes").select("id", { count: "exact", head: true }),
+      db.from("rsvps").select("wedding_id"),
+      db.from("wishes").select("wedding_id"),
       db
         .from("analytics_events")
         .select("name, anonymous_id, occurred_at, country, device")
@@ -76,8 +76,13 @@ async function Overview() {
       db.from("platform_push_subscriptions").select("id", { count: "exact", head: true }).eq("user_id", userId),
     ]);
 
-  const list = weddings ?? [];
-  const accounts = users.data?.users ?? [];
+  // Real numbers only: test and admin accounts, their weddings and the demo stay out.
+  const categories = await accountCategories(db);
+  const list = (weddings ?? []).filter(categories.isRealWedding);
+  const real = new Set(list.map((w) => w.id));
+  const accounts = (users.data?.users ?? []).filter((u) => categories.isRealAccount(u.id));
+  const replies = (replyRows ?? []).filter((r) => real.has(r.wedding_id)).length;
+  const wishes = (wishRows ?? []).filter((r) => real.has(r.wedding_id)).length;
   const recent = (date: string | null | undefined) => Boolean(date && new Date(date) >= since);
 
   // Funnel: unique devices that reached each step.
@@ -126,8 +131,8 @@ async function Overview() {
           value={list.filter((w) => w.is_published && w.status !== "suspended").length}
           hint={`${list.length} creadas · ${list.filter((w) => w.status === "draft").length} borradores`}
         />
-        <Stat label="Confirmaciones" value={replies ?? 0} hint="de todas las bodas" />
-        <Stat label="Deseos" value={wishes ?? 0} />
+        <Stat label="Confirmaciones" value={replies} hint="de las bodas reales" />
+        <Stat label="Deseos" value={wishes} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">

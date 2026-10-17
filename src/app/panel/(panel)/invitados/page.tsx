@@ -59,8 +59,13 @@ export default function GuestsPage({ searchParams }: PageProps<"/panel/invitados
               <AddRsvpButton />
             </Suspense>
             <Button variant="outline" asChild>
+              <a href="/panel/invitados/excel" download>
+                <DownloadIcon /> Descargar Excel
+              </a>
+            </Button>
+            <Button variant="ghost" asChild>
               <a href="/panel/invitados/exportar" download>
-                <DownloadIcon /> Exportar CSV
+                CSV
               </a>
             </Button>
           </>

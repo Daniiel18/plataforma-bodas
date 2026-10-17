@@ -13,3 +13,6 @@ export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim() || "l
  * the "Sign in with Google" button runs on our own domain with it.
  */
 export const GOOGLE_CLIENT_ID = "329731616598-q7fgv51c9f7hjnqdjahfsd8rnteq3bkf.apps.googleusercontent.com";
+
+/** Where voluntary donations go (a PayPal.me link); nothing about donating shows until it is set. */
+export const DONATE_URL = process.env.NEXT_PUBLIC_DONATE_URL?.trim() || null;

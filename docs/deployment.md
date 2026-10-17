@@ -55,6 +55,7 @@ In [Google Cloud](https://console.cloud.google.com) → **Google Auth Platform**
 | `SUPABASE_SECRET_KEY` | server | Secret key for RSVP functions and push delivery |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | public / server | Web Push keys — generate with `npx web-push generate-vapid-keys` |
 | `VAPID_SUBJECT` | server | Contact URL for push services (your production URL) |
+| `NEXT_PUBLIC_DONATE_URL` | public, optional | PayPal.me link for voluntary donations; without it the donate button stays hidden |
 | `NEXT_PUBLIC_SITE_URL` | public, optional | Canonical URL for links, sitemap and share messages (defaults to `https://lazodeoro.vercel.app`) |
 | `IP_HASH_SALT` | server | Random string used to hash IPs for rate limiting |
 | `CRON_SECRET` | server | Random string; Vercel sends it to `/api/keep-alive` |

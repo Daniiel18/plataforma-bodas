@@ -424,6 +424,12 @@ function Published({ slug, share, failedUploads }: { slug: string; share: ShareD
         </div>
       </div>
       <ShareInvitationDialog slug={slug} details={share} open={sharing} onOpenChange={setSharing} justPublished />
+      <p className="text-center text-xs text-[var(--site-ink-soft)]">
+        Lazo de Oro es gratis.{" "}
+        <Link href="/donar" className="underline underline-offset-4">
+          Si les gustó, pueden apoyarnos ♡
+        </Link>
+      </p>
     </Card>
   );
 }

@@ -27,7 +27,15 @@ export const getAdminContext = cache(async () => {
     .eq("user_id", claims.sub)
     .limit(1)
     .maybeSingle();
-  if (!membership) redirect("/panel/sin-acceso");
+  if (!membership) {
+    // Platform admins have no wedding: their home is the back office.
+    const { data: admin } = await supabase
+      .from("platform_admins")
+      .select("user_id")
+      .eq("user_id", claims.sub)
+      .maybeSingle();
+    redirect(admin ? "/admin" : "/panel/sin-acceso");
+  }
 
   const { data: wedding, error } = await supabase
     .from("weddings")

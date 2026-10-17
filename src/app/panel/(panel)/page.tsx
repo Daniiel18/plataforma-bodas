@@ -11,6 +11,7 @@ import { daysUntil, displayZone, formatDateTime, formatShortDateTime, isPast } f
 import { shareDetails } from "@/lib/share";
 import type { DuplicateMatch, Rsvp, WeddingStats } from "@/lib/types";
 
+import { DonateCard } from "./donate-card";
 import { BlockSkeleton, CardsSkeleton, PageHeader } from "./page-header";
 import { ShareInvitationButton } from "@/components/share-invitation";
 
@@ -113,6 +114,7 @@ async function Dashboard() {
           </div>
         </div>
       )}
+      {wedding.is_published && <DonateCard />}
       <p className="-mt-4 mb-6 text-sm text-muted-foreground">
         {wedding.event_starts_at
           ? `Boda el ${formatDateTime(wedding.event_starts_at, zone)}`

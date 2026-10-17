@@ -3,6 +3,10 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { Logo } from "@/components/brand/logo";
+import { LogOutIcon } from "lucide-react";
+
+import { signOut } from "@/app/panel/actions";
+import { Button } from "@/components/ui/button";
 import { getPlatformAdmin } from "@/lib/platform-admin";
 
 import { AdminNav } from "./admin-nav";
@@ -32,7 +36,10 @@ export default function AdminLayout({ children }: LayoutProps<"/admin">) {
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-10 grid gap-2 border-b bg-background/95 px-4 py-3 backdrop-blur md:hidden">
-          <Logo markClassName="size-6" />
+          <div className="flex items-center justify-between">
+            <Logo markClassName="size-6" />
+            <SignOutButton compact />
+          </div>
           <Suspense>
             <AdminNav horizontal />
           </Suspense>
@@ -46,8 +53,26 @@ export default function AdminLayout({ children }: LayoutProps<"/admin">) {
 async function AdminAccount() {
   const { email } = await getPlatformAdmin();
   return (
-    <p className="truncate px-3 text-xs text-muted-foreground" title={email}>
-      {email}
-    </p>
+    <div className="grid gap-2">
+      <p className="truncate px-3 text-xs text-muted-foreground" title={email}>
+        {email}
+      </p>
+      <SignOutButton />
+    </div>
+  );
+}
+
+function SignOutButton({ compact = false }: { compact?: boolean }) {
+  return (
+    <form action={signOut}>
+      <Button
+        type="submit"
+        variant="ghost"
+        size={compact ? "sm" : "default"}
+        className={compact ? "" : "w-full justify-start gap-3"}
+      >
+        <LogOutIcon /> Salir
+      </Button>
+    </form>
   );
 }

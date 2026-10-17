@@ -6,7 +6,8 @@ import { z } from "zod";
 import { invitationTag } from "@/lib/invitation";
 import { lifecycleCutoffs } from "@/lib/lifecycle";
 import { notifyCouple, notifyPlatform } from "@/lib/notify";
-import { auditPlatform, getPlatformAdmin } from "@/lib/platform-admin";
+import { MEDIA_BUCKET } from "@/lib/media";
+import { auditPlatform, getPlatformAdmin, PROTECTED_SLUGS } from "@/lib/platform-admin";
 import type { ActionResult } from "@/lib/types";
 
 const reasonSchema = z.string().trim().min(3, "Escribe el motivo").max(300, "Máximo 300 caracteres");
@@ -23,6 +24,7 @@ export async function suspendWedding(weddingId: string, reason: string): Promise
     .update({ status: "suspended", suspension_reason: why.data })
     .eq("id", weddingId)
     .neq("status", "suspended")
+    .not("slug", "in", `(${[...PROTECTED_SLUGS].join(",")})`)
     .select("slug, status")
     .single();
   if (error || !wedding) return { ok: false, error: "No se pudo suspender" };
@@ -102,4 +104,50 @@ export async function testAdminPush(): Promise<ActionResult> {
   return delivered
     ? { ok: true, message: `Aviso de prueba enviado a ${delivered} dispositivo(s)` }
     : { ok: false, error: "No hay dispositivos activos." };
+}
+
+/** Deletes a wedding for good: its files, answers, wishes and the owners' link to it. */
+export async function deleteWedding(weddingId: string, confirmSlug: string): Promise<ActionResult> {
+  const { db, userId } = await getPlatformAdmin();
+  if (!z.uuid().safeParse(weddingId).success) return { ok: false, error: "Boda no válida" };
+
+  const { data: wedding } = await db.from("weddings").select("slug").eq("id", weddingId).maybeSingle();
+  if (!wedding) return { ok: false, error: "Esa boda ya no existe" };
+  if (PROTECTED_SLUGS.has(wedding.slug))
+    return { ok: false, error: "La demo de la página principal no se puede borrar" };
+  if (confirmSlug.trim() !== wedding.slug) return { ok: false, error: "Escribe el enlace exacto para confirmar" };
+
+  // Storage first: the files live in a folder named after the wedding.
+  const paths: string[] = [];
+  const { data: folders } = await db.storage.from(MEDIA_BUCKET).list(weddingId, { limit: 100 });
+  for (const folder of folders ?? []) {
+    const { data: files } = await db.storage.from(MEDIA_BUCKET).list(`${weddingId}/${folder.name}`, { limit: 1000 });
+    paths.push(...(files ?? []).map((f) => `${weddingId}/${folder.name}/${f.name}`));
+  }
+  if (paths.length) {
+    const { error: storageError } = await db.storage.from(MEDIA_BUCKET).remove(paths);
+    if (storageError) return { ok: false, error: "No se pudieron borrar sus archivos" };
+  }
+
+  const { error } = await db.from("weddings").delete().eq("id", weddingId);
+  if (error) return { ok: false, error: "No se pudo borrar la boda" };
+
+  await auditPlatform(userId, "wedding.deleted", "wedding", weddingId, { slug: wedding.slug, files: paths.length });
+  revalidateTag(invitationTag(wedding.slug), "max");
+  revalidatePath("/admin", "layout");
+  return { ok: true, message: `Boda /${wedding.slug} eliminada` };
+}
+
+/** Marks an account as a test one (left out of the real numbers) or back as real. */
+export async function setAccountTest(accountId: string, isTest: boolean): Promise<ActionResult> {
+  const { db, userId } = await getPlatformAdmin();
+  if (!z.uuid().safeParse(accountId).success) return { ok: false, error: "Cuenta no válida" };
+  const { data: admin } = await db.from("platform_admins").select("user_id").eq("user_id", accountId).maybeSingle();
+  if (admin) return { ok: false, error: "Las cuentas de administración ya están fuera de los números" };
+
+  const { error } = await db.from("profiles").update({ is_test: isTest }).eq("id", accountId);
+  if (error) return { ok: false, error: "No se pudo actualizar" };
+  await auditPlatform(userId, isTest ? "account.marked_test" : "account.marked_real", "account", accountId);
+  revalidatePath("/admin", "layout");
+  return { ok: true, message: isTest ? "Cuenta marcada como de prueba" : "Cuenta marcada como real" };
 }

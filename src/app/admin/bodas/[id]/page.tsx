@@ -10,12 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { lifecycleDates } from "@/lib/lifecycle";
 import { findTrack } from "@/lib/music-library";
-import { getPlatformAdmin } from "@/lib/platform-admin";
+import { getPlatformAdmin, PROTECTED_SLUGS } from "@/lib/platform-admin";
 import { parseContent } from "@/lib/sections";
 import { SITE_URL } from "@/lib/site";
 
 import { formatBytes, formatDate, Stat, StatusBadge } from "../../ui";
-import { SuspendControls } from "./suspend-controls";
+import { DeleteWedding, SuspendControls } from "./suspend-controls";
 
 export const metadata: Metadata = { title: "Boda" };
 
@@ -38,6 +38,7 @@ const ACTIONS: Record<string, string> = {
   "wedding.published": "Publicada por primera vez",
   "wedding.suspended": "Suspendida",
   "wedding.reactivated": "Reactivada",
+  "wedding.deleted": "Eliminada",
 };
 
 async function WeddingDetail({ params }: { params: PageProps<"/admin/bodas/[id]">["params"] }) {
@@ -97,7 +98,16 @@ async function WeddingDetail({ params }: { params: PageProps<"/admin/bodas/[id]"
               </a>
             </Button>
           )}
-          {w.status !== "archived" && <SuspendControls weddingId={w.id} suspended={w.status === "suspended"} />}
+          {PROTECTED_SLUGS.has(w.slug) ? (
+            <span className="self-center text-xs text-muted-foreground">
+              La demo de la página principal está protegida.
+            </span>
+          ) : (
+            <>
+              {w.status !== "archived" && <SuspendControls weddingId={w.id} suspended={w.status === "suspended"} />}
+              <DeleteWedding weddingId={w.id} slug={w.slug} />
+            </>
+          )}
         </div>
       </div>
 

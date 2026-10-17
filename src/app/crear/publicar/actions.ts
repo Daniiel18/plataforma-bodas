@@ -76,6 +76,18 @@ export async function prepareWedding(input: unknown, mode: "new" | "replace"): P
   const draft = parsed.data;
   const admin = createAdminClient();
 
+  const { data: platformAdmin } = await admin
+    .from("platform_admins")
+    .select("user_id")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (platformAdmin) {
+    return {
+      status: "error",
+      error: "Esta es una cuenta de administración y no puede tener bodas. Entra con la cuenta de la pareja.",
+    };
+  }
+
   const { data: owned } = await admin
     .from("wedding_members")
     .select("wedding_id, weddings(slug, partner1_name, partner2_name, status, is_published, theme_overrides)")

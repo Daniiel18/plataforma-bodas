@@ -6,16 +6,20 @@ import { BlockSkeleton, PageHeader } from "@/app/panel/(panel)/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { getPlatformAdmin } from "@/lib/platform-admin";
+import { accountCategories, getPlatformAdmin } from "@/lib/platform-admin";
 
 import { formatDate } from "../ui";
+import { TestToggle } from "./test-toggle";
 
 export const metadata: Metadata = { title: "Cuentas" };
 
 export default function AccountsPage() {
   return (
     <>
-      <PageHeader title="Cuentas" description="Quién se registró, cómo entra y qué boda maneja." />
+      <PageHeader
+        title="Cuentas"
+        description="Quién se registró, cómo entra y qué boda maneja. Las de prueba y administración no cuentan en los números."
+      />
       <Suspense fallback={<BlockSkeleton className="h-96" />}>
         <AccountList />
       </Suspense>
@@ -27,15 +31,15 @@ const PROVIDER: Record<string, string> = { google: "Google", email: "Correo" };
 
 async function AccountList() {
   const { db } = await getPlatformAdmin();
-  const [users, { data: members }, { data: weddings }, { data: admins }] = await Promise.all([
+  const [users, { data: members }, { data: weddings }, categories] = await Promise.all([
     db.auth.admin.listUsers({ perPage: 1000 }),
     db.from("wedding_members").select("user_id, wedding_id, role"),
     db.from("weddings").select("id, slug"),
-    db.from("platform_admins").select("user_id"),
+    accountCategories(db),
   ]);
 
   const slugs = new Map((weddings ?? []).map((w) => [w.id, w.slug]));
-  const isAdmin = new Set((admins ?? []).map((a) => a.user_id));
+  const isAdmin = categories.adminIds;
   const accounts = [...(users.data?.users ?? [])].sort((a, b) => b.created_at.localeCompare(a.created_at));
 
   return (
@@ -57,7 +61,14 @@ async function AccountList() {
               <TableRow key={u.id}>
                 <TableCell className="max-w-56">
                   <p className="truncate font-medium">{u.email}</p>
-                  {isAdmin.has(u.id) && <Badge variant="outline">Administración</Badge>}
+                  {isAdmin.has(u.id) ? (
+                    <Badge>Administración</Badge>
+                  ) : categories.testIds.has(u.id) ? (
+                    <Badge variant="secondary">Prueba</Badge>
+                  ) : (
+                    <Badge variant="outline">Real</Badge>
+                  )}
+                  {!isAdmin.has(u.id) && <TestToggle accountId={u.id} isTest={categories.testIds.has(u.id)} />}
                 </TableCell>
                 <TableCell className="hidden text-sm sm:table-cell">
                   {((u.app_metadata?.providers as string[] | undefined) ?? []).map((p) => PROVIDER[p] ?? p).join(", ")}

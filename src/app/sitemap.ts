@@ -17,5 +17,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...TEMPLATES.map((template) => page(`/demo/${template.key}`, 0.7)),
     page("/privacidad", 0.2),
     page("/terminos", 0.2),
+    page("/donar", 0.3),
   ];
 }

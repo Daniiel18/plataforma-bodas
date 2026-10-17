@@ -61,3 +61,32 @@ export async function auditPlatform(
     details,
   });
 }
+
+/** The public demo powers the landing page: it can't be suspended or deleted. */
+export const PROTECTED_SLUGS = new Set(["demo"]);
+
+/**
+ * Which accounts don't count in the real numbers: platform admins and accounts
+ * marked as test. A wedding is a test one when it is the demo, has no owner, or
+ * every owner is a test or admin account.
+ */
+export async function accountCategories(db: ReturnType<typeof createAdminClient>) {
+  const [{ data: admins }, { data: tests }, { data: owners }] = await Promise.all([
+    db.from("platform_admins").select("user_id"),
+    db.from("profiles").select("id").eq("is_test", true),
+    db.from("wedding_members").select("wedding_id, user_id").eq("role", "owner"),
+  ]);
+  const adminIds = new Set((admins ?? []).map((a) => a.user_id as string));
+  const testIds = new Set((tests ?? []).map((t) => t.id as string));
+  const realOwners = new Map<string, boolean>();
+  for (const o of owners ?? []) {
+    const real = !adminIds.has(o.user_id) && !testIds.has(o.user_id);
+    realOwners.set(o.wedding_id, (realOwners.get(o.wedding_id) ?? false) || real);
+  }
+  return {
+    adminIds,
+    testIds,
+    isRealAccount: (id: string) => !adminIds.has(id) && !testIds.has(id),
+    isRealWedding: (w: { id: string; slug: string }) => !PROTECTED_SLUGS.has(w.slug) && realOwners.get(w.id) === true,
+  };
+}
