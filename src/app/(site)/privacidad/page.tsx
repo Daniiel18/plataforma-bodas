@@ -57,37 +57,8 @@ const SECTIONS: LegalSection[] = [
     title: { es: "Quién puede verlos", en: "Who can see it" },
     paragraphs: [
       {
-        es: "La web de la boda la ve quien tenga el enlace; no la mostramos en buscadores. Las respuestas y los deseos solo los ven los novios, salvo que activen el libro de deseos público, en el que ellos pueden ocultar cualquier mensaje.",
-        en: "Anyone with the link can see the wedding website; we keep it out of search engines. Only the couple sees the replies and wishes, unless they turn on the public guestbook, where they can hide any message.",
-      },
-    ],
-  },
-  {
-    title: { es: "Proveedores", en: "Service providers" },
-    paragraphs: [
-      {
-        es: "Usamos estos servicios para funcionar; algunos están en Estados Unidos:",
-        en: "We rely on these services to operate; some are located in the United States:",
-      },
-    ],
-    list: [
-      {
-        es: "Supabase: base de datos, cuentas y archivos.",
-        en: "Supabase: database, accounts and files.",
-      },
-      { es: "Vercel: alojamiento del sitio.", en: "Vercel: website hosting." },
-      { es: "Google: inicio de sesión y el mapa de la invitación.", en: "Google: sign-in and the invitation's map." },
-      {
-        es: "OpenStreetMap (Nominatim): búsqueda de la dirección del lugar.",
-        en: "OpenStreetMap (Nominatim): venue address search.",
-      },
-      {
-        es: "MyMemory: traducción automática de los textos al inglés.",
-        en: "MyMemory: automatic translation of texts into English.",
-      },
-      {
-        es: "Servicios de notificaciones del navegador (Apple, Google, Mozilla), si los novios las activan.",
-        en: "Browser notification services (Apple, Google, Mozilla), if the couple turns them on.",
+        es: "La web de la boda la ve quien tenga el enlace; no la mostramos en buscadores. Las respuestas y los deseos solo los ven los novios, salvo los deseos que ellos aprueben, uno por uno, para mostrarlos en la invitación con el primer nombre de quien los escribió.",
+        en: "Anyone with the link can see the wedding website; we keep it out of search engines. Only the couple sees the replies and wishes, except the wishes they approve, one by one, to show on the invitation with the writer's first name.",
       },
     ],
   },
