@@ -43,8 +43,8 @@ In [Google Cloud](https://console.cloud.google.com) → **Google Auth Platform**
 
 1. **Branding:** app name *Lazo de Oro*, the 120×120 logo, support email, home page, privacy policy (`/privacidad`) and terms (`/terminos`) on the production domain, which also goes under *Authorized domains*.
 2. **Audience:** External and *In production*. Only the basic scopes (`openid`, `email`, `profile`) are used, so no app review is needed.
-3. **Clients → Web application:** add every production domain and `http://localhost:3000` to *Authorized JavaScript origins* (the button only works on these origins), and `https://<project-ref>.supabase.co/auth/v1/callback` to *Authorized redirect URIs* (fallback redirect flow). Paste the client ID and secret into Supabase's Google provider; the client ID is public and also lives in `src/lib/site.ts`.
-4. **Brand verification:** verify the production domain in Google Search Console and submit the branding in the Verification Center, so the consent screen shows the logo.
+3. **Clients → Web application:** add every production domain and `http://localhost:3000` to *Authorized JavaScript origins* (the button only works on these origins). No redirect URI is needed, so the Supabase domain stays out of *Authorized domains*. Paste the client ID and secret into Supabase's Google provider; the client ID is public and also lives in `src/lib/site.ts`.
+4. **Brand verification:** verify every authorized domain in Google Search Console (the site already serves the `google-site-verification` tag from `src/app/layout.tsx`) and press *Verify branding*. Until Google approves it, the consent screen shows the domain instead of the app name and logo.
 
 ## 2. Environment variables
 
