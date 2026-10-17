@@ -20,7 +20,13 @@ const store = () => (db ??= createStore("lazodoro", "media"));
 export async function saveLocalMedia(file: File, kind: MediaKind): Promise<LocalMedia> {
   const prepared = kind === "audio" ? await prepareAudio(file) : await prepareImage(file, kind);
   const id = crypto.randomUUID();
-  await set(id, prepared.blob, store());
+  try {
+    await set(id, prepared.blob, store());
+  } catch {
+    throw new Error(
+      "Tu navegador no deja guardar fotos en este dispositivo. Si estás en modo privado, abre la página en una ventana normal.",
+    );
+  }
   return { id, mime: prepared.mime, width: prepared.width, height: prepared.height };
 }
 

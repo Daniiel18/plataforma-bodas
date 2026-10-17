@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+
 import { cn } from "@/lib/utils";
 
 /** Size of a typical phone screen (iPhone 14/15), in CSS pixels. */
@@ -20,6 +24,16 @@ export function PhoneFrame({
   className?: string;
 }) {
   const scale = width / PHONE.width;
+  const frame = useRef<HTMLIFrameElement>(null);
+
+  // The page inside plays music: unload it when this page is left (Next.js keeps
+  // visited pages alive but hidden) and load it again on return.
+  useEffect(() => {
+    const iframe = frame.current;
+    if (iframe && iframe.getAttribute("src") !== src) iframe.setAttribute("src", src);
+    return () => iframe?.setAttribute("src", "about:blank");
+  }, [src]);
+
   return (
     <div
       className={cn(
@@ -34,6 +48,7 @@ export function PhoneFrame({
         style={{ width, height: Math.round(PHONE.height * scale) }}
       >
         <iframe
+          ref={frame}
           src={src}
           title={title}
           loading="lazy"

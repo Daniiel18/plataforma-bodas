@@ -152,7 +152,7 @@ function PublishFlow() {
         />
       );
     case "publishing":
-      return <Progress title="Traduciendo al inglés y publicando…" />;
+      return <Progress title="Publicando su invitación…" />;
     case "empty":
       return (
         <Card>

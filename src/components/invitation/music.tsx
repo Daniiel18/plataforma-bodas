@@ -38,6 +38,14 @@ export function MusicProvider({ src, children }: { src: string | null; children:
     else audio.pause();
   };
 
+  // Leaving the invitation stops the song. Next.js keeps visited pages alive
+  // but hidden (for instant back navigation), and a hidden page's effects are
+  // cleaned up, so this also covers navigating to another page of the site.
+  useEffect(() => {
+    const audio = audioRef.current;
+    return () => audio?.pause();
+  }, [src]);
+
   // Pauses when the guest switches apps or tabs, and resumes on return.
   useEffect(() => {
     const onVisibility = () => {

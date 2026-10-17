@@ -27,32 +27,57 @@ function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality?: number)
   return new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, type, quality));
 }
 
-async function decode(file: File) {
+type Decoded = { image: CanvasImageSource; width: number; height: number; release: () => void };
+
+/**
+ * Reads the photo. createImageBitmap is fast but some phones fail on very
+ * large photos (48 MP) or HEIC; an <img> decodes whatever the browser can
+ * show, so it is the fallback.
+ */
+async function decode(file: File): Promise<Decoded> {
+  for (const options of [{ imageOrientation: "from-image" } as ImageBitmapOptions, undefined]) {
+    try {
+      const bitmap = await createImageBitmap(file, options);
+      return { image: bitmap, width: bitmap.width, height: bitmap.height, release: () => bitmap.close() };
+    } catch {
+      // Try the next way.
+    }
+  }
+  const url = URL.createObjectURL(file);
   try {
-    return await createImageBitmap(file, { imageOrientation: "from-image" });
-  } catch {
-    return await createImageBitmap(file);
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    return { image: img, width: img.naturalWidth, height: img.naturalHeight, release: () => URL.revokeObjectURL(url) };
+  } catch (error) {
+    URL.revokeObjectURL(url);
+    throw error;
   }
 }
 
+const IMAGE_NAME = /\.(jpe?g|png|webp|heic|heif|avif|gif)$/i;
+
 /** Resizes and compresses the photo in the browser before uploading it. */
 export async function prepareImage(file: File, kind: Exclude<MediaKind, "audio">): Promise<Prepared> {
-  if (!file.type.startsWith("image/")) throw new Error("Elige un archivo de imagen (JPG, PNG o WebP).");
-  let bitmap: ImageBitmap;
+  // Some phones hand over HEIC photos without a type: trust the extension then.
+  if (!file.type.startsWith("image/") && !IMAGE_NAME.test(file.name)) {
+    throw new Error("Elige un archivo de imagen (JPG, PNG o WebP).");
+  }
+  let source: Decoded;
   try {
-    bitmap = await decode(file);
+    source = await decode(file);
   } catch {
-    throw new Error("No se pudo leer la imagen. Usa una foto JPG o PNG.");
+    throw new Error("No se pudo leer esta foto. Prueba con otra o haz una captura de pantalla de ella y súbela.");
   }
 
-  const scale = Math.min(1, MAX_SIDE[kind] / Math.max(bitmap.width, bitmap.height));
-  const width = Math.round(bitmap.width * scale);
-  const height = Math.round(bitmap.height * scale);
+  const scale = Math.min(1, MAX_SIDE[kind] / Math.max(source.width, source.height));
+  const width = Math.round(source.width * scale);
+  const height = Math.round(source.height * scale);
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
-  canvas.getContext("2d")!.drawImage(bitmap, 0, 0, width, height);
-  bitmap.close();
+  canvas.getContext("2d")!.drawImage(source.image, 0, 0, width, height);
+  source.release();
 
   // The QR is stored as PNG so it stays sharp and scannable.
   if (kind === "qr") {
