@@ -1,4 +1,5 @@
 import { DEFAULT_VEIL, type BackgroundKey, type PhotoVeil } from "@/lib/backgrounds";
+import { emptyGifts, type Gifts } from "@/lib/gifts";
 import { SECTION_TYPES, type SectionType, type Translations } from "@/lib/sections";
 import { DEFAULT_TEMPLATE, resolveTemplate, type AccentValue, type TemplateKey } from "@/lib/templates";
 
@@ -8,7 +9,8 @@ import { DEFAULT_TEMPLATE, resolveTemplate, type AccentValue, type TemplateKey }
  * moved to the database when they publish.
  */
 
-export const DRAFT_VERSION = 1;
+/** 2: every gift method (v1 only had Zelle). */
+export const DRAFT_VERSION = 2;
 
 /** A file kept in the browser's IndexedDB. */
 export type LocalMedia = { id: string; mime: string; width: number | null; height: number | null };
@@ -39,7 +41,7 @@ export type BuilderDraft = {
     qr: LocalMedia | null;
     background: LocalMedia | null;
   };
-  gift: { holderName: string; handle: string; note: string };
+  gifts: Gifts;
   rsvp: {
     /** Last day to reply (local date), or "" for no deadline. */
     deadline: string;
@@ -137,7 +139,7 @@ export function createDraft(template?: string | null, timeZone?: string): Builde
     sections,
     translations: exampleTranslations(),
     media: { cover: null, gallery: [], audio: null, qr: null, background: null },
-    gift: { holderName: "", handle: "", note: "" },
+    gifts: emptyGifts(),
     rsvp: { deadline: "", maxCompanions: 4, companionsMode: "names", guestbookPublic: false },
   };
 }
@@ -152,7 +154,7 @@ export const RESERVED_SLUGS = new Set([
   "api", "auth", "app", "www", "static", "media", "icons", "sw", "manifest",
   "sitemap", "robots", "favicon", "plantillas", "precios", "donar", "ayuda",
   "soporte", "legal", "terminos", "privacidad", "blog", "vista-previa",
-  "ejemplo", "boda", "bodas", "invitacion", "invitaciones", "lazodoro", "lazo-de-oro",
+  "ejemplo", "boda", "bodas", "invitacion", "invitaciones", "lazodoro", "lazodeoro", "lazo-de-oro",
   "demo",
 ]); // prettier-ignore
 
@@ -228,4 +230,29 @@ export function missingForPublish(draft: BuilderDraft): StepKey[] {
   if (!draft.couple.partner1.trim() || !draft.couple.partner2.trim()) missing.push("nombres");
   if (!/^\d{4}-\d{2}-\d{2}$/.test(draft.event.date) || !/^\d{2}:\d{2}$/.test(draft.event.time)) missing.push("fecha");
   return missing;
+}
+
+/**
+ * Brings a draft saved by an older version of the builder up to date, so
+ * nobody loses their design when the builder changes.
+ */
+export function migrateDraft(raw: unknown): BuilderDraft | null {
+  if (!raw || typeof raw !== "object") return null;
+  const draft = raw as Record<string, unknown>;
+  if (draft.version === DRAFT_VERSION) return draft as unknown as BuilderDraft;
+  if (draft.version === 1) {
+    const old = (draft.gift ?? {}) as { holderName?: string; handle?: string; note?: string };
+    const media = (draft.media ?? {}) as { qr?: unknown };
+    const gifts = emptyGifts();
+    gifts.zelle = {
+      enabled: Boolean(old.handle || media.qr),
+      holderName: old.holderName ?? "",
+      handle: old.handle ?? "",
+      note: old.note ?? "",
+    };
+    const rest = { ...draft };
+    delete rest.gift;
+    return { ...(rest as unknown as BuilderDraft), version: DRAFT_VERSION, gifts };
+  }
+  return null;
 }

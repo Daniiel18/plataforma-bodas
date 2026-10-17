@@ -3,15 +3,15 @@ import "server-only";
 import { createClient as createSupabaseClient, type SupabaseClient } from "@supabase/supabase-js";
 import { cacheLife, cacheTag } from "next/cache";
 
+import { giftViews, rowsToGifts, type GiftRow } from "@/lib/gifts";
 import { publicMediaUrl, type MediaImage } from "@/lib/media";
 import { assembleInvitation, type InvitationData, type ViewContext } from "@/lib/section-view";
 import type { Bi, SectionType, Translations } from "@/lib/sections";
 import type { Wedding } from "@/lib/types";
-import { zelleLink } from "@/lib/zelle";
 
 export const invitationTag = (slug: string) => `invitation:${slug}`;
 
-export type { InvitationData, Photo, SectionView, ZelleInfo } from "@/lib/section-view";
+export type { InvitationData, Photo, SectionView } from "@/lib/section-view";
 
 type SectionRow = {
   type: SectionType;
@@ -30,15 +30,6 @@ type MediaRow = {
   caption: string | null;
   caption_en: string | null;
   position: number;
-};
-
-type GiftRow = {
-  holder_name: string | null;
-  handle: string | null;
-  qr_media_id: string | null;
-  note: string | null;
-  note_en: string | null;
-  is_visible: boolean;
 };
 
 const image = (m: MediaRow): MediaImage => ({
@@ -73,11 +64,9 @@ export async function loadInvitationParts(
       .order("position"),
     supabase
       .from("gift_methods")
-      .select("holder_name, handle, qr_media_id, note, note_en, is_visible")
+      .select("type, holder_name, handle, qr_media_id, note, note_en, details, is_visible")
       .eq("wedding_id", wedding.id)
-      .eq("type", "zelle")
-      .order("position")
-      .limit(1),
+      .order("position"),
   ]);
 
   const media = (mediaRows ?? []) as MediaRow[];
@@ -85,8 +74,9 @@ export async function loadInvitationParts(
   const coverRow = byKind("cover")[0];
   const audioRow = byKind("audio")[0];
   const backgroundRow = byKind("background")[0];
-  const gift = (giftRows ?? [])[0] as GiftRow | undefined;
-  const qrRow = gift?.qr_media_id ? media.find((m) => m.id === gift.qr_media_id) : undefined;
+  const gifts = (giftRows ?? []) as GiftRow[];
+  const zelleRow = gifts.find((g) => g.type === "zelle");
+  const qrRow = zelleRow?.qr_media_id ? media.find((m) => m.id === zelleRow.qr_media_id) : undefined;
 
   return assembleInvitation({
     slug: wedding.slug,
@@ -109,16 +99,10 @@ export async function loadInvitationParts(
     cover: coverRow ? image(coverRow) : null,
     photos: byKind("gallery").map((m) => ({ ...image(m), id: m.id, caption: plainBi(m.caption, m.caption_en) })),
     audioUrl: audioRow ? publicMediaUrl(audioRow.storage_path) : null,
-    zelle:
-      gift?.is_visible && (gift.handle || qrRow)
-        ? {
-            holderName: gift.holder_name ?? "",
-            handle: gift.handle ?? "",
-            note: plainBi(gift.note, gift.note_en),
-            qr: qrRow ? image(qrRow) : null,
-            link: gift.handle ? zelleLink(gift.holder_name ?? "", gift.handle) : null,
-          }
-        : null,
+    gifts: giftViews(rowsToGifts(gifts), {
+      qr: qrRow ? image(qrRow) : null,
+      notesEn: Object.fromEntries(gifts.map((g) => [g.type, g.note_en ?? null])),
+    }),
   });
 }
 

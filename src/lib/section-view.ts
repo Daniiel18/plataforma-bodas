@@ -1,4 +1,5 @@
 import { resolveBackground, resolveVeil, type BackgroundKey, type PhotoVeil } from "./backgrounds";
+import type { GiftView } from "./gifts";
 import type { MediaImage } from "./media";
 import {
   bilingual,
@@ -24,15 +25,6 @@ export type Coords = { lat: number; lng: number };
 export const locationCoords = (c: { lat: number | null; lng: number | null }): Coords | null =>
   c.lat !== null && c.lng !== null ? { lat: c.lat, lng: c.lng } : null;
 
-export type ZelleInfo = {
-  holderName: string;
-  handle: string;
-  note: Bi | null;
-  qr: MediaImage | null;
-  /** Opens Zelle with the couple as the recipient. */
-  link: string | null;
-};
-
 export type SectionView =
   | { type: "hero"; kicker: Bi; cover: MediaImage | null }
   | { type: "parents"; title: Bi; intro: Bi | null; families: { title: Bi | null; names: string[] }[] }
@@ -50,7 +42,7 @@ export type SectionView =
       deadlineLabel: Bi | null;
       maxCompanions: number;
     }
-  | { type: "gifts"; title: Bi; message: Bi; zelle: ZelleInfo };
+  | { type: "gifts"; title: Bi; message: Bi; methods: GiftView[] };
 
 export type InvitationData = {
   slug: string;
@@ -74,8 +66,8 @@ export type ViewContext = {
   photos: Photo[];
   event: { startsAt: string; timeZone: string } | null;
   rsvp: { deadline: string | null; timeZone: string | null; maxCompanions: number };
-  /** null when the couple hid the gift or has no Zelle details yet. */
-  zelle: ZelleInfo | null;
+  /** Gift methods that are on and complete (empty: the section is not shown). */
+  gifts: GiftView[];
 };
 
 /** Returns null when the section has nothing to show yet. */
@@ -171,13 +163,13 @@ export function buildSectionView(
       };
     }
     case "gifts": {
-      if (!ctx.zelle) return null;
+      if (!ctx.gifts.length) return null;
       const c = parseContent("gifts", raw);
       return {
         type,
         title: bilingual(c.title, "title", tr, DEFAULT_TEXT.gifts.title)!,
         message: bilingual(c.message, "message", tr, DEFAULT_TEXT.gifts.message)!,
-        zelle: ctx.zelle,
+        methods: ctx.gifts,
       };
     }
     default:
@@ -205,7 +197,7 @@ export type InvitationSource = {
   cover: MediaImage | null;
   photos: Photo[];
   audioUrl: string | null;
-  zelle: ZelleInfo | null;
+  gifts: GiftView[];
 };
 
 /** Builds the invitation data plus the context that lets an editor preview any section. */
@@ -242,7 +234,7 @@ export function assembleInvitation(source: InvitationSource): { data: Invitation
     photos: source.photos,
     event: source.event,
     rsvp: source.rsvp,
-    zelle: source.zelle,
+    gifts: source.gifts,
   };
 
   const locationContent = parseContent("location", find("location")?.content);

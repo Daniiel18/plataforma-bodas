@@ -6,6 +6,7 @@ import { toThemeOverrides } from "@/lib/appearance";
 import { draftDeadline, draftStartsAt } from "@/lib/builder/invitation";
 import { draftSchema, type ValidDraft } from "@/lib/builder/schema";
 import { findSlug } from "@/lib/builder/slugs";
+import { giftsToRows } from "@/lib/gifts";
 import { MEDIA_BUCKET } from "@/lib/media";
 import { SECTION_TYPES, syncTranslations, type Translations } from "@/lib/sections";
 import { shareDetails, type ShareDetails } from "@/lib/share";
@@ -54,14 +55,8 @@ const sectionRows = (weddingId: string, draft: ValidDraft) =>
     content_en: (draft.translations[type] ?? {}) as Translations,
   }));
 
-const giftRow = (draft: ValidDraft) => ({
-  holder_name: draft.gift.holderName || null,
-  handle: draft.gift.handle || null,
-  note: draft.gift.note || null,
-  note_en: null,
-  qr_media_id: null,
-  is_visible: draft.sections.gifts.visible,
-});
+const giftRows = (weddingId: string, draft: ValidDraft) =>
+  giftsToRows(draft.gifts).map((row) => ({ wedding_id: weddingId, ...row }));
 
 async function audit(admin: Admin, userId: string, action: string, weddingId: string) {
   await admin.from("audit_log").insert({ actor_user_id: userId, action, target_type: "wedding", target_id: weddingId });
@@ -134,7 +129,7 @@ export async function prepareWedding(input: unknown, mode: "new" | "replace"): P
   const steps = await Promise.all([
     admin.from("wedding_members").insert({ wedding_id: wedding.id, user_id: userId, role: "owner" }),
     admin.from("sections").insert(sectionRows(wedding.id, draft)),
-    admin.from("gift_methods").insert({ wedding_id: wedding.id, type: "zelle", ...giftRow(draft) }),
+    admin.from("gift_methods").insert(giftRows(wedding.id, draft)),
   ]);
   if (steps.some((step) => step.error)) {
     await admin.from("weddings").delete().eq("id", wedding.id);
@@ -164,7 +159,11 @@ async function replaceDesign(
       })
       .eq("id", weddingId),
     admin.from("sections").upsert(sectionRows(weddingId, draft), { onConflict: "wedding_id,type" }),
-    admin.from("gift_methods").update(giftRow(draft)).eq("wedding_id", weddingId).eq("type", "zelle"),
+    admin
+      .from("gift_methods")
+      .delete()
+      .eq("wedding_id", weddingId)
+      .then(() => admin.from("gift_methods").insert(giftRows(weddingId, draft))),
   ]);
   if (steps.some((step) => step.error)) return { status: "error", error: "No se pudo reemplazar el diseño." };
 
@@ -208,16 +207,19 @@ export async function finishPublishing(): Promise<FinishResult> {
     }
   }
 
-  const { data: gift } = await supabase
+  const { data: gifts } = await supabase
     .from("gift_methods")
-    .select("note, note_en")
-    .eq("wedding_id", wedding.id)
-    .eq("type", "zelle")
-    .maybeSingle();
-  if (gift?.note && !gift.note_en) {
+    .select("type, note, note_en")
+    .eq("wedding_id", wedding.id);
+  for (const gift of gifts ?? []) {
+    if (!gift.note || gift.note_en) continue;
     const [noteEn] = await translateEsToEn([gift.note]);
     if (noteEn) {
-      await supabase.from("gift_methods").update({ note_en: noteEn }).eq("wedding_id", wedding.id).eq("type", "zelle");
+      await supabase
+        .from("gift_methods")
+        .update({ note_en: noteEn })
+        .eq("wedding_id", wedding.id)
+        .eq("type", gift.type);
     }
   }
 

@@ -5,7 +5,15 @@ import { createJSONStorage, persist } from "zustand/middleware";
 
 import { cleanContent, type SectionType } from "@/lib/sections";
 
-import { createDraft, DRAFT_VERSION, STEPS, suggestSlug, type BuilderDraft, type LocalMedia } from "./draft";
+import {
+  createDraft,
+  DRAFT_VERSION,
+  migrateDraft,
+  STEPS,
+  suggestSlug,
+  type BuilderDraft,
+  type LocalMedia,
+} from "./draft";
 
 type MediaSlot = "cover" | "audio" | "qr" | "background";
 
@@ -25,7 +33,7 @@ type BuilderState = {
   setSectionVisible: (type: SectionType, visible: boolean) => void;
   setMedia: (slot: MediaSlot, media: LocalMedia | null) => void;
   setGallery: (photos: LocalMedia[]) => void;
-  setGift: (patch: Partial<BuilderDraft["gift"]>) => void;
+  setGifts: (gifts: BuilderDraft["gifts"]) => void;
   setRsvp: (patch: Partial<BuilderDraft["rsvp"]>) => void;
 };
 
@@ -80,7 +88,7 @@ export const useBuilder = create<BuilderState>()(
           edit((d) => ({ ...d, sections: { ...d.sections, [type]: { ...d.sections[type], visible } } })),
         setMedia: (slot, media) => edit((d) => ({ ...d, media: { ...d.media, [slot]: media } })),
         setGallery: (photos) => edit((d) => ({ ...d, media: { ...d.media, gallery: photos } })),
-        setGift: (patch) => edit((d) => ({ ...d, gift: { ...d.gift, ...patch } })),
+        setGifts: (gifts) => edit((d) => ({ ...d, gifts })),
         setRsvp: (patch) => edit((d) => ({ ...d, rsvp: { ...d.rsvp, ...patch } })),
       };
     },
@@ -89,6 +97,11 @@ export const useBuilder = create<BuilderState>()(
       version: DRAFT_VERSION,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ draft: state.draft, step: state.step }),
+      // Drafts saved by older versions of the builder keep working.
+      migrate: (persisted) => {
+        const state = (persisted ?? {}) as { draft?: unknown; step?: number };
+        return { draft: migrateDraft(state.draft), step: state.step ?? 0 } as Partial<BuilderState>;
+      },
     },
   ),
 );

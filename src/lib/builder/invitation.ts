@@ -2,7 +2,7 @@ import { zonedInputToDate } from "@/lib/dates";
 import type { MediaImage } from "@/lib/media";
 import { assembleInvitation, type InvitationData, type ViewContext } from "@/lib/section-view";
 import { SECTION_TYPES } from "@/lib/sections";
-import { zelleLink } from "@/lib/zelle";
+import { giftViews } from "@/lib/gifts";
 
 import type { BuilderDraft, LocalMedia } from "./draft";
 
@@ -40,8 +40,6 @@ export function draftToInvitation(
   const image = (media: LocalMedia | null): MediaImage | null =>
     media && urls[media.id] ? { url: urls[media.id], width: media.width ?? 1200, height: media.height ?? 1600 } : null;
   const startsAt = draftStartsAt(draft);
-  const { holderName, handle, note } = draft.gift;
-  const qr = image(draft.media.qr);
   const name = (n: string, fallback: string) => n.trim() || fallback;
 
   return assembleInvitation({
@@ -65,16 +63,7 @@ export function draftToInvitation(
       return img ? [{ ...img, id: media.id, caption: null }] : [];
     }),
     audioUrl: draft.media.audio ? (urls[draft.media.audio.id] ?? null) : null,
-    zelle:
-      handle.trim() || qr
-        ? {
-            holderName: holderName.trim(),
-            handle: handle.trim(),
-            note: note.trim() ? { es: note.trim(), en: note.trim() } : null,
-            qr,
-            link: handle.trim() ? zelleLink(holderName, handle) : null,
-          }
-        : null,
+    gifts: giftViews(draft.gifts, { qr: image(draft.media.qr) }),
   });
 }
 

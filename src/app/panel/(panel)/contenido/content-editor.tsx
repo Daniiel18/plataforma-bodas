@@ -54,7 +54,7 @@ type Props = {
 
 const FIXED: SectionType[] = ["intro", "music"];
 /**
- * Sections managed on their own page (photos, Zelle, song): here they are only
+ * Sections managed on their own page (photos, gifts, song): here they are only
  * ordered and hidden, without a preview.
  */
 const MANAGED_ELSEWHERE: SectionType[] = ["gallery", "gifts", "music"];
@@ -266,7 +266,7 @@ function SectionCard({
 
 const MANAGED_NOTE: Partial<Record<SectionType, string>> = {
   gallery: "Las fotos y el estilo del carrusel se eligen en Galería.",
-  gifts: "El QR y los datos de Zelle se agregan en Regalos.",
+  gifts: "Las formas de regalo (Zelle, PayPal, transferencia, mesa de regalos) se configuran en Regalos.",
   music: "Suena de fondo cuando los invitados abren el sobre. La canción se sube en Música.",
 };
 

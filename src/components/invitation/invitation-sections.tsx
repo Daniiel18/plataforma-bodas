@@ -292,7 +292,7 @@ export function GiftsSection({ section }: { section: Of<"gifts"> }) {
       <Heading>
         <TB text={section.title} />
       </Heading>
-      <GiftBox zelle={section.zelle} />
+      <GiftBox methods={section.methods} />
       <p className="mx-auto mt-8 max-w-xs whitespace-pre-line text-[var(--inv-ink-soft)] italic">
         <TB text={section.message} />
       </p>

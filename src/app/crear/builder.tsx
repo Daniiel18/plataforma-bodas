@@ -42,7 +42,7 @@ const STEP_INTRO: Record<(typeof STEPS)[number]["key"], string> = {
   vestimenta: "Cómo les gustaría que vinieran vestidos.",
   fotos: "Un carrusel en 3D con sus fotos favoritas.",
   musica: "Una canción para acompañar la invitación.",
-  regalos: "Si quieren, una caja de regalo con su Zelle.",
+  regalos: "Si quieren, una caja de regalo con Zelle, PayPal, transferencia o su mesa de regalos.",
   confirmaciones: "Cómo les confirmarán sus invitados.",
   revisar: "Revisen su invitación, elijan su enlace y publíquenla.",
 };

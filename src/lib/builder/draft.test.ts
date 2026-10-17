@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   createDraft,
+  migrateDraft,
   missingForPublish,
   normalizeSlugInput,
   sectionsWithExamples,
@@ -63,7 +64,7 @@ describe("draft", () => {
     const draft = createDraft();
     draft.couple = { partner1: "Ana María", partner2: "Luis" };
     draft.event.date = "2026-12-19";
-    draft.gift = { holderName: "Ana", handle: "ana@example.com", note: "" };
+    draft.gifts.zelle = { enabled: true, holderName: "Ana", handle: "ana@example.com", note: "" };
     const { data } = draftToInvitation(draft, {});
     expect(data.couple).toEqual({ partner1: "Ana María", partner2: "Luis" });
     expect(data.event?.startsAt).toBeTruthy();
@@ -72,5 +73,22 @@ describe("draft", () => {
     expect(types).toEqual(["hero", "celebration", "dress_code", "program", "rsvp", "gifts"]);
     const program = data.sections.find((s) => s.type === "program");
     expect(program?.type === "program" && program.items[0].title).toEqual({ es: "Ceremonia", en: "Ceremony" });
+  });
+
+  it("moves the Zelle details of a draft saved before gift methods", () => {
+    const { gifts, ...current } = createDraft();
+    const old = { ...current, version: 1, gift: { holderName: "Ana", handle: "ana@example.com", note: "Gracias" } };
+    const draft = migrateDraft(old);
+    expect(draft?.version).toBe(2);
+    expect(draft?.gifts.zelle).toEqual({
+      enabled: true,
+      holderName: "Ana",
+      handle: "ana@example.com",
+      note: "Gracias",
+    });
+    expect(draft?.gifts.paypal.enabled).toBe(false);
+    expect(draft && "gift" in draft).toBe(false);
+    expect(gifts.zelle.enabled).toBe(false);
+    expect(migrateDraft({ version: 99 })).toBeNull();
   });
 });

@@ -19,8 +19,8 @@ export const FAQ: { q: Bi; a: Bi }[] = [
   {
     q: { es: "¿Qué incluye la invitación?", en: "What does the invitation include?" },
     a: {
-      es: "Sobre animado, cuenta regresiva, calendario con «Añadir al calendario», fotos en 3D, música, mapa con «Cómo llegar», programa, código de vestimenta, regalos con QR de Zelle y confirmación de asistencia con acompañantes y deseos. En español e inglés.",
-      en: "Animated envelope, countdown, calendar with “Add to calendar”, 3D photos, music, map with directions, schedule, dress code, gifts with a Zelle QR code and replies with companions and wishes. In Spanish and English.",
+      es: "Sobre animado, cuenta regresiva, calendario con «Añadir al calendario», fotos en 3D, música, mapa con «Cómo llegar», programa, código de vestimenta, regalos por Zelle, PayPal, transferencia o mesa de regalos, y confirmación de asistencia con acompañantes y deseos. En español e inglés.",
+      en: "Animated envelope, countdown, calendar with “Add to calendar”, 3D photos, music, map with directions, schedule, dress code, gifts via Zelle, PayPal, bank transfer or a registry, and replies with companions and wishes. In Spanish and English.",
     },
   },
   {

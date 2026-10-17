@@ -1,56 +1,43 @@
 "use server";
 
-import { z } from "zod";
-
 import { getAdminContext, READ_ONLY_RESULT } from "@/lib/admin";
 import { refreshInvitation } from "@/lib/admin-invitation";
+import { giftsSchema, giftsToRows, type GiftKind, type Gifts } from "@/lib/gifts";
 import { translateEsToEn } from "@/lib/translate";
 import type { ActionResult } from "@/lib/types";
 
-const zelleSchema = z.object({
-  holder_name: z.string().trim().max(80, "Nombre muy largo"),
-  handle: z
-    .string()
-    .trim()
-    .max(80)
-    .refine((v) => v === "" || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v) || /^[+\d][\d\s().-]{6,}$/.test(v), {
-      message: "Escribe el correo o el teléfono registrado en Zelle",
-    }),
-  note: z.string().trim().max(300, "Máximo 300 caracteres"),
-  is_visible: z.boolean(),
-});
-
-export async function saveZelle(input: z.input<typeof zelleSchema>): Promise<ActionResult> {
+export async function saveGifts(input: Gifts): Promise<ActionResult> {
   const { supabase, wedding, readOnly } = await getAdminContext();
   if (readOnly) return READ_ONLY_RESULT;
-  const parsed = zelleSchema.safeParse(input);
+  const parsed = giftsSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
-  const v = parsed.data;
 
   const { data: current } = await supabase
     .from("gift_methods")
-    .select("note, note_en")
-    .eq("wedding_id", wedding.id)
-    .eq("type", "zelle")
-    .single();
+    .select("type, note, note_en")
+    .eq("wedding_id", wedding.id);
+  const saved = new Map((current ?? []).map((row) => [row.type as GiftKind, row]));
 
-  // The note is only translated when it changed.
-  let noteEn: string | null = current?.note === v.note ? (current?.note_en ?? null) : null;
-  if (v.note && current?.note !== v.note) [noteEn] = await translateEsToEn([v.note]);
+  // Notes are only translated when they changed.
+  const rows = giftsToRows(parsed.data);
+  const changed = rows.filter((row) => row.note && row.note !== saved.get(row.type)?.note);
+  const translated = changed.length ? await translateEsToEn(changed.map((row) => row.note!)) : [];
+  const notesEn = new Map(changed.map((row, i) => [row.type, translated[i] ?? null]));
 
-  const { error } = await supabase
-    .from("gift_methods")
-    .update({
-      holder_name: v.holder_name || null,
-      handle: v.handle || null,
-      note: v.note || null,
-      note_en: v.note ? noteEn : null,
-      is_visible: v.is_visible,
-    })
-    .eq("wedding_id", wedding.id)
-    .eq("type", "zelle");
-  if (error) return { ok: false, error: "No se pudieron guardar los datos de Zelle" };
+  const { error } = await supabase.from("gift_methods").upsert(
+    rows.map((row) => ({
+      ...row,
+      wedding_id: wedding.id,
+      note_en: !row.note
+        ? null
+        : notesEn.has(row.type)
+          ? notesEn.get(row.type)
+          : (saved.get(row.type)?.note_en ?? null),
+    })),
+    { onConflict: "wedding_id,type" },
+  );
+  if (error) return { ok: false, error: "No se pudieron guardar las formas de regalo" };
 
   refreshInvitation(wedding.slug);
-  return { ok: true, message: "Datos de Zelle guardados" };
+  return { ok: true, message: "Formas de regalo guardadas" };
 }

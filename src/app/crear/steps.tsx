@@ -3,6 +3,7 @@
 import { useCallback, type ReactNode } from "react";
 
 import { AppearanceFields } from "@/components/editor/appearance-fields";
+import { GiftMethodsFields } from "@/components/editor/gift-methods-fields";
 import { SectionForm } from "@/components/editor/section-forms";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -246,40 +247,16 @@ function MusicStep({ draft }: { draft: BuilderDraft }) {
 }
 
 function GiftsStep({ draft }: { draft: BuilderDraft }) {
-  const setGift = useBuilder((s) => s.setGift);
+  const setGifts = useBuilder((s) => s.setGifts);
   const setSection = useBuilder((s) => s.setSection);
   const gifts = parseContent("gifts", draft.sections.gifts.content);
   return (
     <ToggleSection type="gifts" draft={draft}>
       <div className="grid gap-4">
         <p className="text-sm text-muted-foreground">
-          Una caja de regalo que se abre y muestra su QR de Zelle, con botón para enviar directo desde la app del banco.
-          El dinero va de sus invitados a ustedes; Lazo de Oro no interviene.
+          Una caja de regalo que se abre y muestra las formas de enviarles un regalo. Activen las que quieran. El dinero
+          va de sus invitados a ustedes; Lazo de Oro no interviene.
         </p>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="grid gap-2">
-            <Label htmlFor="gift-holder">Nombre en Zelle</Label>
-            <Input
-              id="gift-holder"
-              value={draft.gift.holderName}
-              onChange={(e) => setGift({ holderName: e.target.value })}
-              maxLength={80}
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="gift-handle">Correo o teléfono de Zelle</Label>
-            <Input
-              id="gift-handle"
-              value={draft.gift.handle}
-              onChange={(e) => setGift({ handle: e.target.value })}
-              maxLength={120}
-            />
-          </div>
-        </div>
-        <div className="grid gap-2">
-          <Label>Código QR de Zelle (opcional)</Label>
-          <LocalMediaField slot="qr" emptyLabel="Subir el QR de su app de Zelle" />
-        </div>
         <div className="grid gap-2">
           <Label htmlFor="gift-message">Mensaje</Label>
           <Textarea
@@ -291,16 +268,11 @@ function GiftsStep({ draft }: { draft: BuilderDraft }) {
             onChange={(e) => setSection("gifts", { ...gifts, message: e.target.value })}
           />
         </div>
-        <div className="grid gap-2">
-          <Label htmlFor="gift-note">Nota (opcional)</Label>
-          <Input
-            id="gift-note"
-            value={draft.gift.note}
-            onChange={(e) => setGift({ note: e.target.value })}
-            placeholder="Ej.: Escribe tu nombre en el concepto"
-            maxLength={200}
-          />
-        </div>
+        <GiftMethodsFields
+          value={draft.gifts}
+          onChange={setGifts}
+          qrField={<LocalMediaField slot="qr" emptyLabel="Subir el QR de su app de Zelle" />}
+        />
       </div>
     </ToggleSection>
   );

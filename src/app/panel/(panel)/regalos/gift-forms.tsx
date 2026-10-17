@@ -1,25 +1,53 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, type ReactNode } from "react";
 import { toast } from "sonner";
 
+import { GiftMethodsFields } from "@/components/editor/gift-methods-fields";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
+import type { Gifts } from "@/lib/gifts";
 import { DEFAULT_TEXT, type SectionContent } from "@/lib/sections";
 
-import { saveSection } from "../contenido/actions";
-import { saveZelle } from "./actions";
+import { saveSection, setSectionVisible } from "../contenido/actions";
+import { saveGifts } from "./actions";
 
-type ZelleValues = { holder_name: string; handle: string; note: string; is_visible: boolean };
+/** Shows or hides the whole gifts section of the invitation. */
+export function GiftsVisibleSwitch({ initial }: { initial: boolean }) {
+  const [visible, setVisible] = useState(initial);
+  const [pending, startTransition] = useTransition();
 
-export function ZelleForm({ initial }: { initial: ZelleValues }) {
+  return (
+    <label className="flex items-center justify-between gap-4 rounded-xl border bg-card p-4 text-sm">
+      <span className="grid gap-0.5">
+        <span className="font-medium">Mostrar regalos en la invitación</span>
+        <span className="text-muted-foreground">Apágalo si prefieren no hablar de regalos.</span>
+      </span>
+      <Switch
+        checked={visible}
+        disabled={pending}
+        onCheckedChange={(next) => {
+          setVisible(next);
+          startTransition(async () => {
+            const result = await setSectionVisible("gifts", next);
+            if (result.ok) toast.success(result.message);
+            else {
+              setVisible(!next);
+              toast.error(result.error);
+            }
+          });
+        }}
+      />
+    </label>
+  );
+}
+
+/** Every gift method with its switch; saved together. */
+export function GiftMethodsForm({ initial, qrField }: { initial: Gifts; qrField: ReactNode }) {
   const [values, setValues] = useState(initial);
   const [pending, startTransition] = useTransition();
-  const set = <K extends keyof ZelleValues>(key: K, value: ZelleValues[K]) =>
-    setValues((v) => ({ ...v, [key]: value }));
 
   return (
     <form
@@ -27,51 +55,15 @@ export function ZelleForm({ initial }: { initial: ZelleValues }) {
       onSubmit={(e) => {
         e.preventDefault();
         startTransition(async () => {
-          const result = await saveZelle(values);
+          const result = await saveGifts(values);
           if (result.ok) toast.success(result.message);
           else toast.error(result.error);
         });
       }}
     >
-      <div className="grid gap-2">
-        <Label htmlFor="holder_name">Nombre del titular</Label>
-        <Input
-          id="holder_name"
-          value={values.holder_name}
-          onChange={(e) => set("holder_name", e.target.value)}
-          maxLength={80}
-        />
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor="handle">Correo o teléfono de Zelle</Label>
-        <Input
-          id="handle"
-          value={values.handle}
-          onChange={(e) => set("handle", e.target.value)}
-          placeholder="nombre@correo.com o +1 555 123 4567"
-          maxLength={80}
-        />
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor="note">Nota (opcional)</Label>
-        <Textarea
-          id="note"
-          value={values.note}
-          onChange={(e) => set("note", e.target.value)}
-          placeholder="Por ejemplo: Escribe tu nombre en el concepto 💛"
-          maxLength={300}
-          rows={3}
-        />
-      </div>
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <Label htmlFor="zelle-visible">Mostrar regalos en la invitación</Label>
-          <p className="text-sm text-muted-foreground">Necesita el QR o el correo/teléfono.</p>
-        </div>
-        <Switch id="zelle-visible" checked={values.is_visible} onCheckedChange={(v) => set("is_visible", v)} />
-      </div>
+      <GiftMethodsFields value={values} onChange={setValues} qrField={qrField} />
       <Button type="submit" disabled={pending} className="justify-self-start">
-        {pending ? "Guardando…" : "Guardar datos"}
+        {pending ? "Guardando…" : "Guardar formas de regalo"}
       </Button>
     </form>
   );

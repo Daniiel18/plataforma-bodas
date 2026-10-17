@@ -30,7 +30,7 @@ const EMPTY: Partial<Record<StepKey, string>> = {
   programa: "Agreguen al menos una actividad con su hora.",
   vestimenta: "Escriban la descripción para ver esta sección.",
   fotos: "Añadan fotos para ver el carrusel en 3D.",
-  regalos: "Escriban su Zelle o suban el QR para ver la caja de regalo.",
+  regalos: "Activen una forma de regalo y escriban sus datos para ver la caja de regalo.",
 };
 
 /** How the current step looks with the chosen template. */

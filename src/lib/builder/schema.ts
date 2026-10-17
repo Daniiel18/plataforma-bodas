@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { appearanceSchema } from "@/lib/appearance";
+import { giftsSchema } from "@/lib/gifts";
 import { SECTION_TYPES, sectionSchemas, type SectionContent, type SectionType } from "@/lib/sections";
 
 import { slugProblem } from "./draft";
@@ -45,11 +46,7 @@ export const draftSchema = z.object({
   slug: z.string().refine((slug) => slugProblem(slug) === null, "Ese enlace no es válido"),
   sections: sectionsSchema,
   translations: z.partialRecord(z.enum(SECTION_TYPES), translationsSchema).default({}),
-  gift: z.object({
-    holderName: z.string().trim().max(80),
-    handle: z.string().trim().max(120),
-    note: z.string().trim().max(200),
-  }),
+  gifts: giftsSchema,
   rsvp: z.object({
     deadline: z.union([z.literal(""), z.string().regex(/^\d{4}-\d{2}-\d{2}$/)]),
     maxCompanions: z.number().int().min(0).max(10),
