@@ -15,7 +15,7 @@ The couple manages every detail from a dashboard and gets a push notification on
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38bdf8?logo=tailwindcss&logoColor=white)
 ![License](https://img.shields.io/badge/license-proprietary-6f5b4e)
 
-**[Website](https://lazodeoro.vercel.app)** · **[Live demo](https://lazodeoro.vercel.app/demo)** · **[Create one](https://lazodeoro.vercel.app/crear)** · **[Dashboard demo](#-try-the-dashboard)** · **[Architecture](docs/architecture.md)** · **[Deployment](docs/deployment.md)**
+**[Website](https://lazodeoro.vercel.app)** · **[Live demo](https://lazodeoro.vercel.app/demo)** · **[Create one](https://lazodeoro.vercel.app/crear)** · **[Try it](#-try-it)** · **[Architecture](docs/architecture.md)** · **[Deployment](docs/deployment.md)**
 
 </div>
 
@@ -69,15 +69,10 @@ The couple manages every detail from a dashboard and gets a push notification on
   <img src="docs/screenshots/dashboard-appearance.jpg" width="49%" alt="Template studio with live preview" />
 </p>
 
-## 👀 Try the dashboard
+## 👀 Try it
 
-Open **[lazodeoro.vercel.app/panel/login](https://lazodeoro.vercel.app/panel/login)** and sign in with the read-only demo account:
-
-| Email | Password |
-| --- | --- |
-| `demo@plataforma-bodas.app` | `VerLaDemo2026!` |
-
-You can explore every screen; the database rejects any change made with this account. The guest side is at **[/demo](https://lazodeoro.vercel.app/demo)** — try confirming attendance from your phone.
+- **Guests' side:** open the **[live demo](https://lazodeoro.vercel.app/demo)** on your phone — the envelope, music, gallery, map and the reply form all work.
+- **Couple's side:** **[create an invitation](https://lazodeoro.vercel.app/crear)** without an account and preview it; signing in publishes it and opens its dashboard.
 
 ## 🧱 Tech stack
 

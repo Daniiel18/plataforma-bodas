@@ -93,7 +93,7 @@ npm run demo:seed            # fictional wedding at /demo with photos, music and
 npm run demo:data -- demo    # sample guests and wishes for the dashboard
 ```
 
-For a read-only dashboard demo, create a user in Supabase Auth and link it as a viewer:
+For a read-only dashboard demo, create a user in Supabase Auth, link it as a viewer and mark it as a test account in the back office (*Cuentas*), where you can also set its password. Keep its credentials private:
 
 ```bash
 npm run admin:link -- demo@your-domain.com demo --viewer

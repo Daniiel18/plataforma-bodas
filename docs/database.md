@@ -153,7 +153,7 @@ Guests never write to tables directly. The RSVP Server Actions call these functi
 | `rsvp_change` | Switches Yes ↔ No before the deadline; increments `change_count`. |
 | `platform_usage` | Database size and bytes/files in Storage, for the back office. |
 | `storage_by_wedding` | Bytes and files each wedding keeps in Storage. |
-| `public_guestbook` | Approved, visible wishes of a published wedding whose guestbook is public (author, message). The only function anonymous visitors can call. |
+| `public_guestbook` | Wishes the couple has not hidden, of a published wedding whose guestbook is public (author, message). The only function anonymous visitors can call. |
 | `set_auth_locale` | Stores the sign-in page language (`es`/`en`) in an account's metadata, so the sign-in email is sent in that language. |
 
 ## Realtime
