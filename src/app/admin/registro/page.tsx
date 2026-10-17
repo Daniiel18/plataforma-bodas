@@ -66,6 +66,10 @@ const ACTIONS: Record<string, string> = {
   "wedding.published": "Publicó por primera vez",
   "wedding.suspended": "Suspendió una boda",
   "wedding.reactivated": "Reactivó una boda",
+  "wedding.deleted": "Eliminó una boda",
+  "account.deleted": "Eliminó una cuenta",
+  "account.marked_test": "Marcó una cuenta como de prueba",
+  "account.marked_real": "Marcó una cuenta como real",
 };
 
 async function Audit() {
@@ -104,6 +108,8 @@ async function Audit() {
                 </>
               )}
               {a.details?.reason ? ` · ${a.details.reason}` : ""}
+              {a.details?.slug ? ` · /${a.details.slug}` : ""}
+              {a.details?.email ? ` · ${a.details.email}` : ""}
             </p>
           </div>
         ))}

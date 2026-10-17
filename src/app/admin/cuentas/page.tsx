@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { accountCategories, getPlatformAdmin } from "@/lib/platform-admin";
 
 import { formatDate } from "../ui";
-import { TestToggle } from "./test-toggle";
+import { DeleteAccount, TestToggle } from "./test-toggle";
 
 export const metadata: Metadata = { title: "Cuentas" };
 
@@ -68,7 +68,12 @@ async function AccountList() {
                   ) : (
                     <Badge variant="outline">Real</Badge>
                   )}
-                  {!isAdmin.has(u.id) && <TestToggle accountId={u.id} isTest={categories.testIds.has(u.id)} />}
+                  {!isAdmin.has(u.id) && (
+                    <span className="flex flex-wrap">
+                      <TestToggle accountId={u.id} isTest={categories.testIds.has(u.id)} />
+                      <DeleteAccount accountId={u.id} email={u.email ?? ""} />
+                    </span>
+                  )}
                 </TableCell>
                 <TableCell className="hidden text-sm sm:table-cell">
                   {((u.app_metadata?.providers as string[] | undefined) ?? []).map((p) => PROVIDER[p] ?? p).join(", ")}

@@ -27,9 +27,9 @@ export type BackgroundKey = (typeof BACKGROUNDS)[number]["key"];
 
 /** How visible the background photo is (the rest is a veil in the template's color). */
 export const PHOTO_VEILS = [
-  { key: "visible", label: "Se ve más", strength: "55%" },
-  { key: "medio", label: "Equilibrado", strength: "72%" },
-  { key: "sutil", label: "Sutil", strength: "86%" },
+  { key: "visible", label: "Se ve más", strength: "64%" },
+  { key: "medio", label: "Equilibrado", strength: "80%" },
+  { key: "sutil", label: "Sutil", strength: "90%" },
 ] as const;
 
 export type PhotoVeil = (typeof PHOTO_VEILS)[number]["key"];
@@ -65,7 +65,7 @@ export function resolveBackground(
 }
 
 export function veilStrength(veil: PhotoVeil): string {
-  return PHOTO_VEILS.find((v) => v.key === veil)?.strength ?? "72%";
+  return PHOTO_VEILS.find((v) => v.key === veil)?.strength ?? "80%";
 }
 
 /**

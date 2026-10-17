@@ -579,7 +579,8 @@ export function themeStyle(template: Template, accent: string | null): CSSProper
     "--inv-card": c.card,
     "--inv-card-strong": c.cardStrong,
     "--inv-ink": c.ink,
-    "--inv-ink-soft": c.inkSoft,
+    // Secondary text leans toward the main ink so older guests read it easily, even over a photo.
+    "--inv-ink-soft": `color-mix(in srgb, ${c.inkSoft} 55%, ${c.ink})`,
     "--inv-on-strong": c.onStrong,
     "--inv-accent": (acceptsAccent(template) && accent) || c.accent,
     "--inv-gold": c.gold,

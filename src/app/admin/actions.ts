@@ -151,3 +151,34 @@ export async function setAccountTest(accountId: string, isTest: boolean): Promis
   revalidatePath("/admin", "layout");
   return { ok: true, message: isTest ? "Cuenta marcada como de prueba" : "Cuenta marcada como real" };
 }
+
+/** Deletes an account (its sign-in and profile). Its weddings must be deleted first. */
+export async function deleteAccount(accountId: string, confirmEmail: string): Promise<ActionResult> {
+  const { db, userId } = await getPlatformAdmin();
+  if (!z.uuid().safeParse(accountId).success) return { ok: false, error: "Cuenta no válida" };
+  if (accountId === userId) return { ok: false, error: "No puedes borrar tu propia cuenta" };
+
+  const { data: admin } = await db.from("platform_admins").select("user_id").eq("user_id", accountId).maybeSingle();
+  if (admin) return { ok: false, error: "Las cuentas de administración no se borran desde aquí" };
+
+  const { data: account } = await db.auth.admin.getUserById(accountId);
+  const email = account.user?.email ?? "";
+  if (!account.user) return { ok: false, error: "Esa cuenta ya no existe" };
+  if (confirmEmail.trim().toLowerCase() !== email.toLowerCase()) {
+    return { ok: false, error: "Escribe el correo exacto para confirmar" };
+  }
+
+  const { count } = await db
+    .from("wedding_members")
+    .select("wedding_id", { count: "exact", head: true })
+    .eq("user_id", accountId)
+    .eq("role", "owner");
+  if (count) return { ok: false, error: "Esta cuenta tiene una boda: elimínala primero en Bodas" };
+
+  const { error } = await db.auth.admin.deleteUser(accountId);
+  if (error) return { ok: false, error: "No se pudo borrar la cuenta" };
+
+  await auditPlatform(userId, "account.deleted", "account", accountId, { email });
+  revalidatePath("/admin", "layout");
+  return { ok: true, message: `Cuenta ${email} eliminada` };
+}

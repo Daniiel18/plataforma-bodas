@@ -81,7 +81,7 @@ const firstName = (name: string) => name.trim().split(/\s+/)[0] ?? name;
 const validName = (name: string) => name.trim().length >= 2;
 
 const inputClass =
-  "w-full rounded-xl bg-[var(--inv-paper)] px-4 py-3 text-base ring-1 ring-[var(--inv-line)] outline-none placeholder:text-[var(--inv-ink-soft)]/70 focus:ring-2 focus:ring-[var(--inv-gold)]";
+  "w-full rounded-xl bg-[var(--inv-paper)] px-4 py-3 text-base ring-1 ring-[var(--inv-line)] outline-none placeholder:text-[var(--inv-ink-soft)] focus:ring-2 focus:ring-[var(--inv-gold)]";
 
 export function RsvpForm(props: Props) {
   const { slug, deadline, preview } = props;
@@ -247,7 +247,7 @@ function NewRsvpForm({
           <span className="text-center text-sm font-semibold tracking-[0.12em] uppercase">
             <T es="¿Quieres dejarles un deseo?" en="Would you like to leave them a wish?" />
           </span>
-          <span className="text-center text-xs text-[var(--inv-ink-soft)]">
+          <span className="text-center text-sm text-[var(--inv-ink-soft)]">
             <T es="Opcional · solo lo leerán los novios" en="Optional · only the couple will read it" />
           </span>
           <textarea
