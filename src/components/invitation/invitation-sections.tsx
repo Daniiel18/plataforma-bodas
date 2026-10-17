@@ -13,6 +13,7 @@ import { DirectionsButton } from "./directions-button";
 import { eventDateParts, formatClock } from "./format";
 import { Gallery3D } from "./gallery-3d";
 import { GiftBox } from "./gift-box";
+import { GuestbookCarousel } from "./guestbook-carousel";
 import { T, TB } from "./lang";
 import { MonthCalendar } from "./month-calendar";
 import { RsvpForm } from "./rsvp-form";
@@ -288,14 +289,7 @@ export function RsvpSection({ section, slug, preview }: { section: Of<"rsvp">; s
           <p className="inv-heading text-sm text-[var(--inv-ink-soft)]">
             <T es="Deseos para los novios" en="Wishes for the couple" />
           </p>
-          <ul className="grid gap-3 text-left">
-            {section.guestbook.map((entry, index) => (
-              <li key={index} className="inv-card px-5 py-4">
-                <p className="whitespace-pre-line">“{entry.message}”</p>
-                <p className="mt-2 text-sm text-[var(--inv-ink-soft)]">— {entry.author}</p>
-              </li>
-            ))}
-          </ul>
+          <GuestbookCarousel entries={section.guestbook} />
         </div>
       )}
     </Section>
