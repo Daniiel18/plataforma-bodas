@@ -5,6 +5,7 @@ import { cacheLife, cacheTag } from "next/cache";
 
 import { giftViews, rowsToGifts, type GiftRow } from "@/lib/gifts";
 import { mediaImage, publicMediaUrl, type MediaImage } from "@/lib/media";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { assembleInvitation, type GuestbookEntry, type InvitationData, type ViewContext } from "@/lib/section-view";
 import type { Bi, SectionType, Translations } from "@/lib/sections";
 import type { Wedding } from "@/lib/types";
@@ -91,7 +92,7 @@ export async function loadInvitationParts(
       timeZone: wedding.timezone,
       maxCompanions: wedding.max_companions,
       companionsMode: wedding.companions_mode,
-      guestbook: wedding.guestbook_public ? await loadGuestbook(supabase, wedding.id) : [],
+      guestbook: wedding.guestbook_public ? await loadGuestbook(wedding.id) : [],
     },
     sections: ((sectionRows ?? []) as SectionRow[]).map((row) => ({
       type: row.type,
@@ -109,13 +110,21 @@ export async function loadInvitationParts(
   });
 }
 
-/** Approved wishes, signed with the guest's first name only. */
-async function loadGuestbook(supabase: SupabaseClient, weddingId: string): Promise<GuestbookEntry[]> {
-  const { data } = await supabase.rpc("public_guestbook", { p_wedding_id: weddingId });
-  return ((data ?? []) as { author: string; message: string }[]).map((row) => ({
-    author: row.author.trim().split(/\s+/)[0] ?? "",
-    message: row.message,
-  }));
+/**
+ * Wishes shown on the invitation, signed with the guest's first name only.
+ * public_guestbook is server-only, so it is read with the secret key (absent
+ * in previews, where the guestbook simply stays empty).
+ */
+async function loadGuestbook(weddingId: string): Promise<GuestbookEntry[]> {
+  try {
+    const { data } = await createAdminClient().rpc("public_guestbook", { p_wedding_id: weddingId });
+    return ((data ?? []) as { author: string; message: string }[]).map((row) => ({
+      author: row.author.trim().split(/\s+/)[0] ?? "",
+      message: row.message,
+    }));
+  } catch {
+    return [];
+  }
 }
 
 /** Published invitation, cached until the couple saves a change. */
