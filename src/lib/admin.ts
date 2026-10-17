@@ -42,14 +42,16 @@ export const getAdminContext = cache(async () => {
     email: (claims.email as string | undefined) ?? "",
     wedding,
     /** Demo account: can see everything but cannot save changes. */
-    readOnly: membership.role !== "owner",
+    isViewer: membership.role !== "owner",
+    /** Nothing can be saved: demo account, or a wedding past its event (read-only, archived, suspended). */
+    readOnly: membership.role !== "owner" || !["draft", "active"].includes(wedding.status),
   };
 });
 
 /** Standard response when the demo account tries to save something. */
 export const READ_ONLY_RESULT = {
   ok: false as const,
-  error: "Modo demo: puedes explorar todo, pero los cambios no se guardan.",
+  error: "Esta boda está en modo solo lectura: puedes ver todo, pero los cambios no se guardan.",
 };
 
 /** Unread wishes (menu badge). */

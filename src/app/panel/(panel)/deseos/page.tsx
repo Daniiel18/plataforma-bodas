@@ -9,7 +9,7 @@ import type { Wish } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 import { BlockSkeleton, PageHeader } from "../page-header";
-import { MarkAllReadButton, WishReadToggle } from "./wish-controls";
+import { MarkAllReadButton, WishApproveToggle, WishReadToggle } from "./wish-controls";
 
 export const metadata: Metadata = { title: "Deseos" };
 
@@ -20,7 +20,7 @@ export default function WishesPage() {
     <>
       <PageHeader
         title="Deseos"
-        description="Mensajes privados que dejan los invitados después de responder. Solo ustedes los ven."
+        description="Mensajes que dejan los invitados al responder. Son privados, salvo los que ustedes muestren en la invitación (actívenlo en Ajustes)."
         actions={
           <Suspense fallback={null}>
             <MarkAllRead />
@@ -83,7 +83,9 @@ async function WishList() {
                   {w.rsvps &&
                     (w.rsvps.attending ? <Badge>Asiste</Badge> : <Badge variant="secondary">No asiste</Badge>)}
                   {w.locale === "en" && <Badge variant="outline">EN</Badge>}
+                  {w.approved_at && wedding.guestbook_public && <Badge variant="outline">En la invitación</Badge>}
                   <WishReadToggle wishId={w.id} isRead={w.is_read} />
+                  <WishApproveToggle wishId={w.id} approved={Boolean(w.approved_at)} />
                 </div>
               </div>
             </CardContent>

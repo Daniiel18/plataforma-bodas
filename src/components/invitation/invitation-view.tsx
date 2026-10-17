@@ -4,12 +4,13 @@ import type { CSSProperties } from "react";
 
 import { photoBackdropStyle } from "@/lib/backgrounds";
 import type { InvitationData, SectionView } from "@/lib/invitation";
+import { SITE_URL } from "@/lib/site";
 import { getTemplate, themeAttributes, themeStyle } from "@/lib/templates";
 
 import { Envelope } from "./envelope";
 import { invitationFonts } from "./fonts";
 import { eventDateParts } from "./format";
-import { LangScript } from "./lang";
+import { LangScript, T } from "./lang";
 import { LanguageToggle } from "./language-toggle";
 import { MusicProvider } from "./music";
 import {
@@ -83,8 +84,16 @@ export function InvitationView({ data, preview = false }: { data: InvitationData
           {data.sections.map((section) => (
             <div key={section.type}>{renderSection(section, data, preview)}</div>
           ))}
-          <footer className="px-5 pt-6 text-center text-xs tracking-[0.2em] text-[var(--inv-ink-soft)] uppercase">
-            ♡ {data.couple.partner1.split(" ")[0]} &amp; {data.couple.partner2.split(" ")[0]}
+          <footer className="grid gap-3 px-5 pt-6 text-center text-xs text-[var(--inv-ink-soft)]">
+            <p className="tracking-[0.2em] uppercase">
+              ♡ {data.couple.partner1.split(" ")[0]} &amp; {data.couple.partner2.split(" ")[0]}
+            </p>
+            <a href={SITE_URL} target="_blank" rel="noopener" className="opacity-80 hover:underline">
+              <T
+                es="Hecho con ♡ en Lazo de Oro · Crea la tuya gratis"
+                en="Made with ♡ on Lazo de Oro · Create yours free"
+              />
+            </a>
           </footer>
         </main>
       </MusicProvider>

@@ -151,6 +151,7 @@ Guests never write to tables directly. The RSVP Server Actions call these functi
 | `rsvp_submit` | Building block of `rsvp_reply`: creates the RSVP and its companions. Checks publication, deadline, max companions and a per-connection rate limit. |
 | `rsvp_status` | Returns the guest's own answer from their token hash. |
 | `rsvp_change` | Switches Yes ↔ No before the deadline; increments `change_count`. |
+| `public_guestbook` | Approved, visible wishes of a published wedding whose guestbook is public (author, message). The only function anonymous visitors can call. |
 | `set_auth_locale` | Stores the sign-in page language (`es`/`en`) in an account's metadata, so the sign-in email is sent in that language. |
 
 ## Realtime

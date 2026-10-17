@@ -12,6 +12,8 @@ import { pick, useLang } from "./use-lang";
 type Props = {
   slug: string;
   maxCompanions: number;
+  /** "count": only how many people come with each guest. */
+  companionsMode: "names" | "count";
   deadline: string | null;
   deadlineLabel: Bi | null;
   closed: Bi;
@@ -163,6 +165,7 @@ export function RsvpForm(props: Props) {
 function NewRsvpForm({
   slug,
   maxCompanions,
+  companionsMode,
   deadline,
   deadlineLabel,
   preview,
@@ -177,10 +180,11 @@ function NewRsvpForm({
   const [website, setWebsite] = useState("");
   const [error, setError] = useState<RsvpErrorCode | null>(null);
   const [pending, startTransition] = useTransition();
+  const byCount = companionsMode === "count";
 
   const next = (event: FormEvent) => {
     event.preventDefault();
-    if (!validName(name) || attending === null || (attending && !companions.every(validName))) {
+    if (!validName(name) || attending === null || (attending && !byCount && !companions.every(validName))) {
       setError("INVALID");
       return;
     }
@@ -191,13 +195,15 @@ function NewRsvpForm({
   const send = (withWish: boolean) => {
     if (preview || attending === null) return;
     startTransition(async () => {
-      const list = attending ? companions.map((c) => c.trim()) : [];
+      const list = attending && !byCount ? companions.map((c) => c.trim()) : [];
+      const count = attending ? companions.length : 0;
       const message = withWish ? wish.trim() : "";
       const result = await submitRsvp({
         slug,
         fullName: name.trim(),
         attending,
         companions: list,
+        companionsCount: byCount ? count : undefined,
         wish: message,
         locale: lang,
         website,
@@ -211,6 +217,7 @@ function NewRsvpForm({
           fullName: name.trim(),
           attending,
           companions: list,
+          companionsCount: count,
           hasWish: Boolean(message),
           canChange: !isPastDeadline(deadline),
         },
@@ -329,7 +336,9 @@ function NewRsvpForm({
         </div>
       </fieldset>
 
-      {attending && <CompanionFields companions={companions} onChange={setCompanions} max={maxCompanions} />}
+      {attending && (
+        <CompanionFields companions={companions} onChange={setCompanions} max={maxCompanions} byCount={byCount} />
+      )}
 
       {/* Honeypot field for bots: hidden from people. */}
       <input
@@ -383,10 +392,13 @@ function CompanionFields({
   companions,
   onChange,
   max,
+  byCount = false,
 }: {
   companions: string[];
   onChange: (list: string[]) => void;
   max: number;
+  /** Only the number of companions, without their names. */
+  byCount?: boolean;
 }) {
   const lang = useLang();
   const count = companions.length;
@@ -399,7 +411,11 @@ function CompanionFields({
     <div className="grid gap-3">
       <div className="flex items-center justify-between gap-3">
         <span className="text-sm font-semibold tracking-[0.12em] uppercase">
-          <T es="Acompañantes" en="Guests coming with you" />
+          {byCount ? (
+            <T es="¿Cuántos vienen contigo?" en="How many are coming with you?" />
+          ) : (
+            <T es="Acompañantes" en="Guests coming with you" />
+          )}
         </span>
         <div className="flex items-center gap-3">
           <button
@@ -425,17 +441,18 @@ function CompanionFields({
           </button>
         </div>
       </div>
-      {companions.map((value, i) => (
-        <input
-          key={i}
-          className={inputClass}
-          value={value}
-          onChange={(e) => onChange(companions.map((c, j) => (j === i ? e.target.value : c)))}
-          maxLength={120}
-          required
-          placeholder={pick(lang, `Nombre del acompañante ${i + 1}`, `Guest ${i + 1} full name`)}
-        />
-      ))}
+      {!byCount &&
+        companions.map((value, i) => (
+          <input
+            key={i}
+            className={inputClass}
+            value={value}
+            onChange={(e) => onChange(companions.map((c, j) => (j === i ? e.target.value : c)))}
+            maxLength={120}
+            required
+            placeholder={pick(lang, `Nombre del acompañante ${i + 1}`, `Guest ${i + 1} full name`)}
+          />
+        ))}
       {count >= max && (
         <p className="text-xs text-[var(--inv-ink-soft)]">
           <T es={`Máximo ${max} acompañantes por respuesta.`} en={`Up to ${max} guests per reply.`} />
@@ -463,6 +480,7 @@ function ErrorText({ code }: { code: RsvpErrorCode }) {
 function AnsweredView({
   slug,
   maxCompanions,
+  companionsMode,
   rsvp,
   token,
   onUpdate,
@@ -488,6 +506,11 @@ function AnsweredView({
                 es={`Te esperamos junto a ${rsvp.companions.join(", ")}.`}
                 en={`We'll see you there with ${rsvp.companions.join(", ")}.`}
               />
+            ) : rsvp.companionsCount > 0 ? (
+              <T
+                es={`Te esperamos con ${rsvp.companionsCount} ${rsvp.companionsCount === 1 ? "acompañante" : "acompañantes"}.`}
+                en={`We'll see you there with ${rsvp.companionsCount} ${rsvp.companionsCount === 1 ? "guest" : "guests"}.`}
+              />
             ) : (
               <T es="¡Te esperamos!" en="We can't wait to see you!" />
             )
@@ -506,7 +529,14 @@ function AnsweredView({
       <PersonalLink slug={slug} token={token} />
 
       {rsvp.canChange ? (
-        <ChangeAnswer slug={slug} token={token} rsvp={rsvp} maxCompanions={maxCompanions} onChanged={onUpdate} />
+        <ChangeAnswer
+          slug={slug}
+          token={token}
+          rsvp={rsvp}
+          maxCompanions={maxCompanions}
+          companionsMode={companionsMode}
+          onChanged={onUpdate}
+        />
       ) : (
         <p className="text-xs text-[var(--inv-ink-soft)]">
           <T es="El plazo para cambiar tu respuesta ya terminó." en="The deadline to change your answer has passed." />
@@ -561,14 +591,17 @@ function ChangeAnswer({
   token,
   rsvp,
   maxCompanions,
+  companionsMode,
   onChanged,
 }: {
   slug: string;
   token: string;
   rsvp: MyRsvp;
   maxCompanions: number;
+  companionsMode: "names" | "count";
   onChanged: (rsvp: MyRsvp) => void;
 }) {
+  const byCount = companionsMode === "count";
   const [editing, setEditing] = useState(false);
   const [companions, setCompanions] = useState<string[]>([]);
   const [error, setError] = useState<RsvpErrorCode | null>(null);
@@ -576,20 +609,27 @@ function ChangeAnswer({
   const toAttending = !rsvp.attending;
 
   const confirm = () => {
-    if (toAttending && !companions.every(validName)) {
+    if (toAttending && !byCount && !companions.every(validName)) {
       setError("INVALID");
       return;
     }
     startTransition(async () => {
-      const list = toAttending ? companions.map((c) => c.trim()) : [];
-      const result = await changeAttendance({ slug, token, attending: toAttending, companions: list });
+      const list = toAttending && !byCount ? companions.map((c) => c.trim()) : [];
+      const count = toAttending ? companions.length : 0;
+      const result = await changeAttendance({
+        slug,
+        token,
+        attending: toAttending,
+        companions: list,
+        companionsCount: byCount ? count : undefined,
+      });
       if (!result.ok) {
         setError(result.code);
         return;
       }
       setEditing(false);
       setError(null);
-      onChanged({ ...rsvp, attending: toAttending, companions: list });
+      onChanged({ ...rsvp, attending: toAttending, companions: list, companionsCount: count });
     });
   };
 
@@ -608,7 +648,7 @@ function ChangeAnswer({
   return (
     <div className="grid gap-4 rounded-2xl bg-[var(--inv-card)] px-4 py-5 text-left">
       {toAttending ? (
-        <CompanionFields companions={companions} onChange={setCompanions} max={maxCompanions} />
+        <CompanionFields companions={companions} onChange={setCompanions} max={maxCompanions} byCount={byCount} />
       ) : (
         <p className="text-center text-sm">
           <T

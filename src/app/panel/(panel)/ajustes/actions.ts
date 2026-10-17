@@ -19,6 +19,8 @@ const settingsSchema = z
     deadline_enabled: z.boolean(),
     deadline_local: z.string(),
     max_companions: z.coerce.number().int().min(0, "Mínimo 0").max(50, "Máximo 50"),
+    companions_mode: z.enum(["names", "count"]),
+    guestbook_public: z.boolean(),
     is_published: z.boolean(),
   })
   .superRefine((v, ctx) => {
@@ -42,6 +44,8 @@ export async function updateWeddingSettings(_prev: ActionResult | null, formData
     deadline_enabled: formData.get("deadline_enabled") === "on",
     deadline_local: formData.get("deadline_local") ?? "",
     max_companions: formData.get("max_companions"),
+    companions_mode: formData.get("companions_mode") ?? "names",
+    guestbook_public: formData.get("guestbook_public") === "on",
     is_published: formData.get("is_published") === "on",
   });
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
@@ -62,6 +66,8 @@ export async function updateWeddingSettings(_prev: ActionResult | null, formData
       timezone: v.timezone || null,
       rsvp_deadline: deadline?.toISOString() ?? null,
       max_companions: v.max_companions,
+      companions_mode: v.companions_mode,
+      guestbook_public: v.guestbook_public,
       is_published: v.is_published,
     })
     .eq("id", wedding.id);

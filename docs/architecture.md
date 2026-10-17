@@ -116,6 +116,14 @@ Guests have no accounts. A random 192-bit token identifies their answer; only it
 3. A Server Action validates the path, type and size and registers the file; a database trigger enforces the limits (30 photos, one cover, one song, one QR).
 4. Guests receive images through `next/image`, so Vercel's CDN serves optimized versions and Supabase egress stays low. Music is only downloaded after the guest opens the envelope.
 
+### Lifecycle
+
+`/api/cron/lifecycle` runs every day (Vercel Cron, `CRON_SECRET`) and applies the rules in `src/lib/lifecycle.ts` with the service role: active → `read_only` 30 days after the event; a push warning 30 days before archiving (`archive_notified_at`); `archived` 12 months after the event (files removed from Storage, media rows deleted, unpublished); drafts never published get a warning after 23 days (`draft_notified_at`) and are deleted after 30. The dashboard shows the same dates in a banner (`lifecycleNotice`) and `getAdminContext` turns it read-only outside `draft`/`active`. The `demo` wedding is exempt.
+
+### Guests' companions and the guestbook
+
+Each wedding asks for companions by name or only by count (`companions_mode`); the RSVP functions take both and ignore names in count mode, storing `rsvps.companions_count`. With `guestbook_public` on, wishes the couple approves (`wishes.approved_at`) show under the reply form through `public_guestbook`, the only way anonymous visitors read wishes.
+
 ### Music
 
 The music section stores `track`, a song of the library (`src/lib/music-library.ts`, public domain recordings served from `/public/music`), or null to play the couple's own upload; uploading a song resets it to null. Library songs live on Vercel's CDN, not in Storage.

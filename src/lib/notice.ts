@@ -1,6 +1,15 @@
 export type CoupleNotice =
-  | { kind: "rsvp"; name: string; attending: boolean; companions: string[]; wish: string | null }
-  | { kind: "change"; name: string; attending: boolean; companions: string[] }
+  | {
+      kind: "rsvp";
+      name: string;
+      attending: boolean;
+      companions: string[];
+      /** People coming with the guest; equals companions.length when they are named. */
+      companionsCount?: number;
+      wish: string | null;
+    }
+  | { kind: "change"; name: string; attending: boolean; companions: string[]; companionsCount?: number }
+  | { kind: "lifecycle"; title: string; body: string }
   | { kind: "test" };
 
 export type NoticePayload = { title: string; body: string; url: string; tag: string };
@@ -11,11 +20,13 @@ const truncate = (text: string, max: number) => (text.length > max ? `${text.sli
 export function composeNotice(notice: CoupleNotice): NoticePayload {
   switch (notice.kind) {
     case "rsvp": {
-      const people = 1 + notice.companions.length;
+      const extra = notice.companionsCount ?? notice.companions.length;
       const answer = notice.attending
         ? notice.companions.length
-          ? `${people} personas: ${notice.name}, ${notice.companions.join(", ")}`
-          : "Asistirá sin acompañantes"
+          ? `${1 + extra} personas: ${notice.name}, ${notice.companions.join(", ")}`
+          : extra
+            ? `${1 + extra} personas: ${notice.name} y ${extra} ${extra === 1 ? "acompañante" : "acompañantes"}`
+            : "Asistirá sin acompañantes"
         : "Respondió que no asistirá";
       return {
         title: notice.attending ? `✅ ${notice.name} confirmó` : `✉️ ${notice.name} no podrá asistir`,
@@ -27,15 +38,22 @@ export function composeNotice(notice: CoupleNotice): NoticePayload {
         tag: "rsvp",
       };
     }
-    case "change":
+    case "change": {
+      const extra = notice.companionsCount ?? notice.companions.length;
+      const company = notice.companions.length
+        ? ` con ${notice.companions.join(", ")}`
+        : extra
+          ? ` con ${extra} ${extra === 1 ? "acompañante" : "acompañantes"}`
+          : "";
       return {
         title: `🔄 ${notice.name} cambió su respuesta`,
-        body: notice.attending
-          ? `Ahora asistirá${notice.companions.length ? ` con ${notice.companions.join(", ")}` : ""}`
-          : "Ahora no asistirá",
+        body: notice.attending ? `Ahora asistirá${company}` : "Ahora no asistirá",
         url: "/panel/invitados",
         tag: "rsvp",
       };
+    }
+    case "lifecycle":
+      return { title: notice.title, body: notice.body, url: "/panel", tag: "lifecycle" };
     case "test":
       return {
         title: "🔔 Notificaciones activadas",

@@ -10,6 +10,10 @@ export type Wedding = {
   template_key: string;
   theme_overrides: Record<string, unknown>;
   is_published: boolean;
+  status: "draft" | "active" | "read_only" | "archived" | "suspended";
+  companions_mode: "names" | "count";
+  guestbook_public: boolean;
+  published_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -26,6 +30,8 @@ export type Wish = {
   message: string;
   locale: "es" | "en";
   is_read: boolean;
+  /** When the couple approved it for the public guestbook. */
+  approved_at: string | null;
   created_at: string;
 };
 
@@ -34,6 +40,8 @@ export type Rsvp = {
   wedding_id: string;
   full_name: string;
   attending: boolean;
+  /** Companions when the wedding only counts them (null when they are named). */
+  companions_count: number | null;
   locale: "es" | "en";
   change_count: number;
   admin_note: string | null;
@@ -41,6 +49,10 @@ export type Rsvp = {
   created_at: string;
   updated_at: string;
 };
+
+/** People coming with a guest, named or only counted. */
+export const companionsOf = (r: { companions_count: number | null; rsvp_companions: unknown[] }) =>
+  r.companions_count ?? r.rsvp_companions.length;
 
 export type RsvpWithDetails = Rsvp & {
   rsvp_companions: Companion[];

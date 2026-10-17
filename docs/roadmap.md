@@ -8,9 +8,9 @@
 | --- | --- | --- |
 | 1 | Architecture and database: accounts, plans, wedding lifecycle, per-wedding settings, analytics, audit log | ✅ Done |
 | 2 | Landing page, indexable demo, builder without an account (settings in the browser, photos and music in IndexedDB) | ✅ Done |
-| 3 | Sign-in with Google or an email link, moving the browser draft to the database, publishing | Next |
-| 4 | Couple's dashboard: companions mode, public guestbook, "Made with Lazo de Oro" credit, lifecycle jobs (read-only, archive, draft cleanup) | Planned |
-| 5 | Super admin: accounts, weddings, conversion funnel, free-tier usage, errors, audit log, suspensions | Planned |
+| 3 | Sign-in with Google or an email code, moving the browser draft to the database, publishing | ✅ Done |
+| 4 | Couple's dashboard: companions mode, public guestbook, "Made with Lazo de Oro" credit, lifecycle jobs (read-only, archive, draft cleanup) | ✅ Done |
+| 5 | Super admin: accounts, weddings, conversion funnel, free-tier usage, errors, audit log, suspensions | Next |
 | 6 | Excel export of the guest list and a donations button | Planned |
 
 ## Decisions

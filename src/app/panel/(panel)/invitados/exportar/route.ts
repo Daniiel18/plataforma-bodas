@@ -40,6 +40,12 @@ export async function GET() {
     for (const c of [...r.rsvp_companions].sort((a, b) => a.position - b.position)) {
       lines.push([c.full_name, "Acompañante", r.full_name, attending, date, "", ""].map(csvCell).join(","));
     }
+    // Weddings that only count companions: one row per person, without a name.
+    if (r.attending && !r.rsvp_companions.length) {
+      for (let i = 0; i < (r.companions_count ?? 0); i++) {
+        lines.push(["(sin nombre)", "Acompañante", r.full_name, attending, date, "", ""].map(csvCell).join(","));
+      }
+    }
   }
 
   const fileName = `invitados-${wedding.slug}-${new Date().toISOString().slice(0, 10)}.csv`;

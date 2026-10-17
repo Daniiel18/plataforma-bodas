@@ -34,7 +34,7 @@ export async function uploadPrepared(
     );
     throw new Error(
       denied
-        ? "Modo demo: puedes explorar todo, pero los cambios no se guardan."
+        ? "Esta boda está en modo solo lectura: puedes ver todo, pero los cambios no se guardan."
         : "No se pudo subir el archivo. Revisa tu conexión e inténtalo de nuevo.",
     );
   }

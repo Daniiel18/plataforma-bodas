@@ -276,12 +276,28 @@ export function RsvpSection({ section, slug, preview }: { section: Of<"rsvp">; s
         <RsvpForm
           slug={slug}
           maxCompanions={section.maxCompanions}
+          companionsMode={section.companionsMode}
           deadline={section.deadline}
           deadlineLabel={section.deadlineLabel}
           closed={section.closed}
           preview={preview}
         />
       </div>
+      {section.guestbook.length > 0 && (
+        <div className="mt-12 grid gap-4">
+          <p className="inv-heading text-sm text-[var(--inv-ink-soft)]">
+            <T es="Deseos para los novios" en="Wishes for the couple" />
+          </p>
+          <ul className="grid gap-3 text-left">
+            {section.guestbook.map((entry, index) => (
+              <li key={index} className="inv-card px-5 py-4">
+                <p className="whitespace-pre-line">“{entry.message}”</p>
+                <p className="mt-2 text-sm text-[var(--inv-ink-soft)]">— {entry.author}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </Section>
   );
 }

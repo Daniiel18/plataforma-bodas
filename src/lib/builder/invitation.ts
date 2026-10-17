@@ -54,7 +54,13 @@ export function draftToInvitation(
     backgroundPhoto: image(draft.media.background),
     couple: { partner1: name(draft.couple.partner1, "Nombre"), partner2: name(draft.couple.partner2, "Nombre") },
     event: startsAt ? { startsAt, timeZone: draft.event.timeZone } : null,
-    rsvp: { deadline: draftDeadline(draft), timeZone: draft.event.timeZone, maxCompanions: draft.rsvp.maxCompanions },
+    rsvp: {
+      deadline: draftDeadline(draft),
+      timeZone: draft.event.timeZone,
+      maxCompanions: draft.rsvp.maxCompanions,
+      companionsMode: draft.rsvp.companionsMode,
+      guestbook: [],
+    },
     sections: SECTION_TYPES.map((type) => ({
       type,
       visible: draft.sections[type].visible,

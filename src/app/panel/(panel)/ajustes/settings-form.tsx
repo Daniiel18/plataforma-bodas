@@ -26,6 +26,8 @@ type Props = {
     timezone: string;
     deadline_local: string;
     max_companions: number;
+    companions_mode: "names" | "count";
+    guestbook_public: boolean;
     is_published: boolean;
   };
   share: ShareDetails;
@@ -129,6 +131,28 @@ export function SettingsForm({ wedding, share }: Props) {
             required
           />
         </div>
+        <div className="grid gap-2">
+          <Label htmlFor="companions_mode">Acompañantes</Label>
+          <select
+            id="companions_mode"
+            name="companions_mode"
+            defaultValue={wedding.companions_mode}
+            className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs"
+          >
+            <option value="names">Pedir el nombre de cada uno</option>
+            <option value="count">Solo cuántos vienen</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <Label htmlFor="guestbook_public">Mostrar deseos en la invitación</Label>
+          <p className="text-sm text-muted-foreground">
+            Solo se ven los deseos que ustedes aprueben en <strong>Deseos</strong>, firmados con el primer nombre.
+          </p>
+        </div>
+        <Switch id="guestbook_public" name="guestbook_public" defaultChecked={wedding.guestbook_public} />
       </div>
 
       <Separator />

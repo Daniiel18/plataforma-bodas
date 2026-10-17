@@ -4,6 +4,7 @@ import { Suspense } from "react";
 
 import { Button } from "@/components/ui/button";
 import { getAdminContext, getUnreadWishesCount } from "@/lib/admin";
+import { lifecycleNotice } from "@/lib/lifecycle";
 
 import { signOut } from "../actions";
 import { MobileNav, SidebarNav } from "./admin-nav";
@@ -30,7 +31,12 @@ export default function PanelLayout({ children }: LayoutProps<"/panel">) {
             <MobileHeader />
           </Suspense>
         </header>
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 md:px-8 md:py-10">{children}</main>
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 md:px-8 md:py-10">
+          <Suspense>
+            <LifecycleBanner />
+          </Suspense>
+          {children}
+        </main>
       </div>
       <Suspense>
         <Live />
@@ -48,16 +54,35 @@ function coupleTitle(partner1: string, partner2: string) {
   return `${partner1.split(" ")[0]} & ${partner2.split(" ")[0]}`;
 }
 
-function DemoBadge() {
+function ReadOnlyBadge({ label }: { label: string }) {
   return (
     <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-amber-900 uppercase">
-      Demo · solo lectura
+      {label}
     </span>
   );
 }
 
+const readOnlyLabel = (isViewer: boolean, status: string) =>
+  isViewer ? "Demo · solo lectura" : status === "archived" ? "Archivada" : "Solo lectura";
+
+/** Read-only, archive or draft-deletion news, above every page. */
+async function LifecycleBanner() {
+  const { wedding } = await getAdminContext();
+  const notice = lifecycleNotice(wedding);
+  if (!notice) return null;
+  return (
+    <div
+      className={`mb-6 rounded-xl border p-4 text-sm ${notice.tone === "warning" ? "border-amber-300 bg-amber-50 text-amber-950" : "bg-muted/60"}`}
+      role="status"
+    >
+      <p className="font-medium">{notice.title}</p>
+      <p className="mt-1 text-muted-foreground">{notice.text}</p>
+    </div>
+  );
+}
+
 async function Sidebar() {
-  const { wedding, email, readOnly } = await getAdminContext();
+  const { wedding, email, readOnly, isViewer } = await getAdminContext();
   const unreadWishes = await getUnreadWishesCount();
 
   return (
@@ -65,7 +90,7 @@ async function Sidebar() {
       <div className="mb-6 px-3">
         <p className="text-xs tracking-[0.25em] text-muted-foreground uppercase">Panel</p>
         <p className="font-heading text-2xl">{coupleTitle(wedding.partner1_name, wedding.partner2_name)}</p>
-        {readOnly && <DemoBadge />}
+        {readOnly && <ReadOnlyBadge label={readOnlyLabel(isViewer, wedding.status)} />}
       </div>
       <SidebarNav unreadWishes={unreadWishes} />
       <div className="mt-auto grid gap-2 border-t pt-4">
@@ -83,7 +108,7 @@ async function Sidebar() {
 }
 
 async function MobileHeader() {
-  const { wedding, readOnly } = await getAdminContext();
+  const { wedding, readOnly, isViewer } = await getAdminContext();
   const unreadWishes = await getUnreadWishesCount();
   const title = coupleTitle(wedding.partner1_name, wedding.partner2_name);
 
@@ -91,7 +116,7 @@ async function MobileHeader() {
     <>
       <MobileNav unreadWishes={unreadWishes} title={title} />
       <p className="font-heading text-xl">{title}</p>
-      {readOnly && <DemoBadge />}
+      {readOnly && <ReadOnlyBadge label={readOnlyLabel(isViewer, wedding.status)} />}
       <form action={signOut} className="ml-auto">
         <Button type="submit" variant="ghost" size="icon" aria-label="Salir">
           <LogOutIcon />

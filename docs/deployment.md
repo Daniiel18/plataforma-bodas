@@ -81,7 +81,7 @@ Every push to `main` deploys to production; every pull request gets its own prev
 | Deployment Checks | Settings → Deployment Checks | GitHub check *Lint, types, tests & build* | Production is only promoted after CI passes |
 | Deployment Protection | Settings → Deployment Protection | Standard (Vercel Authentication) | Preview URLs are private; production stays public |
 | Protect sourcemaps | Settings → Deployment Protection | On | Source maps are not public |
-| Cron job | Settings → Cron Jobs | `/api/keep-alive`, daily at 12:00 UTC | Keeps the free Supabase project awake; answers `401` without `CRON_SECRET` |
+| Cron jobs | Settings → Cron Jobs | `/api/keep-alive` daily at 12:00 UTC and `/api/cron/lifecycle` daily at 09:00 UTC | Keep the free Supabase project awake and apply the wedding lifecycle; both answer `401` without `CRON_SECRET` |
 
 For a team or a commercial launch, add a **separate Supabase project for previews** (staging) and point the Preview environment variables to it, so pull requests can be tested end to end without touching real weddings.
 

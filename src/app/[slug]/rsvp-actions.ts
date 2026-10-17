@@ -32,6 +32,8 @@ export type MyRsvp = {
   fullName: string;
   attending: boolean;
   companions: string[];
+  /** People coming with the guest (named or only counted). */
+  companionsCount: number;
   hasWish: boolean;
   canChange: boolean;
 };
@@ -79,11 +81,13 @@ const submitSchema = z
     fullName: nameSchema,
     attending: z.boolean(),
     companions: z.array(nameSchema).max(50),
+    /** Weddings that only count companions send the number instead of names. */
+    companionsCount: z.number().int().min(0).max(50).optional(),
     wish: z.string().trim().max(1000),
     locale: localeSchema,
     website: z.string().max(0), // honeypot field: people never see it
   })
-  .refine((v) => v.attending || v.companions.length === 0);
+  .refine((v) => v.attending || (v.companions.length === 0 && !v.companionsCount));
 
 /** Saves the answer and the optional wish together, then sends the couple a single notification. */
 export async function submitRsvp(input: z.input<typeof submitSchema>): Promise<{ ok: true; token: string } | Failure> {
@@ -102,6 +106,7 @@ export async function submitRsvp(input: z.input<typeof submitSchema>): Promise<{
       p_full_name: v.fullName,
       p_attending: v.attending,
       p_companions: v.companions,
+      p_companions_count: v.companionsCount ?? null,
       p_wish: v.wish || null,
       p_locale: v.locale,
       p_token_hash: hashToken(token),
@@ -116,6 +121,7 @@ export async function submitRsvp(input: z.input<typeof submitSchema>): Promise<{
       name: v.fullName,
       attending: v.attending,
       companions: v.companions,
+      companionsCount: v.companionsCount ?? v.companions.length,
       wish: v.wish || null,
     }),
   );
@@ -131,6 +137,7 @@ export async function getMyRsvp(slug: string, token: string): Promise<{ ok: true
     full_name: string;
     attending: boolean;
     companions: string[];
+    companions_count: number | null;
     has_wish: boolean;
     can_change: boolean;
   }>();
@@ -143,6 +150,7 @@ export async function getMyRsvp(slug: string, token: string): Promise<{ ok: true
       fullName: data.full_name,
       attending: data.attending,
       companions: data.companions ?? [],
+      companionsCount: data.companions_count ?? data.companions?.length ?? 0,
       hasWish: data.has_wish,
       canChange: data.can_change,
     },
@@ -155,8 +163,9 @@ const changeSchema = z
     token: tokenSchema,
     attending: z.boolean(),
     companions: z.array(nameSchema).max(50),
+    companionsCount: z.number().int().min(0).max(50).optional(),
   })
-  .refine((v) => v.attending || v.companions.length === 0);
+  .refine((v) => v.attending || (v.companions.length === 0 && !v.companionsCount));
 
 export async function changeAttendance(input: z.input<typeof changeSchema>): Promise<{ ok: true } | Failure> {
   const parsed = changeSchema.safeParse(input);
@@ -171,6 +180,7 @@ export async function changeAttendance(input: z.input<typeof changeSchema>): Pro
       p_token_hash: hashToken(v.token),
       p_attending: v.attending,
       p_companions: v.companions,
+      p_companions_count: v.companionsCount ?? null,
     })
     .single<{ rsvp_id: string; wedding_id: string; full_name: string }>();
   if (error || !data) return failureFrom(error);
@@ -181,6 +191,7 @@ export async function changeAttendance(input: z.input<typeof changeSchema>): Pro
       name: data.full_name,
       attending: v.attending,
       companions: v.companions,
+      companionsCount: v.companionsCount ?? v.companions.length,
     }),
   );
   return { ok: true };

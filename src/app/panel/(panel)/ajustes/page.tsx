@@ -106,6 +106,8 @@ async function WeddingSettings() {
         timezone: wedding.timezone ?? "",
         deadline_local: zoned(wedding.rsvp_deadline),
         max_companions: wedding.max_companions,
+        companions_mode: wedding.companions_mode,
+        guestbook_public: wedding.guestbook_public,
         is_published: wedding.is_published,
       }}
       share={shareDetails(wedding)}

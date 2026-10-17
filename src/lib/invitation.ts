@@ -5,7 +5,7 @@ import { cacheLife, cacheTag } from "next/cache";
 
 import { giftViews, rowsToGifts, type GiftRow } from "@/lib/gifts";
 import { mediaImage, publicMediaUrl, type MediaImage } from "@/lib/media";
-import { assembleInvitation, type InvitationData, type ViewContext } from "@/lib/section-view";
+import { assembleInvitation, type GuestbookEntry, type InvitationData, type ViewContext } from "@/lib/section-view";
 import type { Bi, SectionType, Translations } from "@/lib/sections";
 import type { Wedding } from "@/lib/types";
 
@@ -86,7 +86,13 @@ export async function loadInvitationParts(
       wedding.event_starts_at && wedding.timezone
         ? { startsAt: wedding.event_starts_at, timeZone: wedding.timezone }
         : null,
-    rsvp: { deadline: wedding.rsvp_deadline, timeZone: wedding.timezone, maxCompanions: wedding.max_companions },
+    rsvp: {
+      deadline: wedding.rsvp_deadline,
+      timeZone: wedding.timezone,
+      maxCompanions: wedding.max_companions,
+      companionsMode: wedding.companions_mode,
+      guestbook: wedding.guestbook_public ? await loadGuestbook(supabase, wedding.id) : [],
+    },
     sections: ((sectionRows ?? []) as SectionRow[]).map((row) => ({
       type: row.type,
       visible: row.is_visible,
@@ -101,6 +107,15 @@ export async function loadInvitationParts(
       notesEn: Object.fromEntries(gifts.map((g) => [g.type, g.note_en ?? null])),
     }),
   });
+}
+
+/** Approved wishes, signed with the guest's first name only. */
+async function loadGuestbook(supabase: SupabaseClient, weddingId: string): Promise<GuestbookEntry[]> {
+  const { data } = await supabase.rpc("public_guestbook", { p_wedding_id: weddingId });
+  return ((data ?? []) as { author: string; message: string }[]).map((row) => ({
+    author: row.author.trim().split(/\s+/)[0] ?? "",
+    message: row.message,
+  }));
 }
 
 /** Published invitation, cached until the couple saves a change. */

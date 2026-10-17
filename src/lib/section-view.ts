@@ -42,8 +42,17 @@ export type SectionView =
       deadline: string | null;
       deadlineLabel: Bi | null;
       maxCompanions: number;
+      companionsMode: CompanionsMode;
+      /** Wishes the couple approved for the invitation (empty when the guestbook is private). */
+      guestbook: GuestbookEntry[];
     }
   | { type: "gifts"; title: Bi; message: Bi; methods: GiftView[] };
+
+/** "names" asks for each companion's name; "count" only how many come. */
+export type CompanionsMode = "names" | "count";
+
+/** A wish shown on the invitation: the guest's first name and their message. */
+export type GuestbookEntry = { author: string; message: string };
 
 export type InvitationData = {
   slug: string;
@@ -66,7 +75,13 @@ export type ViewContext = {
   cover: MediaImage | null;
   photos: Photo[];
   event: { startsAt: string; timeZone: string } | null;
-  rsvp: { deadline: string | null; timeZone: string | null; maxCompanions: number };
+  rsvp: {
+    deadline: string | null;
+    timeZone: string | null;
+    maxCompanions: number;
+    companionsMode: CompanionsMode;
+    guestbook: GuestbookEntry[];
+  };
   /** Gift methods that are on and complete (empty: the section is not shown). */
   gifts: GiftView[];
 };
@@ -145,7 +160,7 @@ export function buildSectionView(
     }
     case "rsvp": {
       const c = parseContent("rsvp", raw);
-      const { deadline, timeZone, maxCompanions } = ctx.rsvp;
+      const { deadline, timeZone, maxCompanions, companionsMode, guestbook } = ctx.rsvp;
       const formatDeadline = (lang: string) =>
         new Intl.DateTimeFormat(lang, {
           timeZone: timeZone ?? "UTC",
@@ -161,6 +176,8 @@ export function buildSectionView(
         deadline,
         deadlineLabel: deadline ? { es: formatDeadline("es"), en: formatDeadline("en-US") } : null,
         maxCompanions,
+        companionsMode,
+        guestbook,
       };
     }
     case "gifts": {

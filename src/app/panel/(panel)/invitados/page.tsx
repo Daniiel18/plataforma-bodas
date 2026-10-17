@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getAdminContext } from "@/lib/admin";
 import { displayZone, formatShortDateTime } from "@/lib/dates";
-import type { DuplicateMatch, RsvpWithDetails, Wish } from "@/lib/types";
+import { companionsOf, type DuplicateMatch, type RsvpWithDetails, type Wish } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 import { BlockSkeleton, PageHeader } from "../page-header";
@@ -126,7 +126,7 @@ async function GuestList({ searchParams }: Pick<PageProps<"/panel/invitados">, "
   });
 
   const zone = displayZone(wedding.timezone);
-  const peopleShown = rows.reduce((sum, r) => sum + (r.attending ? 1 + r.rsvp_companions.length : 0), 0);
+  const peopleShown = rows.reduce((sum, r) => sum + (r.attending ? 1 + companionsOf(r) : 0), 0);
 
   return (
     <>
@@ -188,9 +188,7 @@ async function GuestList({ searchParams }: Pick<PageProps<"/panel/invitados">, "
                     <TableCell>
                       <AttendanceBadge row={r} />
                     </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {r.attending ? 1 + r.rsvp_companions.length : 0}
-                    </TableCell>
+                    <TableCell className="text-right tabular-nums">{r.attending ? 1 + companionsOf(r) : 0}</TableCell>
                     <TableCell className="text-muted-foreground">{formatShortDateTime(r.updated_at, zone)}</TableCell>
                     <TableCell>
                       <RsvpActions
@@ -243,8 +241,15 @@ function GuestName({ row }: { row: Row }) {
         {row.locale === "en" && <Badge variant="outline">EN</Badge>}
         {row.is_archived && <Badge variant="outline">Archivada</Badge>}
       </p>
-      {row.rsvp_companions.length > 0 && (
+      {row.rsvp_companions.length > 0 ? (
         <p className="text-sm text-muted-foreground">+ {row.rsvp_companions.map((c) => c.full_name).join(", ")}</p>
+      ) : (
+        row.attending &&
+        (row.companions_count ?? 0) > 0 && (
+          <p className="text-sm text-muted-foreground">
+            + {row.companions_count} {row.companions_count === 1 ? "acompañante" : "acompañantes"}
+          </p>
+        )
       )}
       {row.duplicates.length > 0 && (
         <p className="text-xs text-destructive">Posible duplicado: {row.duplicates.join(" · ")}</p>
