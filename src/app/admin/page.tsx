@@ -147,9 +147,9 @@ async function Overview() {
             {funnel.map((step, i) => (
               <div key={step.label} className="grid gap-1">
                 <BarRow label={step.label} value={step.value} max={funnel[0].value || 1} />
-                {i > 0 && funnel[i - 1].value > 0 && (
+                {i > 0 && funnel[0].value > 0 && (
                   <p className="pl-1 text-xs text-muted-foreground">
-                    {Math.round((step.value / funnel[i - 1].value) * 100)}% del paso anterior
+                    {Math.round((step.value / funnel[0].value) * 100)}% de quienes visitaron
                   </p>
                 )}
               </div>
