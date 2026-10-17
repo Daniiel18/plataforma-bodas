@@ -78,7 +78,7 @@ export function GuestbookCarousel({ entries }: { entries: GuestbookEntry[] }) {
                 key={i}
                 type="button"
                 onClick={() => setIndex(i)}
-                className={`h-2 rounded-full transition-all ${i === index ? "w-5 bg-[var(--inv-accent)]" : "w-2 bg-[var(--inv-line)]"}`}
+                className={`h-2 rounded-full transition-all ${i === index ? "w-5 bg-[var(--inv-accent)]" : "w-2 bg-[var(--inv-ink-soft)]/40"}`}
                 aria-label={pick(lang, `Deseo ${i + 1} de ${count}`, `Wish ${i + 1} of ${count}`)}
                 aria-current={i === index}
               />
