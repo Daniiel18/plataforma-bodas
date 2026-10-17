@@ -12,6 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 
+import { rememberEmailLanguage } from "./actions";
+import { GoogleButton } from "./google-button";
+
 const RESEND_SECONDS = 60;
 
 type Problem = { es: string; en: string };
@@ -68,7 +71,20 @@ export function SignIn({ next, linkError }: { next: string; linkError: boolean }
 
   const callback = () => `${window.location.origin}/auth/confirm?next=${encodeURIComponent(next)}`;
 
-  const google = () =>
+  /** Google's button signed the couple in on this page: exchange the token for a session. */
+  const googleToken = (token: string, nonce: string) =>
+    startTransition(async () => {
+      setProblem(null);
+      const { error } = await supabase.auth.signInWithIdToken({ provider: "google", token, nonce });
+      if (error) {
+        setProblem(describe(error, "google"));
+        return;
+      }
+      window.location.assign(next);
+    });
+
+  /** Fallback when Google's button cannot load: the classic redirect. */
+  const googleRedirect = () =>
     startTransition(async () => {
       setProblem(null);
       const { error } = await supabase.auth.signInWithOAuth({
@@ -81,9 +97,11 @@ export function SignIn({ next, linkError }: { next: string; linkError: boolean }
   const sendCode = () =>
     startTransition(async () => {
       setProblem(null);
+      // The email is sent in the language this page is shown in.
+      await rememberEmailLanguage(email.trim(), lang).catch(() => undefined);
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim(),
-        options: { shouldCreateUser: true, emailRedirectTo: callback() },
+        options: { shouldCreateUser: true, emailRedirectTo: callback(), data: { locale: lang } },
       });
       if (error) {
         setProblem(describe(error, "email"));
@@ -133,16 +151,22 @@ export function SignIn({ next, linkError }: { next: string; linkError: boolean }
       <div className="grid gap-5 rounded-2xl border border-[var(--site-line)] bg-[var(--site-paper)] p-6 shadow-sm">
         {step === "email" ? (
           <>
-            <Button
-              type="button"
-              variant="outline"
-              size="lg"
-              className="h-12 bg-white"
-              onClick={google}
-              disabled={pending}
-            >
-              <GoogleLogo /> <T es="Continuar con Google" en="Continue with Google" />
-            </Button>
+            <GoogleButton
+              lang={lang}
+              onToken={googleToken}
+              fallback={
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  className="h-12 bg-white"
+                  onClick={googleRedirect}
+                  disabled={pending}
+                >
+                  <GoogleLogo /> <T es="Continuar con Google" en="Continue with Google" />
+                </Button>
+              }
+            />
 
             <div className="flex items-center gap-3 text-xs text-[var(--site-ink-soft)] uppercase">
               <span className="h-px flex-1 bg-[var(--site-line)]" />

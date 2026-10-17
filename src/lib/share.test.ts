@@ -9,7 +9,7 @@ const wedding = {
   timezone: "America/New_York",
   rsvp_deadline: "2027-05-16T03:59:00Z",
 };
-const url = "https://lazodoro.vercel.app/demo";
+const url = "https://lazodeoro.vercel.app/demo";
 
 describe("share", () => {
   it("formats the date and deadline in the wedding's time zone", () => {
