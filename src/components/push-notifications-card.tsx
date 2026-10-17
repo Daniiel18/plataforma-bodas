@@ -5,8 +5,21 @@ import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import type { ActionResult } from "@/lib/types";
 
-import { removePushSubscription, savePushSubscription, sendTestPush } from "./notification-actions";
+type Subscription = { endpoint: string; keys: { p256dh: string; auth: string }; label: string };
+
+type Props = {
+  /** Service worker scope: "/panel" for couples, "/admin" for the platform. */
+  scope: string;
+  description: string;
+  /** App name shown in the iPhone install steps. */
+  appName: string;
+  save: (subscription: Subscription) => Promise<ActionResult>;
+  remove: (endpoint: string) => Promise<ActionResult>;
+  test: () => Promise<ActionResult>;
+  deviceCount: number;
+};
 
 type Status = "checking" | "unsupported" | "ios-install" | "denied" | "off" | "on";
 
@@ -38,21 +51,19 @@ function isStandalone() {
   );
 }
 
-async function registerWorker() {
-  return navigator.serviceWorker.register("/sw.js", { scope: "/panel", updateViaCache: "none" });
-}
-
-async function saveSubscription(subscription: PushSubscription) {
+const toSubscription = (subscription: PushSubscription): Subscription => {
   const json = subscription.toJSON();
-  return savePushSubscription({
+  return {
     endpoint: json.endpoint ?? subscription.endpoint,
     keys: { p256dh: json.keys?.p256dh ?? "", auth: json.keys?.auth ?? "" },
     label: deviceLabel(),
-  });
-}
+  };
+};
 
-/** Turns on push notifications (new answer, change or wish) on the current device. */
-export function NotificationsCard({ deviceCount }: { deviceCount: number }) {
+/** Turns on push notifications on the current device (couple's dashboard or back office). */
+export function PushNotificationsCard({ scope, description, appName, save, remove, test, deviceCount }: Props) {
+  const registerWorker = () => navigator.serviceWorker.register("/sw.js", { scope, updateViaCache: "none" });
+  const saveSubscription = (subscription: PushSubscription) => save(toSubscription(subscription));
   const [status, setStatus] = useState<Status>("checking");
   const [pending, startTransition] = useTransition();
 
@@ -77,6 +88,7 @@ export function NotificationsCard({ deviceCount }: { deviceCount: number }) {
     return () => {
       active = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- checked once per mount
   }, []);
 
   const enable = () =>
@@ -100,7 +112,7 @@ export function NotificationsCard({ deviceCount }: { deviceCount: number }) {
         }
         setStatus("on");
         toast.success(result.message);
-        await sendTestPush();
+        await test();
       } catch {
         toast.error("Este navegador no permitió activar los avisos.");
       }
@@ -108,19 +120,19 @@ export function NotificationsCard({ deviceCount }: { deviceCount: number }) {
 
   const disable = () =>
     startTransition(async () => {
-      const registration = await navigator.serviceWorker.getRegistration("/panel");
+      const registration = await navigator.serviceWorker.getRegistration(scope);
       const subscription = await registration?.pushManager.getSubscription();
       if (subscription) {
-        await removePushSubscription(subscription.endpoint);
+        await remove(subscription.endpoint);
         await subscription.unsubscribe();
       }
       setStatus("off");
       toast.success("Avisos desactivados en este dispositivo");
     });
 
-  const test = () =>
+  const sendTest = () =>
     startTransition(async () => {
-      const result = await sendTestPush();
+      const result = await test();
       if (result.ok) toast.success(result.message);
       else toast.error(result.error);
     });
@@ -128,7 +140,7 @@ export function NotificationsCard({ deviceCount }: { deviceCount: number }) {
   return (
     <div className="grid gap-4 text-sm">
       <p className="text-muted-foreground">
-        Te avisamos al instante cuando alguien confirme, cambie su respuesta o deje un deseo.
+        {description}
         {deviceCount > 0 && ` Dispositivos activos: ${deviceCount}.`}
       </p>
 
@@ -144,8 +156,8 @@ export function NotificationsCard({ deviceCount }: { deviceCount: number }) {
             .
           </li>
           <li className="flex gap-2">
-            <BellIcon className="mt-0.5 size-4 shrink-0" /> 3. Abre <strong>Mi boda</strong> desde el ícono, entra a
-            Ajustes y activa los avisos aquí.
+            <BellIcon className="mt-0.5 size-4 shrink-0" /> 3. Abre <strong>{appName}</strong> desde el ícono y activa
+            los avisos aquí.
           </li>
         </ol>
       )}
@@ -174,7 +186,7 @@ export function NotificationsCard({ deviceCount }: { deviceCount: number }) {
             <BellIcon className="size-4" /> Este dispositivo recibe avisos
           </p>
           <div className="flex flex-wrap gap-2">
-            <Button variant="secondary" size="sm" onClick={test} disabled={pending}>
+            <Button variant="secondary" size="sm" onClick={sendTest} disabled={pending}>
               <SendIcon /> Enviar aviso de prueba
             </Button>
             <Button variant="ghost" size="sm" onClick={disable} disabled={pending}>

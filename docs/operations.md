@@ -19,6 +19,16 @@ Couples onboard themselves: they design their invitation at `/crear`, sign in wi
 
 To give someone read-only access (a planner, a relative), link their account with `--viewer`.
 
+## Back office
+
+Platform admins manage everything at **/admin**. To give someone access, run in the SQL editor:
+
+```sql
+insert into public.platform_admins (user_id) select id from auth.users where email = 'person@example.com';
+```
+
+Turn on the admin notifications from the overview (*Avisos en este dispositivo*) to hear about new weddings and server errors. Suspend a wedding from its page in *Bodas* (a reason is required; it is reversible).
+
 ## Backups
 
 The free Supabase plan does not include downloadable backups. Take a snapshot before every migration, before a couple publishes and after the wedding:

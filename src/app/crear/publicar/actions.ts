@@ -1,5 +1,7 @@
 "use server";
 
+import { after } from "next/server";
+
 import { getAdminContext, READ_ONLY_RESULT } from "@/lib/admin";
 import { refreshInvitation } from "@/lib/admin-invitation";
 import { toThemeOverrides } from "@/lib/appearance";
@@ -8,6 +10,7 @@ import { draftSchema, type ValidDraft } from "@/lib/builder/schema";
 import { findSlug } from "@/lib/builder/slugs";
 import { giftsToRows } from "@/lib/gifts";
 import { MEDIA_BUCKET } from "@/lib/media";
+import { announcePublished } from "@/lib/platform-admin";
 import { SECTION_TYPES, syncTranslations, type Translations } from "@/lib/sections";
 import { shareDetails, type ShareDetails } from "@/lib/share";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -188,7 +191,7 @@ export type FinishResult = { ok: true; slug: string; share: ShareDetails } | { o
 
 /** Translates every text into English and publishes the couple's wedding (unless they only save it). */
 export async function finishPublishing({ publish = true }: { publish?: boolean } = {}): Promise<FinishResult> {
-  const { supabase, wedding, readOnly } = await getAdminContext();
+  const { supabase, wedding, readOnly, userId } = await getAdminContext();
   if (readOnly) return READ_ONLY_RESULT;
 
   const { data: sections } = await supabase
@@ -226,6 +229,7 @@ export async function finishPublishing({ publish = true }: { publish?: boolean }
   if (publish) {
     const { error } = await supabase.from("weddings").update({ is_published: true }).eq("id", wedding.id);
     if (error) return { ok: false, error: "No se pudo publicar. Inténtalo de nuevo desde tu panel." };
+    if (!wedding.published_at) after(() => announcePublished(wedding, userId));
   }
 
   refreshInvitation(wedding.slug);

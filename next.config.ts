@@ -9,9 +9,10 @@ const nextConfig: NextConfig = {
   partialPrefetching: false,
   async redirects() {
     return [
-      // The couple's dashboard moved from /admin to /panel (old links and installed apps).
-      { source: "/admin", destination: "/panel", permanent: false },
-      { source: "/admin/:path*", destination: "/panel/:path*", permanent: false },
+      // The couple's dashboard moved from /admin to /panel; /admin is now the
+      // platform's back office (couples who land there are sent to /panel).
+      { source: "/admin/login", destination: "/panel/login", permanent: false },
+      { source: "/admin/recuperar", destination: "/panel/recuperar", permanent: false },
     ];
   },
   async headers() {

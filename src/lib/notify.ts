@@ -60,3 +60,37 @@ export async function notifyCouple(weddingId: string, notice: CoupleNotice): Pro
   }
   return delivered;
 }
+
+/** Something the platform admins should know (a wedding published, server errors). */
+export type PlatformNotice = { title: string; body: string; url: string };
+
+/** Notifies the platform admins' devices (Web Push). Never throws. */
+export async function notifyPlatform(notice: PlatformNotice): Promise<number> {
+  try {
+    if (!configured()) return 0;
+    const db = createAdminClient();
+    const { data: subscriptions } = await db.from("platform_push_subscriptions").select("id, endpoint, p256dh, auth");
+    if (!subscriptions?.length) return 0;
+
+    const payload = JSON.stringify({ ...notice, tag: "platform" });
+    let delivered = 0;
+    const expired: string[] = [];
+    await Promise.all(
+      subscriptions.map(async (s) => {
+        try {
+          await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, payload, {
+            TTL: 60 * 60 * 24,
+          });
+          delivered++;
+        } catch (error) {
+          const status = (error as { statusCode?: number }).statusCode;
+          if (status === 404 || status === 410) expired.push(s.id);
+        }
+      }),
+    );
+    if (expired.length) await db.from("platform_push_subscriptions").delete().in("id", expired);
+    return delivered;
+  } catch {
+    return 0;
+  }
+}

@@ -1,10 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 
 import { getAdminContext, READ_ONLY_RESULT } from "@/lib/admin";
 import { refreshInvitation } from "@/lib/admin-invitation";
+import { announcePublished } from "@/lib/platform-admin";
 import { isValidTimeZone, zonedInputToDate } from "@/lib/dates";
 import type { ActionResult } from "@/lib/types";
 
@@ -33,7 +35,7 @@ const settingsSchema = z
   });
 
 export async function updateWeddingSettings(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
-  const { supabase, wedding, readOnly } = await getAdminContext();
+  const { supabase, wedding, readOnly, userId } = await getAdminContext();
   if (readOnly) return READ_ONLY_RESULT;
 
   const parsed = settingsSchema.safeParse({
@@ -72,6 +74,7 @@ export async function updateWeddingSettings(_prev: ActionResult | null, formData
     })
     .eq("id", wedding.id);
   if (error) return { ok: false, error: "No se pudieron guardar los ajustes" };
+  if (v.is_published && !wedding.published_at) after(() => announcePublished(wedding, userId));
 
   refreshInvitation(wedding.slug);
   revalidatePath("/panel", "layout");

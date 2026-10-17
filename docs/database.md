@@ -87,7 +87,7 @@ erDiagram
   }
 ```
 
-Platform tables outside the diagram: `platform_admins` (super admins), `analytics_events` (product funnel, no cookies) and `audit_log` (sensitive actions).
+Platform tables outside the diagram: `platform_admins` (back-office access), `platform_push_subscriptions` (admins' devices), `analytics_events` (product funnel, no cookies), `audit_log` (sensitive actions) and `error_log` (server errors). All server-only.
 
 ## Wedding lifecycle
 
@@ -151,6 +151,8 @@ Guests never write to tables directly. The RSVP Server Actions call these functi
 | `rsvp_submit` | Building block of `rsvp_reply`: creates the RSVP and its companions. Checks publication, deadline, max companions and a per-connection rate limit. |
 | `rsvp_status` | Returns the guest's own answer from their token hash. |
 | `rsvp_change` | Switches Yes ↔ No before the deadline; increments `change_count`. |
+| `platform_usage` | Database size and bytes/files in Storage, for the back office. |
+| `storage_by_wedding` | Bytes and files each wedding keeps in Storage. |
 | `public_guestbook` | Approved, visible wishes of a published wedding whose guestbook is public (author, message). The only function anonymous visitors can call. |
 | `set_auth_locale` | Stores the sign-in page language (`es`/`en`) in an account's metadata, so the sign-in email is sent in that language. |
 

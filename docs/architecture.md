@@ -116,6 +116,10 @@ Guests have no accounts. A random 192-bit token identifies their answer; only it
 3. A Server Action validates the path, type and size and registers the file; a database trigger enforces the limits (30 photos, one cover, one song, one QR).
 4. Guests receive images through `next/image`, so Vercel's CDN serves optimized versions and Supabase egress stays low. Music is only downloaded after the guest opens the envelope.
 
+### Back office
+
+`/admin` is for platform admins (`platform_admins`; `getPlatformAdmin` checks the role on every page and action and sends anyone else to `/panel`). It reads everything with the service role: funnel from `analytics_events`, weddings with their owners, accounts from Supabase Auth, usage from `platform_usage` / `storage_by_wedding`, `error_log` and `audit_log`. Suspending sets `status = 'suspended'` (the invitation disappears, the couple's dashboard turns read-only) and stores the reason; reactivating returns the wedding to `draft`, `active` or `read_only` from its dates. First publishes and server errors notify the admins' devices (`platform_push_subscriptions`, `notifyPlatform`); `instrumentation.ts` records every server error.
+
 ### Lifecycle
 
 `/api/cron/lifecycle` runs every day (Vercel Cron, `CRON_SECRET`) and applies the rules in `src/lib/lifecycle.ts` with the service role: active → `read_only` 30 days after the event; a push warning 30 days before archiving (`archive_notified_at`); `archived` 12 months after the event (files removed from Storage, media rows deleted, unpublished); drafts never published get a warning after 23 days (`draft_notified_at`) and are deleted after 30. The dashboard shows the same dates in a banner (`lifecycleNotice`) and `getAdminContext` turns it read-only outside `draft`/`active`. The `demo` wedding is exempt.

@@ -6,6 +6,7 @@ describe("safeNext", () => {
   it("keeps the dashboard and the builder's publish step", () => {
     expect(safeNext("/panel/ajustes?recuperacion=1")).toBe("/panel/ajustes?recuperacion=1");
     expect(safeNext("/crear/publicar")).toBe("/crear/publicar");
+    expect(safeNext("/admin/bodas")).toBe("/admin/bodas");
   });
 
   it("falls back to the dashboard for anything else", () => {
@@ -14,5 +15,6 @@ describe("safeNext", () => {
     expect(safeNext("//evil.example/panel")).toBe("/panel");
     expect(safeNext("/panelfalso")).toBe("/panel");
     expect(safeNext("/demo")).toBe("/panel");
+    expect(safeNext("/administrador")).toBe("/panel");
   });
 });

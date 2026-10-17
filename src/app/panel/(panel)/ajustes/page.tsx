@@ -7,7 +7,9 @@ import { dateToZonedInput } from "@/lib/dates";
 import { shareDetails } from "@/lib/share";
 
 import { BlockSkeleton, PageHeader } from "../page-header";
-import { NotificationsCard } from "./notifications-card";
+import { PushNotificationsCard } from "@/components/push-notifications-card";
+
+import { removePushSubscription, savePushSubscription, sendTestPush } from "./notification-actions";
 import { PasswordForm } from "./password-form";
 import { SettingsForm } from "./settings-form";
 
@@ -84,7 +86,17 @@ async function Notifications() {
     .from("push_subscriptions")
     .select("id", { count: "exact", head: true })
     .eq("wedding_id", wedding.id);
-  return <NotificationsCard deviceCount={count ?? 0} />;
+  return (
+    <PushNotificationsCard
+      scope="/panel"
+      appName="Mi boda"
+      description="Te avisamos al instante cuando alguien confirme, cambie su respuesta o deje un deseo."
+      save={savePushSubscription}
+      remove={removePushSubscription}
+      test={sendTestPush}
+      deviceCount={count ?? 0}
+    />
+  );
 }
 
 async function AccountEmail() {
