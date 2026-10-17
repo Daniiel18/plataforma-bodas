@@ -158,7 +158,7 @@ function PublishFlow() {
             height: media.height,
             duration: null,
           };
-          await uploadPrepared(result.weddingId, kind, prepared);
+          await uploadPrepared(result.weddingId, kind, prepared, media.crop ?? null);
         } catch {
           failed++;
         }

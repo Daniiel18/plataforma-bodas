@@ -53,7 +53,7 @@ export function StepPreview({
         background={data.background.key}
         accent={data.accent}
         couple={`${first(data.couple.partner1)} & ${first(data.couple.partner2)}`}
-        cover={data.cover?.url ?? null}
+        cover={data.cover}
         backgroundPhoto={data.background.photo}
         veil={data.background.veil}
         size="large"

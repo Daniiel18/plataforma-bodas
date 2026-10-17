@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { MAX_UPLOAD_BYTES, MEDIA_BUCKET, type MediaKind } from "@/lib/media";
+import type { PhotoCrop } from "@/lib/photo-crop";
 import { prepareAudio, prepareImage, type Prepared } from "@/lib/media-prepare";
 import { createClient } from "@/lib/supabase/client";
 
@@ -12,7 +13,12 @@ import { registerMedia, type RegisteredMedia } from "@/lib/media-actions";
  * Uploads an already prepared file straight to Storage (bypassing the server)
  * and registers it in the couple's wedding.
  */
-export async function uploadPrepared(weddingId: string, kind: MediaKind, prepared: Prepared): Promise<RegisteredMedia> {
+export async function uploadPrepared(
+  weddingId: string,
+  kind: MediaKind,
+  prepared: Prepared,
+  crop: PhotoCrop | null = null,
+): Promise<RegisteredMedia> {
   if (prepared.blob.size > MAX_UPLOAD_BYTES[kind]) throw new Error("El archivo es demasiado grande.");
 
   const path = `${weddingId}/${kind}/${crypto.randomUUID()}.${prepared.ext}`;
@@ -41,6 +47,7 @@ export async function uploadPrepared(weddingId: string, kind: MediaKind, prepare
     width: prepared.width,
     height: prepared.height,
     duration: prepared.duration,
+    crop,
   });
   if (!result.ok || !result.media) throw new Error(result.ok ? "No se pudo guardar el archivo" : result.error);
   return result.media;

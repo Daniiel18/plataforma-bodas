@@ -1,16 +1,20 @@
 "use client";
 
-import { ArrowLeftIcon, ArrowRightIcon, ImagePlusIcon, Trash2Icon } from "lucide-react";
+import { ArrowLeftIcon, ArrowRightIcon, CropIcon, ImagePlusIcon, Trash2Icon } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { PhotoCropDialog } from "@/components/editor/photo-crop-dialog";
+import { FramedPhoto } from "@/components/invitation/framed-photo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { localImage } from "@/lib/builder/invitation";
 import { removeLocalMedia, saveLocalMedia, useLocalMediaUrls } from "@/lib/builder/media";
 import { useBuilder } from "@/lib/builder/store";
 import { MEDIA_LIMITS } from "@/lib/media";
+import { galleryFrame } from "@/lib/photo-crop";
 import { DEFAULT_TEXT, GALLERY_STYLES, parseContent } from "@/lib/sections";
 import { cn } from "@/lib/utils";
 
@@ -24,7 +28,11 @@ export function LocalGallery() {
   const urls = useLocalMediaUrls(photos.map((p) => p.id));
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
+  const [adjusting, setAdjusting] = useState<string | null>(null);
   const remaining = MEDIA_LIMITS.gallery - photos.length;
+  const frame = galleryFrame(settings.style);
+  const adjustingIndex = photos.findIndex((p) => p.id === adjusting);
+  const adjustingImage = adjustingIndex >= 0 ? localImage(photos[adjustingIndex], urls) : null;
 
   const onFiles = async (list: FileList | null) => {
     if (!list?.length) return;
@@ -61,42 +69,63 @@ export function LocalGallery() {
       <input ref={input} type="file" accept="image/*" multiple hidden onChange={(e) => onFiles(e.target.files)} />
 
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-        {photos.map((photo, index) => (
-          <div key={photo.id} className="group relative aspect-[4/5] overflow-hidden rounded-lg border bg-muted">
-            {urls[photo.id] && (
-              // eslint-disable-next-line @next/next/no-img-element -- local object URL
-              <img src={urls[photo.id]} alt="" className="size-full object-cover" />
-            )}
-            <div className="absolute inset-x-0 bottom-0 flex justify-between bg-black/45 p-1">
-              <button
-                type="button"
-                aria-label="Mover antes"
-                disabled={index === 0}
-                onClick={() => move(index, -1)}
-                className="rounded p-1 text-white disabled:opacity-30"
-              >
-                <ArrowLeftIcon className="size-4" />
-              </button>
-              <button
-                type="button"
-                aria-label="Quitar foto"
-                onClick={() => remove(photo.id)}
-                className="rounded p-1 text-white"
-              >
-                <Trash2Icon className="size-4" />
-              </button>
-              <button
-                type="button"
-                aria-label="Mover después"
-                disabled={index === photos.length - 1}
-                onClick={() => move(index, 1)}
-                className="rounded p-1 text-white disabled:opacity-30"
-              >
-                <ArrowRightIcon className="size-4" />
-              </button>
+        {photos.map((photo, index) => {
+          const image = localImage(photo, urls);
+          return (
+            <div
+              key={photo.id}
+              className="group relative overflow-hidden rounded-lg border bg-muted"
+              style={{ aspectRatio: frame }}
+            >
+              {image && (
+                <button
+                  type="button"
+                  className="absolute inset-0"
+                  onClick={() => setAdjusting(photo.id)}
+                  aria-label={`Ajustar foto ${index + 1}`}
+                >
+                  <FramedPhoto photo={image} frame={frame} alt="" width={160} />
+                </button>
+              )}
+              <div className="absolute inset-x-0 bottom-0 flex justify-between bg-black/45 p-1">
+                <button
+                  type="button"
+                  aria-label="Mover antes"
+                  disabled={index === 0}
+                  onClick={() => move(index, -1)}
+                  className="rounded p-1 text-white disabled:opacity-30"
+                >
+                  <ArrowLeftIcon className="size-4" />
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Ajustar foto ${index + 1}`}
+                  onClick={() => setAdjusting(photo.id)}
+                  className="rounded p-1 text-white"
+                >
+                  <CropIcon className="size-4" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Quitar foto"
+                  onClick={() => remove(photo.id)}
+                  className="rounded p-1 text-white"
+                >
+                  <Trash2Icon className="size-4" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Mover después"
+                  disabled={index === photos.length - 1}
+                  onClick={() => move(index, 1)}
+                  className="rounded p-1 text-white disabled:opacity-30"
+                >
+                  <ArrowRightIcon className="size-4" />
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         {remaining > 0 && (
           <button
             type="button"
@@ -110,8 +139,24 @@ export function LocalGallery() {
         )}
       </div>
       <p className="text-xs text-muted-foreground">
-        {photos.length} de {MEDIA_LIMITS.gallery} fotos. Se comprimen en tu teléfono y se suben al publicar.
+        {photos.length} de {MEDIA_LIMITS.gallery} fotos. Toquen una foto para ajustar qué parte se ve. Se comprimen en
+        su teléfono y se suben al publicar.
       </p>
+      {adjustingImage && (
+        <PhotoCropDialog
+          open
+          onOpenChange={(open) => !open && setAdjusting(null)}
+          photo={adjustingImage}
+          frame={frame}
+          title={`Ajustar foto ${adjustingIndex + 1}`}
+          onSave={(crop) => {
+            setGallery(
+              useBuilder.getState().draft!.media.gallery.map((p) => (p.id === adjusting ? { ...p, crop } : p)),
+            );
+            return true;
+          }}
+        />
+      )}
 
       <div className="grid gap-2">
         <Label htmlFor="gallery-title">Título</Label>

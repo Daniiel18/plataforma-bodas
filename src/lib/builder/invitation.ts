@@ -1,5 +1,5 @@
 import { zonedInputToDate } from "@/lib/dates";
-import type { MediaImage } from "@/lib/media";
+import { mediaImage, type MediaImage } from "@/lib/media";
 import { assembleInvitation, type InvitationData, type ViewContext } from "@/lib/section-view";
 import { SECTION_TYPES } from "@/lib/sections";
 import { giftViews } from "@/lib/gifts";
@@ -29,6 +29,11 @@ export function draftDeadline(draft: Pick<BuilderDraft, "event" | "rsvp">): stri
   }
 }
 
+/** A photo kept on this device, once its object URL is ready. */
+export function localImage(media: LocalMedia | null, urls: Record<string, string>): MediaImage | null {
+  return media && urls[media.id] ? mediaImage(urls[media.id], media) : null;
+}
+
 /**
  * The invitation as it will look once published, from the browser draft and
  * the object URLs of its local files.
@@ -37,8 +42,7 @@ export function draftToInvitation(
   draft: BuilderDraft,
   urls: Record<string, string>,
 ): { data: InvitationData; ctx: ViewContext } {
-  const image = (media: LocalMedia | null): MediaImage | null =>
-    media && urls[media.id] ? { url: urls[media.id], width: media.width ?? 1200, height: media.height ?? 1600 } : null;
+  const image = (media: LocalMedia | null) => localImage(media, urls);
   const startsAt = draftStartsAt(draft);
   const name = (n: string, fallback: string) => n.trim() || fallback;
 
@@ -47,7 +51,7 @@ export function draftToInvitation(
     updatedAt: draft.startedAt,
     templateKey: draft.appearance.template,
     themeOverrides: draft.appearance,
-    backgroundPhoto: image(draft.media.background)?.url ?? null,
+    backgroundPhoto: image(draft.media.background),
     couple: { partner1: name(draft.couple.partner1, "Nombre"), partner2: name(draft.couple.partner2, "Nombre") },
     event: startsAt ? { startsAt, timeZone: draft.event.timeZone } : null,
     rsvp: { deadline: draftDeadline(draft), timeZone: draft.event.timeZone, maxCompanions: draft.rsvp.maxCompanions },

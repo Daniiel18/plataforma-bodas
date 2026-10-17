@@ -171,4 +171,5 @@ Supabase's security and performance advisors report **no errors and no warnings*
 - Triggers keep companions consistent: none when the answer is "No", never above `max_companions`, and they are removed automatically when someone changes to "No".
 - `enforce_media_limits` caps uploads per wedding (30 photos; one cover, song and QR) and checks that files live in the wedding's own folder.
 - `gift_methods` has one row per wedding and method (`zelle`, `paypal`, `bank`, `registry`; unique on `wedding_id, type`); method-specific fields live in `details`, a JSON object of at most 4 KB.
+- `media.crop` stores how a photo is framed (`{x, y, zoom}`, checked by `media_crop_shape`); null means centered and filling its frame.
 - `wedding_stats` aggregates the dashboard numbers with the caller's permissions (`SECURITY INVOKER`).

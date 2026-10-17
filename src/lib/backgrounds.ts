@@ -1,3 +1,6 @@
+import type { MediaImage } from "./media";
+import { CENTERED, photoAspect } from "./photo-crop";
+
 /**
  * Page backgrounds. They are independent of the template: each one is painted
  * with the chosen template's colors (see `[data-bg]` in invitation.css), so
@@ -63,4 +66,22 @@ export function resolveBackground(
 
 export function veilStrength(veil: PhotoVeil): string {
   return PHOTO_VEILS.find((v) => v.key === veil)?.strength ?? "72%";
+}
+
+/**
+ * CSS variables that paint "Tu foto" behind the invitation, framed as the
+ * couple adjusted it (see `.inv-backdrop::before` in invitation.css). A
+ * background always fills the screen, so it never zooms out below 1.
+ */
+export function photoBackdropStyle(photo: MediaImage | null | undefined, veil: PhotoVeil): Record<string, string> {
+  if (!photo) return {};
+  const crop = photo.crop ?? CENTERED;
+  return {
+    "--inv-bg-photo": `url("${photo.url}")`,
+    "--inv-veil": veilStrength(veil),
+    "--inv-photo-ratio": photoAspect(photo).toFixed(4),
+    "--inv-photo-x": crop.x.toFixed(4),
+    "--inv-photo-y": crop.y.toFixed(4),
+    "--inv-photo-zoom": Math.max(1, crop.zoom).toFixed(4),
+  };
 }

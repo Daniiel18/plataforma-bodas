@@ -1,10 +1,13 @@
 "use client";
 
-import { MusicIcon, Trash2Icon, UploadIcon } from "lucide-react";
+import { CropIcon, MusicIcon, Trash2Icon, UploadIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { PhotoCropDialog } from "@/components/editor/photo-crop-dialog";
+import { FramedPhoto } from "@/components/invitation/framed-photo";
 import { Button } from "@/components/ui/button";
+import { localImage } from "@/lib/builder/invitation";
 import type { LocalMedia } from "@/lib/builder/draft";
 import { removeLocalMedia, saveLocalMedia, useLocalMediaUrls } from "@/lib/builder/media";
 import { useBuilder } from "@/lib/builder/store";
@@ -18,14 +21,26 @@ const ACCEPT: Record<Slot, string> = {
   audio: "audio/mpeg,audio/mp4,audio/x-m4a,audio/aac,.mp3,.m4a",
 };
 
+type Props = {
+  slot: Slot;
+  emptyLabel: string;
+  hint?: string;
+  /** Photos shown in a frame (cover, background) can be adjusted to it. */
+  frame?: number;
+  /** The frame must stay filled (backgrounds). */
+  fill?: boolean;
+};
+
 /** One photo, QR or song kept on this device (the builder's version of the dashboard field). */
-export function LocalMediaField({ slot, emptyLabel, hint }: { slot: Slot; emptyLabel: string; hint?: string }) {
+export function LocalMediaField({ slot, emptyLabel, hint, frame, fill }: Props) {
   const current = useBuilder((s) => s.draft?.media[slot] ?? null);
   const setMedia = useBuilder((s) => s.setMedia);
   const urls = useLocalMediaUrls(current ? [current.id] : []);
   const url = current ? urls[current.id] : undefined;
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
+  const [adjusting, setAdjusting] = useState(false);
+  const image = frame ? localImage(current, urls) : null;
 
   const onFile = async (file: File | undefined) => {
     if (!file) return;
@@ -58,6 +73,16 @@ export function LocalMediaField({ slot, emptyLabel, hint }: { slot: Slot; emptyL
             <MusicIcon className="size-5 shrink-0 text-muted-foreground" />
             <audio controls preload="metadata" src={url} className="h-10 w-full" />
           </div>
+        ) : image && frame ? (
+          <button
+            type="button"
+            onClick={() => setAdjusting(true)}
+            className={`relative overflow-hidden rounded-xl border bg-muted ${frame < 0.6 ? "w-36" : "w-56"}`}
+            style={{ aspectRatio: frame }}
+            aria-label="Ajustar foto"
+          >
+            <FramedPhoto photo={image} frame={frame} alt="" width={224} />
+          </button>
         ) : (
           // eslint-disable-next-line @next/next/no-img-element -- local object URL, nothing to optimize
           <img
@@ -86,6 +111,11 @@ export function LocalMediaField({ slot, emptyLabel, hint }: { slot: Slot; emptyL
 
       {current && (
         <div className="flex flex-wrap gap-2">
+          {image && (
+            <Button type="button" size="sm" onClick={() => setAdjusting(true)} disabled={busy}>
+              <CropIcon /> Ajustar
+            </Button>
+          )}
           <Button type="button" variant="secondary" size="sm" onClick={() => input.current?.click()} disabled={busy}>
             <UploadIcon /> {busy ? "Preparando…" : "Cambiar"}
           </Button>
@@ -93,6 +123,21 @@ export function LocalMediaField({ slot, emptyLabel, hint }: { slot: Slot; emptyL
             <Trash2Icon /> Quitar
           </Button>
         </div>
+      )}
+
+      {image && frame && current && (
+        <PhotoCropDialog
+          open={adjusting}
+          onOpenChange={setAdjusting}
+          photo={image}
+          frame={frame}
+          fill={fill}
+          title={slot === "background" ? "Ajustar foto de fondo" : "Ajustar foto de portada"}
+          onSave={(crop) => {
+            setMedia(slot, { ...current, crop });
+            return true;
+          }}
+        />
       )}
     </div>
   );

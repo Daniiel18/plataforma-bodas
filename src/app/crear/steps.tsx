@@ -10,9 +10,11 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import type { BuilderDraft, StepKey } from "@/lib/builder/draft";
+import { localImage } from "@/lib/builder/invitation";
 import { useLocalMediaUrls } from "@/lib/builder/media";
 import { useBuilder } from "@/lib/builder/store";
 import { COMMON_TIME_ZONES } from "@/lib/dates";
+import { FRAME } from "@/lib/photo-crop";
 import { DEFAULT_TEXT, parseContent, type SectionContent, type SectionType } from "@/lib/sections";
 
 import { LocalGallery } from "./local-gallery";
@@ -210,13 +212,15 @@ function AppearanceStep({ draft }: { draft: BuilderDraft }) {
       value={draft.appearance}
       onChange={setAppearance}
       couple={couple}
-      cover={cover ? (urls[cover.id] ?? null) : null}
-      photo={background ? (urls[background.id] ?? null) : null}
+      cover={localImage(cover, urls)}
+      photo={localImage(background, urls)}
       photoField={
         <LocalMediaField
           slot="background"
           emptyLabel="Subir foto de fondo"
-          hint="Una foto horizontal o vertical; se recorta para llenar la pantalla."
+          hint="Llena toda la pantalla. Con «Ajustar» eligen qué parte se ve detrás de la invitación."
+          frame={FRAME.background}
+          fill
         />
       }
     />

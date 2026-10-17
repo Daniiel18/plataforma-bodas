@@ -50,7 +50,7 @@ export type InvitationData = {
   template: TemplateKey;
   accent: string | null;
   /** Page background; `photo` only when the background is "Tu foto". */
-  background: { key: BackgroundKey; photo: string | null; veil: PhotoVeil };
+  background: { key: BackgroundKey; photo: MediaImage | null; veil: PhotoVeil };
   couple: { partner1: string; partner2: string };
   event: { startsAt: string; timeZone: string } | null;
   intro: { title: Bi; subtitle: Bi | null; button: Bi } | null;
@@ -187,8 +187,8 @@ export type InvitationSource = {
   templateKey: string | null;
   /** Saved appearance choices: accent, background and photo veil. */
   themeOverrides: unknown;
-  /** URL of the "Tu foto" background, when uploaded. */
-  backgroundPhoto: string | null;
+  /** The "Tu foto" background, when uploaded. */
+  backgroundPhoto: MediaImage | null;
   couple: { partner1: string; partner2: string };
   event: { startsAt: string; timeZone: string } | null;
   rsvp: ViewContext["rsvp"];

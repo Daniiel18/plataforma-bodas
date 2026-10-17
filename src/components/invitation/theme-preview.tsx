@@ -1,10 +1,13 @@
 import type { CSSProperties } from "react";
 
-import { veilStrength, type BackgroundKey, type PhotoVeil } from "@/lib/backgrounds";
+import { photoBackdropStyle, type BackgroundKey, type PhotoVeil } from "@/lib/backgrounds";
+import type { MediaImage } from "@/lib/media";
+import { FRAME } from "@/lib/photo-crop";
 import { themeAttributes, themeStyle, type Template } from "@/lib/templates";
 import { cn } from "@/lib/utils";
 
 import { Ornament } from "./decorations";
+import { FramedPhoto } from "./framed-photo";
 import { invitationFonts } from "./fonts";
 
 type Props = {
@@ -13,9 +16,9 @@ type Props = {
   accent: string | null;
   couple: string;
   /** The wedding's cover photo (a template gradient when there is none). */
-  cover?: string | null;
+  cover?: MediaImage | null;
   /** Background photo, for the "Tu foto" background. */
-  backgroundPhoto?: string | null;
+  backgroundPhoto?: MediaImage | null;
   veil?: PhotoVeil;
   size?: "card" | "large";
   className?: string;
@@ -59,9 +62,7 @@ export function ThemePreview({
   const s = SIZES[size];
   const style = {
     ...themeStyle(template, accent),
-    ...(background === "foto" && backgroundPhoto
-      ? { "--inv-bg-photo": `url("${backgroundPhoto}")`, "--inv-veil": veilStrength(veil) }
-      : {}),
+    ...(background === "foto" ? photoBackdropStyle(backgroundPhoto, veil) : {}),
     minHeight: 0,
   } as CSSProperties;
 
@@ -88,10 +89,9 @@ export function ThemePreview({
         )}
       >
         <span className="inv-polaroid-tape absolute -top-1.5 left-1/2 h-3 w-1/2 -translate-x-1/2 rotate-[3deg]" />
-        <div
-          className="inv-polaroid-photo aspect-[4/5] bg-[linear-gradient(160deg,var(--inv-card),var(--inv-card-strong))] bg-cover bg-center"
-          style={cover ? { backgroundImage: `url("${cover}")` } : undefined}
-        />
+        <div className="inv-polaroid-photo relative aspect-[4/5] overflow-hidden bg-[linear-gradient(160deg,var(--inv-card),var(--inv-card-strong))]">
+          {cover && <FramedPhoto photo={cover} frame={FRAME.cover} alt="" width={160} />}
+        </div>
         <Ornament set={template.ornaments} className={cn("pointer-events-none absolute rotate-[-12deg]", s.flowers)} />
       </div>
       <div className={cn("inv-card", s.card)}>
@@ -113,15 +113,13 @@ export function BackgroundSwatch({
 }: {
   template: Template;
   background: BackgroundKey;
-  backgroundPhoto?: string | null;
+  backgroundPhoto?: MediaImage | null;
   veil?: PhotoVeil;
   className?: string;
 }) {
   const style = {
     ...themeStyle(template, null),
-    ...(background === "foto" && backgroundPhoto
-      ? { "--inv-bg-photo": `url("${backgroundPhoto}")`, "--inv-veil": veilStrength(veil) }
-      : {}),
+    ...(background === "foto" ? photoBackdropStyle(backgroundPhoto, veil) : {}),
     minHeight: 0,
   } as CSSProperties;
   return (

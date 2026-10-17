@@ -1,3 +1,5 @@
+import { parseCrop, type PhotoCrop } from "./photo-crop";
+
 export const MEDIA_BUCKET = "wedding-media";
 
 export type MediaKind = "gallery" | "cover" | "audio" | "qr" | "background";
@@ -17,4 +19,13 @@ export function publicMediaUrl(path: string) {
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${MEDIA_BUCKET}/${path}`;
 }
 
-export type MediaImage = { url: string; width: number; height: number };
+/** A photo ready to show; `crop` is how the couple framed it (centered when absent). */
+export type MediaImage = { url: string; width: number; height: number; crop?: PhotoCrop | null };
+
+/** A stored or local photo with its size (a portrait default when unknown) and framing. */
+export function mediaImage(
+  url: string,
+  media: { width: number | null; height: number | null; crop?: unknown },
+): MediaImage {
+  return { url, width: media.width ?? 1200, height: media.height ?? 1600, crop: parseCrop(media.crop) };
+}

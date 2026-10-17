@@ -20,12 +20,13 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { EyeOffIcon, GripVerticalIcon, ImagePlusIcon, Trash2Icon } from "lucide-react";
-import Image from "next/image";
+import { CropIcon, EyeOffIcon, GripVerticalIcon, ImagePlusIcon, Trash2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { PhotoCropDialog } from "@/components/editor/photo-crop-dialog";
+import { FramedPhoto } from "@/components/invitation/framed-photo";
 import { Gallery3D } from "@/components/invitation/gallery-3d";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,14 +34,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { MEDIA_LIMITS } from "@/lib/media";
+import { galleryFrame, type PhotoCrop } from "@/lib/photo-crop";
 import { DEFAULT_TEXT, GALLERY_STYLES, type GalleryStyle, type SectionContent } from "@/lib/sections";
 import { cn } from "@/lib/utils";
 
 import { saveSection } from "../contenido/actions";
-import { deleteMedia, reorderGallery, updateCaption } from "@/lib/media-actions";
+import { deleteMedia, reorderGallery, setMediaCrop, updateCaption } from "@/lib/media-actions";
 import { useMediaUpload } from "@/lib/media-upload";
 
-type AdminPhoto = { id: string; url: string; width: number; height: number; caption: string };
+type AdminPhoto = { id: string; url: string; width: number; height: number; caption: string; crop: PhotoCrop | null };
 
 type Props = {
   weddingId: string;
@@ -60,6 +62,7 @@ export function GalleryManager({ weddingId, photos: initialPhotos, settings, vis
   const { busy, uploadMany } = useMediaUpload(weddingId);
 
   const remaining = MEDIA_LIMITS.gallery - photos.length;
+  const frame = galleryFrame(style);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -102,6 +105,17 @@ export function GalleryManager({ weddingId, photos: initialPhotos, settings, vis
     });
   };
 
+  const adjustPhoto = async (id: string, crop: PhotoCrop | null) => {
+    const result = await setMediaCrop(id, crop);
+    if (!result.ok) {
+      toast.error(result.error);
+      return false;
+    }
+    setPhotos((list) => list.map((p) => (p.id === id ? { ...p, crop } : p)));
+    toast.success(result.message);
+    return true;
+  };
+
   const saveSettings = () =>
     startSaving(async () => {
       const result = await saveSection("gallery", { title, style, autoplay });
@@ -117,7 +131,9 @@ export function GalleryManager({ weddingId, photos: initialPhotos, settings, vis
             <CardTitle>
               Fotos ({photos.length}/{MEDIA_LIMITS.gallery})
             </CardTitle>
-            <CardDescription>Las fotos se comprimen automáticamente para que carguen rápido.</CardDescription>
+            <CardDescription>
+              Arrástralas para ordenarlas y usa «Ajustar» para elegir qué parte de cada foto se ve en el carrusel.
+            </CardDescription>
           </div>
           <input
             ref={fileInput}
@@ -151,7 +167,14 @@ export function GalleryManager({ weddingId, photos: initialPhotos, settings, vis
               <SortableContext items={photos.map((p) => p.id)} strategy={rectSortingStrategy}>
                 <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                   {photos.map((photo, index) => (
-                    <SortablePhoto key={photo.id} photo={photo} index={index} onRemove={removePhoto} />
+                    <SortablePhoto
+                      key={photo.id}
+                      photo={photo}
+                      index={index}
+                      frame={frame}
+                      onRemove={removePhoto}
+                      onAdjust={adjustPhoto}
+                    />
                   ))}
                 </ul>
               </SortableContext>
@@ -225,15 +248,21 @@ export function GalleryManager({ weddingId, photos: initialPhotos, settings, vis
 function SortablePhoto({
   photo,
   index,
+  frame,
   onRemove,
+  onAdjust,
 }: {
   photo: AdminPhoto;
   index: number;
+  /** Shape of the photos in the chosen carousel style. */
+  frame: number;
   onRemove: (id: string) => void;
+  onAdjust: (id: string, crop: PhotoCrop | null) => Promise<boolean>;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: photo.id });
   const [caption, setCaption] = useState(photo.caption);
   const [confirming, setConfirming] = useState(false);
+  const [adjusting, setAdjusting] = useState(false);
 
   const saveCaption = () => {
     if (caption.trim() === photo.caption.trim()) return;
@@ -246,8 +275,8 @@ function SortablePhoto({
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn("grid gap-2 rounded-xl border bg-card p-2", isDragging && "z-10 shadow-xl ring-2 ring-ring")}
     >
-      <div className="relative aspect-[4/5] overflow-hidden rounded-lg bg-muted">
-        <Image src={photo.url} alt="" fill sizes="200px" className="object-cover" />
+      <div className="relative overflow-hidden rounded-lg bg-muted" style={{ aspectRatio: frame }}>
+        <FramedPhoto photo={photo} frame={frame} alt="" width={200} />
         <span className="absolute top-1.5 left-1.5 rounded-full bg-black/55 px-2 text-xs text-white">{index + 1}</span>
         <button
           type="button"
@@ -277,10 +306,29 @@ function SortablePhoto({
           </Button>
         </div>
       ) : (
-        <Button size="sm" variant="ghost" className="text-muted-foreground" onClick={() => setConfirming(true)}>
-          <Trash2Icon /> Quitar
-        </Button>
+        <div className="flex gap-1">
+          <Button size="sm" variant="secondary" className="flex-1" onClick={() => setAdjusting(true)}>
+            <CropIcon /> Ajustar
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-muted-foreground"
+            onClick={() => setConfirming(true)}
+            aria-label={`Quitar foto ${index + 1}`}
+          >
+            <Trash2Icon />
+          </Button>
+        </div>
       )}
+      <PhotoCropDialog
+        open={adjusting}
+        onOpenChange={setAdjusting}
+        photo={photo}
+        frame={frame}
+        title={`Ajustar foto ${index + 1}`}
+        onSave={(crop) => onAdjust(photo.id, crop)}
+      />
     </li>
   );
 }

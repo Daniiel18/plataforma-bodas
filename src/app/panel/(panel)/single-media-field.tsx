@@ -1,17 +1,25 @@
 "use client";
 
-import { MusicIcon, Trash2Icon, UploadIcon } from "lucide-react";
+import { CropIcon, MusicIcon, Trash2Icon, UploadIcon } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { PhotoCropDialog } from "@/components/editor/photo-crop-dialog";
+import { FramedPhoto } from "@/components/invitation/framed-photo";
 import { Button } from "@/components/ui/button";
-
-import { deleteMedia } from "@/lib/media-actions";
+import { mediaImage } from "@/lib/media";
+import { deleteMedia, setMediaCrop } from "@/lib/media-actions";
 import { useMediaUpload } from "@/lib/media-upload";
 
-export type CurrentMedia = { id: string; url: string; width: number | null; height: number | null } | null;
+export type CurrentMedia = {
+  id: string;
+  url: string;
+  width: number | null;
+  height: number | null;
+  crop?: unknown;
+} | null;
 
 type Props = {
   weddingId: string;
@@ -19,6 +27,10 @@ type Props = {
   current: CurrentMedia;
   emptyLabel: string;
   hint?: string;
+  /** Photos shown in a frame (cover, background) can be adjusted to it. */
+  frame?: number;
+  /** The frame must stay filled (backgrounds). */
+  fill?: boolean;
 };
 
 const ACCEPT = {
@@ -29,11 +41,13 @@ const ACCEPT = {
 };
 
 /** Upload, replace or remove a single file (cover, QR, song or background). */
-export function SingleMediaField({ weddingId, kind, current, emptyLabel, hint }: Props) {
+export function SingleMediaField({ weddingId, kind, current, emptyLabel, hint, frame, fill }: Props) {
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
   const { busy, uploadMany } = useMediaUpload(weddingId);
   const [removing, setRemoving] = useState(false);
+  const [adjusting, setAdjusting] = useState(false);
+  const image = current && frame ? mediaImage(current.url, current) : null;
 
   const onFile = async (file: File | undefined) => {
     if (!file) return;
@@ -64,6 +78,16 @@ export function SingleMediaField({ weddingId, kind, current, emptyLabel, hint }:
             <MusicIcon className="size-5 shrink-0 text-muted-foreground" />
             <audio controls preload="none" src={current.url} className="h-10 w-full" />
           </div>
+        ) : image && frame ? (
+          <button
+            type="button"
+            onClick={() => setAdjusting(true)}
+            className={`relative overflow-hidden rounded-xl border bg-muted ${frame < 0.6 ? "w-36" : "w-56"}`}
+            style={{ aspectRatio: frame }}
+            aria-label="Ajustar foto"
+          >
+            <FramedPhoto photo={image} frame={frame} alt="" width={224} />
+          </button>
         ) : (
           <div
             className={`relative overflow-hidden rounded-xl border bg-muted ${kind === "qr" ? "aspect-square w-48 bg-white" : "aspect-[4/5] w-56"}`}
@@ -93,6 +117,11 @@ export function SingleMediaField({ weddingId, kind, current, emptyLabel, hint }:
 
       {current && (
         <div className="flex flex-wrap gap-2">
+          {image && (
+            <Button type="button" size="sm" onClick={() => setAdjusting(true)} disabled={busy}>
+              <CropIcon /> Ajustar
+            </Button>
+          )}
           <Button type="button" variant="secondary" size="sm" onClick={() => input.current?.click()} disabled={busy}>
             <UploadIcon /> {busy ? "Subiendo…" : "Cambiar"}
           </Button>
@@ -100,6 +129,27 @@ export function SingleMediaField({ weddingId, kind, current, emptyLabel, hint }:
             <Trash2Icon /> Quitar
           </Button>
         </div>
+      )}
+
+      {image && frame && current && (
+        <PhotoCropDialog
+          open={adjusting}
+          onOpenChange={setAdjusting}
+          photo={image}
+          frame={frame}
+          fill={fill}
+          title={kind === "background" ? "Ajustar foto de fondo" : "Ajustar foto de portada"}
+          onSave={async (crop) => {
+            const result = await setMediaCrop(current.id, crop);
+            if (!result.ok) {
+              toast.error(result.error);
+              return false;
+            }
+            toast.success(result.message);
+            router.refresh();
+            return true;
+          }}
+        />
       )}
     </div>
   );

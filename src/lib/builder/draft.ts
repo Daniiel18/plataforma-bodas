@@ -1,5 +1,6 @@
 import { DEFAULT_VEIL, type BackgroundKey, type PhotoVeil } from "@/lib/backgrounds";
 import { emptyGifts, type Gifts } from "@/lib/gifts";
+import type { PhotoCrop } from "@/lib/photo-crop";
 import { SECTION_TYPES, type SectionType, type Translations } from "@/lib/sections";
 import { DEFAULT_TEMPLATE, resolveTemplate, type AccentValue, type TemplateKey } from "@/lib/templates";
 
@@ -15,8 +16,14 @@ export const DRAFT_VERSION = 2;
 /** Where the builder sends the couple to save the draft in their account without publishing it. */
 export const SAVE_PATH = "/crear/publicar?modo=guardar";
 
-/** A file kept in the browser's IndexedDB. */
-export type LocalMedia = { id: string; mime: string; width: number | null; height: number | null };
+/** A file kept in the browser's IndexedDB; photos also keep how the couple framed them. */
+export type LocalMedia = {
+  id: string;
+  mime: string;
+  width: number | null;
+  height: number | null;
+  crop?: PhotoCrop | null;
+};
 
 export type BuilderDraft = {
   version: typeof DRAFT_VERSION;

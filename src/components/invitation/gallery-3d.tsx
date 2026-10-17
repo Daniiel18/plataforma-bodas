@@ -14,8 +14,10 @@ import { A11y, Autoplay, EffectCards, EffectCoverflow, EffectCube, EffectFlip, P
 import { Swiper, SwiperSlide } from "swiper/react";
 
 import type { Photo } from "@/lib/invitation";
+import { FRAME, galleryFrame } from "@/lib/photo-crop";
 import type { GalleryStyle } from "@/lib/sections";
 
+import { FramedPhoto } from "./framed-photo";
 import { pick, useLang } from "./use-lang";
 
 type Props = { photos: Photo[]; style: GalleryStyle; autoplay: boolean };
@@ -65,16 +67,7 @@ function SwiperGallery({
     return (
       <div className={frame}>
         <div className={photoBox}>
-          {first && (
-            <Image
-              src={first.url}
-              alt=""
-              fill
-              sizes="(max-width: 480px) 80vw, 340px"
-              className="object-cover"
-              priority
-            />
-          )}
+          {first && <FramedPhoto photo={first} frame={galleryFrame(style)} alt="" width={340} priority />}
         </div>
       </div>
     );
@@ -118,12 +111,11 @@ function SwiperGallery({
             className={photoBox}
             aria-label={pick(lang, `Ver foto ${index + 1} en grande`, `View photo ${index + 1}`)}
           >
-            <Image
-              src={photo.url}
+            <FramedPhoto
+              photo={photo}
+              frame={galleryFrame(style)}
               alt={photo.caption ? pick(lang, photo.caption.es, photo.caption.en) : ""}
-              fill
-              sizes="(max-width: 480px) 80vw, 340px"
-              className="object-cover"
+              width={340}
               loading={index < 2 ? "eager" : "lazy"}
             />
           </button>
@@ -142,7 +134,7 @@ function RingGallery({ photos, autoplay, onOpen }: Omit<Props, "style"> & { onOp
 
   const count = photos.length;
   const itemWidth = count > 12 ? 118 : count > 6 ? 140 : 160;
-  const itemHeight = Math.round(itemWidth * 1.3);
+  const itemHeight = Math.round(itemWidth / FRAME.ring);
   const step = 360 / count;
   const radius = count < 3 ? itemWidth : Math.round(itemWidth / 2 / Math.tan(Math.PI / count)) + 24;
 
@@ -205,13 +197,11 @@ function RingGallery({ photos, autoplay, onOpen }: Omit<Props, "style"> & { onOp
             }}
             aria-label={pick(lang, `Ver foto ${index + 1} en grande`, `View photo ${index + 1}`)}
           >
-            <Image
-              src={photo.url}
+            <FramedPhoto
+              photo={photo}
+              frame={FRAME.ring}
               alt={photo.caption ? pick(lang, photo.caption.es, photo.caption.en) : ""}
-              fill
-              sizes={`${itemWidth * 2}px`}
-              className="pointer-events-none object-cover"
-              draggable={false}
+              width={itemWidth * 2}
             />
           </button>
         ))}

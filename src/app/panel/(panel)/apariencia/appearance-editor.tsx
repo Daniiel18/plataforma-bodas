@@ -15,6 +15,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getTemplate } from "@/lib/templates";
 
+import { mediaImage, type MediaImage } from "@/lib/media";
+import { FRAME } from "@/lib/photo-crop";
+
 import { SingleMediaField, type CurrentMedia } from "../single-media-field";
 import { saveAppearance } from "./actions";
 
@@ -22,7 +25,7 @@ type Props = {
   weddingId: string;
   couple: string;
   initial: Appearance;
-  cover: string | null;
+  cover: MediaImage | null;
   backgroundPhoto: CurrentMedia;
 };
 
@@ -33,7 +36,7 @@ export function AppearanceEditor({ weddingId, couple, initial, cover, background
 
   const template = getTemplate(value.template);
   const background = value.background ?? template.background;
-  const photo = backgroundPhoto?.url ?? null;
+  const photo = backgroundPhoto ? mediaImage(backgroundPhoto.url, backgroundPhoto) : null;
   const missingPhoto = background === "foto" && !photo;
   const dirty = JSON.stringify(value) !== JSON.stringify(initial);
   const set = (patch: Partial<Appearance>) => setValue((v) => ({ ...v, ...patch }));
@@ -64,7 +67,9 @@ export function AppearanceEditor({ weddingId, couple, initial, cover, background
               kind="background"
               current={backgroundPhoto}
               emptyLabel="Subir foto de fondo"
-              hint="Una foto horizontal o vertical; se recorta para llenar la pantalla."
+              hint="Llena toda la pantalla. Con «Ajustar» eligen qué parte se ve detrás de la invitación."
+              frame={FRAME.background}
+              fill
             />
           }
         />

@@ -4,7 +4,7 @@ import { createClient as createSupabaseClient, type SupabaseClient } from "@supa
 import { cacheLife, cacheTag } from "next/cache";
 
 import { giftViews, rowsToGifts, type GiftRow } from "@/lib/gifts";
-import { publicMediaUrl, type MediaImage } from "@/lib/media";
+import { mediaImage, publicMediaUrl, type MediaImage } from "@/lib/media";
 import { assembleInvitation, type InvitationData, type ViewContext } from "@/lib/section-view";
 import type { Bi, SectionType, Translations } from "@/lib/sections";
 import type { Wedding } from "@/lib/types";
@@ -30,13 +30,10 @@ type MediaRow = {
   caption: string | null;
   caption_en: string | null;
   position: number;
+  crop: unknown;
 };
 
-const image = (m: MediaRow): MediaImage => ({
-  url: publicMediaUrl(m.storage_path),
-  width: m.width ?? 1200,
-  height: m.height ?? 1600,
-});
+const image = (m: MediaRow): MediaImage => mediaImage(publicMediaUrl(m.storage_path), m);
 
 const plainBi = (es: string | null, en: string | null): Bi | null =>
   es?.trim() ? { es: es.trim(), en: en?.trim() || es.trim() } : null;
@@ -59,7 +56,7 @@ export async function loadInvitationParts(
       .order("position"),
     supabase
       .from("media")
-      .select("id, kind, storage_path, width, height, caption, caption_en, position")
+      .select("id, kind, storage_path, width, height, caption, caption_en, position, crop")
       .eq("wedding_id", wedding.id)
       .order("position"),
     supabase
@@ -83,7 +80,7 @@ export async function loadInvitationParts(
     updatedAt: wedding.updated_at,
     templateKey: wedding.template_key,
     themeOverrides: wedding.theme_overrides,
-    backgroundPhoto: backgroundRow ? publicMediaUrl(backgroundRow.storage_path) : null,
+    backgroundPhoto: backgroundRow ? image(backgroundRow) : null,
     couple: { partner1: wedding.partner1_name, partner2: wedding.partner2_name },
     event:
       wedding.event_starts_at && wedding.timezone

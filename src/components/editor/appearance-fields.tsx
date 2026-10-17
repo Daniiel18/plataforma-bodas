@@ -6,6 +6,7 @@ import { useState, type ReactNode } from "react";
 import { BackgroundSwatch, ThemePreview } from "@/components/invitation/theme-preview";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BACKGROUNDS, PHOTO_VEILS, type BackgroundKey, type PhotoVeil } from "@/lib/backgrounds";
+import type { MediaImage } from "@/lib/media";
 import {
   ACCENTS,
   acceptsAccent,
@@ -30,9 +31,9 @@ type Props = {
   value: Appearance;
   onChange: (patch: Partial<Appearance>) => void;
   couple: string;
-  cover: string | null;
+  cover: MediaImage | null;
   /** URL of the uploaded "Tu foto" background, if any. */
-  photo: string | null;
+  photo: MediaImage | null;
   /** Upload field for the "Tu foto" background. */
   photoField: ReactNode;
 };

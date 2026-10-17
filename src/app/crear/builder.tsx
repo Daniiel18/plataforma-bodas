@@ -22,6 +22,7 @@ import { missingForPublish, SAVE_PATH, STEPS, type BuilderDraft } from "@/lib/bu
 import { draftMediaIds, draftToInvitation } from "@/lib/builder/invitation";
 import { removeLocalMedia, useLocalMediaUrls } from "@/lib/builder/media";
 import { useBuilder } from "@/lib/builder/store";
+import { FRAME } from "@/lib/photo-crop";
 import { cn } from "@/lib/utils";
 
 import { searchVenue, venueAddressAt } from "./actions";
@@ -94,7 +95,12 @@ function Wizard({ draft }: { draft: BuilderDraft }) {
     () => ({
       geocode: { search: searchVenue, reverse: venueAddressAt },
       coverField: (
-        <LocalMediaField slot="cover" emptyLabel="Subir foto de portada" hint="Se muestra como una foto polaroid." />
+        <LocalMediaField
+          slot="cover"
+          emptyLabel="Subir foto de portada"
+          hint="Se muestra como una foto polaroid. Con «Ajustar» eligen qué parte se ve."
+          frame={FRAME.cover}
+        />
       ),
       hints: {
         names: "Sus nombres se cambian en el paso 1.",

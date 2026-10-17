@@ -29,6 +29,8 @@ import {
 } from "@/lib/sections";
 import { cn } from "@/lib/utils";
 
+import { FRAME } from "@/lib/photo-crop";
+
 import { SingleMediaField, type CurrentMedia } from "../single-media-field";
 import { moveSection, saveSection, saveTranslation, setSectionVisible } from "./actions";
 import { geocodeAddress, reverseGeocode } from "./geocode";
@@ -84,7 +86,8 @@ export function ContentEditor({ weddingId, sections, cover, hasEventDate, invita
           kind="cover"
           current={cover}
           emptyLabel="Subir foto de portada"
-          hint="Se muestra como una foto polaroid."
+          hint="Se muestra como una foto polaroid. Con «Ajustar» eligen qué parte se ve."
+          frame={FRAME.cover}
         />
       ),
       hints: {

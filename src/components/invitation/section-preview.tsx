@@ -2,7 +2,7 @@
 
 import type { CSSProperties, ReactNode } from "react";
 
-import { veilStrength } from "@/lib/backgrounds";
+import { photoBackdropStyle } from "@/lib/backgrounds";
 import type { InvitationData, SectionView } from "@/lib/section-view";
 import type { Bi } from "@/lib/sections";
 import { getTemplate, themeAttributes, themeStyle } from "@/lib/templates";
@@ -31,7 +31,7 @@ export function SectionPreview({
   const { photo, veil } = data.background;
   const style = {
     ...themeStyle(template, data.accent),
-    ...(photo ? { "--inv-bg-photo": `url("${photo}")`, "--inv-veil": veilStrength(veil) } : {}),
+    ...photoBackdropStyle(photo, veil),
     minHeight: 0,
   } as CSSProperties;
 

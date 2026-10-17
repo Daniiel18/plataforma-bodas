@@ -35,7 +35,7 @@ async function ContentLoader() {
       .order("position"),
     supabase
       .from("media")
-      .select("id, storage_path, width, height")
+      .select("id, storage_path, width, height, crop")
       .eq("wedding_id", wedding.id)
       .eq("kind", "cover")
       .maybeSingle(),
@@ -67,7 +67,13 @@ async function ContentLoader() {
       sections={sections}
       cover={
         cover
-          ? { id: cover.id, url: publicMediaUrl(cover.storage_path), width: cover.width, height: cover.height }
+          ? {
+              id: cover.id,
+              url: publicMediaUrl(cover.storage_path),
+              width: cover.width,
+              height: cover.height,
+              crop: cover.crop,
+            }
           : null
       }
       hasEventDate={Boolean(wedding.event_starts_at && wedding.timezone)}

@@ -1,13 +1,14 @@
 import { ClockIcon, ShirtIcon } from "lucide-react";
-import Image from "next/image";
 import type { ReactNode } from "react";
 
 import type { InvitationData, SectionView } from "@/lib/invitation";
+import { FRAME } from "@/lib/photo-crop";
 import { getTemplate, type OrnamentSet } from "@/lib/templates";
 
 import { AddToCalendar } from "./add-to-calendar";
 import { Countdown } from "./countdown";
 import { Flourish, Ornament } from "./decorations";
+import { FramedPhoto } from "./framed-photo";
 import { DirectionsButton } from "./directions-button";
 import { eventDateParts, formatClock } from "./format";
 import { Gallery3D } from "./gallery-3d";
@@ -56,13 +57,12 @@ export function HeroSection({ section, data }: { section: Of<"hero">; data: Invi
             aria-hidden
           />
           <div className="inv-polaroid-photo relative aspect-[4/5] overflow-hidden">
-            <Image
-              src={section.cover.url}
+            <FramedPhoto
+              photo={section.cover}
+              frame={FRAME.cover}
               alt={`${data.couple.partner1} & ${data.couple.partner2}`}
-              fill
+              width={320}
               priority
-              sizes="(max-width: 480px) 78vw, 320px"
-              className="object-cover"
             />
           </div>
           <Ornament set={ornaments} className="pointer-events-none absolute -bottom-10 -left-12 w-24 rotate-[-12deg]" />

@@ -2,7 +2,7 @@ import "./invitation.css";
 
 import type { CSSProperties } from "react";
 
-import { veilStrength } from "@/lib/backgrounds";
+import { photoBackdropStyle } from "@/lib/backgrounds";
 import type { InvitationData, SectionView } from "@/lib/invitation";
 import { getTemplate, themeAttributes, themeStyle } from "@/lib/templates";
 
@@ -54,7 +54,7 @@ export function InvitationView({ data, preview = false }: { data: InvitationData
   const { photo, veil } = data.background;
   const style = {
     ...themeStyle(template, data.accent),
-    ...(photo ? { "--inv-bg-photo": `url("${photo}")`, "--inv-veil": veilStrength(veil) } : {}),
+    ...photoBackdropStyle(photo, veil),
   } as CSSProperties;
 
   return (

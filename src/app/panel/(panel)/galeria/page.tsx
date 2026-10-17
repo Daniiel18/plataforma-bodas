@@ -3,6 +3,7 @@ import { Suspense } from "react";
 
 import { getAdminContext } from "@/lib/admin";
 import { MEDIA_LIMITS, publicMediaUrl } from "@/lib/media";
+import { parseCrop } from "@/lib/photo-crop";
 import { parseContent } from "@/lib/sections";
 
 import { BlockSkeleton, PageHeader } from "../page-header";
@@ -29,7 +30,7 @@ async function GalleryLoader() {
   const [{ data: media }, { data: section }] = await Promise.all([
     supabase
       .from("media")
-      .select("id, storage_path, width, height, caption")
+      .select("id, storage_path, width, height, caption, crop")
       .eq("wedding_id", wedding.id)
       .eq("kind", "gallery")
       .order("position"),
@@ -42,6 +43,7 @@ async function GalleryLoader() {
     width: m.width ?? 1200,
     height: m.height ?? 1600,
     caption: (m.caption as string | null) ?? "",
+    crop: parseCrop(m.crop),
   }));
 
   return (

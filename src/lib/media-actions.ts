@@ -5,6 +5,7 @@ import { z } from "zod";
 import { getAdminContext, READ_ONLY_RESULT } from "@/lib/admin";
 import { refreshInvitation } from "@/lib/admin-invitation";
 import { MAX_UPLOAD_BYTES, MEDIA_BUCKET, MEDIA_LIMITS, type MediaKind } from "@/lib/media";
+import { photoCropSchema, type PhotoCrop } from "@/lib/photo-crop";
 import { translateEsToEn } from "@/lib/translate";
 import type { ActionResult } from "@/lib/types";
 
@@ -24,6 +25,8 @@ const registerSchema = z.object({
   width: z.number().int().positive().max(10000).nullable(),
   height: z.number().int().positive().max(10000).nullable(),
   duration: z.number().positive().max(3600).nullable(),
+  /** Framing chosen before uploading (in the builder). */
+  crop: photoCropSchema.nullable().optional(),
 });
 
 export type RegisteredMedia = { id: string; storage_path: string; width: number | null; height: number | null };
@@ -88,6 +91,7 @@ export async function registerMedia(
       height: m.height,
       duration_seconds: m.duration,
       position: count ?? 0,
+      crop: m.kind === "cover" || m.kind === "gallery" || m.kind === "background" ? (m.crop ?? null) : null,
     })
     .select("id, storage_path, width, height")
     .single<RegisteredMedia>();
@@ -147,6 +151,26 @@ export async function reorderGallery(ids: string[]): Promise<ActionResult> {
 
   refreshInvitation(wedding.slug);
   return { ok: true };
+}
+
+/** Saves how a photo is framed (null = centered, filling its frame). */
+export async function setMediaCrop(id: string, crop: PhotoCrop | null): Promise<ActionResult> {
+  const { supabase, wedding, readOnly } = await getAdminContext();
+  if (readOnly) return READ_ONLY_RESULT;
+  if (!z.uuid().safeParse(id).success) return { ok: false, error: "Foto no válida" };
+  const parsed = photoCropSchema.nullable().safeParse(crop);
+  if (!parsed.success) return { ok: false, error: "Ajuste no válido" };
+
+  const { error } = await supabase
+    .from("media")
+    .update({ crop: parsed.data })
+    .eq("id", id)
+    .eq("wedding_id", wedding.id)
+    .in("kind", ["cover", "gallery", "background"]);
+  if (error) return { ok: false, error: "No se pudo guardar el ajuste" };
+
+  refreshInvitation(wedding.slug);
+  return { ok: true, message: "Foto ajustada" };
 }
 
 export async function updateCaption(id: string, caption: string): Promise<ActionResult> {

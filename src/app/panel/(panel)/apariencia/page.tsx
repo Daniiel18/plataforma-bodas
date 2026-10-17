@@ -3,7 +3,7 @@ import { Suspense } from "react";
 
 import { getAdminContext } from "@/lib/admin";
 import { chosenBackground, resolveVeil } from "@/lib/backgrounds";
-import { publicMediaUrl } from "@/lib/media";
+import { mediaImage, publicMediaUrl } from "@/lib/media";
 import { resolveAccent, resolveTemplate } from "@/lib/templates";
 
 import { BlockSkeleton, PageHeader } from "../page-header";
@@ -31,7 +31,7 @@ async function AppearanceLoader() {
 
   const { data: media } = await supabase
     .from("media")
-    .select("id, kind, storage_path, width, height")
+    .select("id, kind, storage_path, width, height, crop")
     .eq("wedding_id", wedding.id)
     .in("kind", ["cover", "background"]);
   const cover = media?.find((m) => m.kind === "cover");
@@ -47,7 +47,7 @@ async function AppearanceLoader() {
         background: chosenBackground(wedding.theme_overrides),
         veil: resolveVeil(wedding.theme_overrides),
       }}
-      cover={cover ? publicMediaUrl(cover.storage_path) : null}
+      cover={cover ? mediaImage(publicMediaUrl(cover.storage_path), cover) : null}
       backgroundPhoto={
         background
           ? {
@@ -55,6 +55,7 @@ async function AppearanceLoader() {
               url: publicMediaUrl(background.storage_path),
               width: background.width,
               height: background.height,
+              crop: background.crop,
             }
           : null
       }

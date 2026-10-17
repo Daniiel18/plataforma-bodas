@@ -58,6 +58,8 @@
   inset: 0;
   z-index: -1;
   pointer-events: none;
+  /* Its size frames "Tu foto" (container units in ::before). */
+  container-type: size;
   background-color: var(--inv-bg);
   background-image: var(--inv-bg-image, none);
   background-position: center;
@@ -186,14 +188,43 @@
   );
 }
 
-.invitation[data-bg="foto"] {
-  --inv-bg-image:
+/* "Tu foto": the couple's photo under a veil of the template's color, placed
+   as they framed it. --inv-photo-x/y is the point of the photo at the center of
+   the screen, --inv-photo-zoom is relative to filling it (see lib/photo-crop.ts). */
+.invitation[data-bg="foto"] .inv-backdrop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
     linear-gradient(
       color-mix(in srgb, var(--inv-bg) var(--inv-veil, 72%), transparent),
       color-mix(in srgb, var(--inv-bg) var(--inv-veil, 72%), transparent)
     ),
     var(--inv-bg-photo, none);
-  --inv-bg-size: cover;
+  background-repeat: no-repeat;
+  background-size:
+    100% 100%,
+    cover;
+  background-position:
+    0 0,
+    center;
+}
+
+@supports (width: 1cqw) {
+  .invitation[data-bg="foto"] .inv-backdrop::before {
+    --inv-photo-w: calc(max(100cqw, 100cqh * var(--inv-photo-ratio, 1)) * var(--inv-photo-zoom, 1));
+    background-size:
+      100% 100%,
+      var(--inv-photo-w) auto;
+    background-position:
+      0 0,
+      clamp(100cqw - var(--inv-photo-w), 50cqw - var(--inv-photo-x, 0.5) * var(--inv-photo-w), 0px)
+        clamp(
+          100cqh - var(--inv-photo-w) / var(--inv-photo-ratio, 1),
+          50cqh - var(--inv-photo-y, 0.5) * var(--inv-photo-w) / var(--inv-photo-ratio, 1),
+          0px
+        );
+  }
 }
 
 /* ---------------------------------------------------------------------
