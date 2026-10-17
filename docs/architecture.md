@@ -126,7 +126,7 @@ Guests have no accounts. A random 192-bit token identifies their answer; only it
 
 ### Guests' companions and the guestbook
 
-Each wedding asks for companions by name or only by count (`companions_mode`); the RSVP functions take both and ignore names in count mode, storing `rsvps.companions_count`. With `guestbook_public` on, every wish that isn't hidden (`wishes.is_hidden`) shows under the reply form through `public_guestbook`, the only way anonymous visitors read wishes; a new wish refreshes the cached invitation.
+Each wedding asks for companions by name or only by count (`companions_mode`); the RSVP functions take both and ignore names in count mode, storing `rsvps.companions_count`. With `guestbook_public` on, every wish that isn't hidden (`wishes.is_hidden`) shows under the reply form through `public_guestbook` (server-only, read with the secret key while rendering); a new wish refreshes the cached invitation.
 
 ### Music
 
