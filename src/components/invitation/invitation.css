@@ -51,6 +51,30 @@
     0 0 10px color-mix(in srgb, var(--inv-bg) 80%, transparent);
 }
 
+/* Text contrast (Plantilla → Legibilidad del texto; "auto" picks it from the background). */
+.invitation[data-contrast="alta"],
+.invitation[data-contrast="maxima"] {
+  --inv-ink-soft: var(--inv-ink) !important;
+}
+
+.invitation[data-contrast="alta"][data-bg="foto"] main,
+.invitation[data-contrast="maxima"][data-bg="foto"] main {
+  text-shadow:
+    0 0 2px var(--inv-bg),
+    0 0 6px var(--inv-bg),
+    0 0 14px color-mix(in srgb, var(--inv-bg) 85%, transparent);
+}
+
+/* Maximum: each section sits on a translucent sheet of paper. */
+.invitation[data-contrast="maxima"] main > div > section {
+  margin: 0.75rem;
+  border-radius: 1.5rem;
+  background: color-mix(in srgb, var(--inv-paper) 80%, transparent);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 10px 30px -24px color-mix(in srgb, var(--inv-ink) 60%, transparent);
+}
+
 .invitation[data-tone="dark"] {
   --inv-danger: #f2a49b;
   --inv-zelle: #b99af5;

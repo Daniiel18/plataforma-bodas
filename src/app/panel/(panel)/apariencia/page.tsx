@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { getAdminContext } from "@/lib/admin";
-import { chosenBackground, resolveVeil } from "@/lib/backgrounds";
+import { chosenBackground, resolveContrast, resolveVeil } from "@/lib/backgrounds";
 import { mediaImage, publicMediaUrl } from "@/lib/media";
 import { resolveAccent, resolveTemplate } from "@/lib/templates";
 
@@ -46,6 +46,7 @@ async function AppearanceLoader() {
         accent: resolveAccent(wedding.theme_overrides),
         background: chosenBackground(wedding.theme_overrides),
         veil: resolveVeil(wedding.theme_overrides),
+        contrast: resolveContrast(wedding.theme_overrides),
       }}
       cover={cover ? mediaImage(publicMediaUrl(cover.storage_path), cover) : null}
       backgroundPhoto={

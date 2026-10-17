@@ -182,3 +182,25 @@ export async function deleteAccount(accountId: string, confirmEmail: string): Pr
   revalidatePath("/admin", "layout");
   return { ok: true, message: `Cuenta ${email} eliminada` };
 }
+
+/** Test accounts have no real inbox: the admin sets their password to sign in at /panel/login. */
+export async function setTestAccountPassword(accountId: string, password: string): Promise<ActionResult> {
+  const { db, userId } = await getPlatformAdmin();
+  if (!z.uuid().safeParse(accountId).success) return { ok: false, error: "Cuenta no válida" };
+  const strong = z
+    .string()
+    .min(8, "Usa al menos 8 caracteres")
+    .max(72)
+    .regex(/[A-Za-z]/, "Incluye letras")
+    .regex(/\d/, "Incluye números")
+    .safeParse(password);
+  if (!strong.success) return { ok: false, error: strong.error.issues[0].message };
+
+  const { data: profile } = await db.from("profiles").select("is_test").eq("id", accountId).maybeSingle();
+  if (!profile?.is_test) return { ok: false, error: "Solo se puede poner contraseña a las cuentas de prueba" };
+
+  const { error } = await db.auth.admin.updateUserById(accountId, { password: strong.data });
+  if (error) return { ok: false, error: "No se pudo cambiar la contraseña" };
+  await auditPlatform(userId, "account.password_set", "account", accountId);
+  return { ok: true, message: "Contraseña guardada. Entra en /panel/login con «Entrar con contraseña»." };
+}

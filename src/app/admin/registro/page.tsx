@@ -70,6 +70,7 @@ const ACTIONS: Record<string, string> = {
   "account.deleted": "Eliminó una cuenta",
   "account.marked_test": "Marcó una cuenta como de prueba",
   "account.marked_real": "Marcó una cuenta como real",
+  "account.password_set": "Puso la contraseña de una cuenta de prueba",
 };
 
 async function Audit() {

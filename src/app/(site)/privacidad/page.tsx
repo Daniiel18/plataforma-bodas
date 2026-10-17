@@ -57,8 +57,8 @@ const SECTIONS: LegalSection[] = [
     title: { es: "Quién puede verlos", en: "Who can see it" },
     paragraphs: [
       {
-        es: "La web de la boda la ve quien tenga el enlace; no la mostramos en buscadores. Las respuestas y los deseos solo los ven los novios, salvo los deseos que ellos aprueben, uno por uno, para mostrarlos en la invitación con el primer nombre de quien los escribió.",
-        en: "Anyone with the link can see the wedding website; we keep it out of search engines. Only the couple sees the replies and wishes, except the wishes they approve, one by one, to show on the invitation with the writer's first name.",
+        es: "La web de la boda la ve quien tenga el enlace; no la mostramos en buscadores. Las respuestas y los deseos solo los ven los novios, salvo que activen el libro de deseos público: entonces los deseos se muestran en la invitación con el primer nombre de quien los escribió, y los novios pueden ocultar cualquiera.",
+        en: "Anyone with the link can see the wedding website; we keep it out of search engines. Only the couple sees the replies and wishes, unless they turn on the public guestbook: then wishes show on the invitation with the writer's first name, and the couple can hide any of them.",
       },
     ],
   },

@@ -1,6 +1,12 @@
 import type { CSSProperties } from "react";
 
-import { photoBackdropStyle, type BackgroundKey, type PhotoVeil } from "@/lib/backgrounds";
+import {
+  appliedContrast,
+  photoBackdropStyle,
+  type BackgroundKey,
+  type PhotoVeil,
+  type TextContrast,
+} from "@/lib/backgrounds";
 import type { MediaImage } from "@/lib/media";
 import { FRAME } from "@/lib/photo-crop";
 import { themeAttributes, themeStyle, type Template } from "@/lib/templates";
@@ -20,6 +26,7 @@ type Props = {
   /** Background photo, for the "Tu foto" background. */
   backgroundPhoto?: MediaImage | null;
   veil?: PhotoVeil;
+  contrast?: TextContrast;
   size?: "card" | "large";
   className?: string;
 };
@@ -56,6 +63,7 @@ export function ThemePreview({
   cover = null,
   backgroundPhoto = null,
   veil = "medio",
+  contrast = "auto",
   size = "card",
   className,
 }: Props) {
@@ -71,6 +79,7 @@ export function ThemePreview({
       className={cn(`invitation ${invitationFonts} relative overflow-hidden text-center`, s.root, className)}
       style={style}
       {...themeAttributes(template, background)}
+      data-contrast={appliedContrast(contrast, background, veil)}
     >
       <div className="inv-backdrop inv-backdrop-contained" aria-hidden />
       <Ornament

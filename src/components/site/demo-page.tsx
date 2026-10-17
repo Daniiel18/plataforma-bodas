@@ -47,7 +47,7 @@ export async function DemoPage({ templateKey }: { templateKey: string | null }) 
         ...demo,
         template: resolveTemplate(template.key),
         accent: null,
-        background: { key: template.background, photo: null, veil: demo.background.veil },
+        background: { key: template.background, photo: null, veil: demo.background.veil, contrast: "normal" as const },
       }
     : demo;
 

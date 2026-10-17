@@ -46,6 +46,36 @@ export function chosenBackground(overrides: unknown): BackgroundKey | null {
   return isBackgroundKey(value) ? value : null;
 }
 
+/** How strongly the text stands out from the background. */
+export const TEXT_CONTRASTS = [
+  { key: "auto", label: "Automática", description: "Más fuerte sola cuando el fondo es una foto." },
+  { key: "normal", label: "Normal", description: "Como la diseñó la plantilla." },
+  { key: "alta", label: "Alta", description: "Todo el texto en el color principal." },
+  { key: "maxima", label: "Máxima", description: "Además, cada sección sobre un panel de papel." },
+] as const;
+
+export type TextContrast = (typeof TEXT_CONTRASTS)[number]["key"];
+export type AppliedContrast = Exclude<TextContrast, "auto">;
+
+export function resolveContrast(overrides: unknown): TextContrast {
+  const value = (overrides as { contrast?: unknown } | null)?.contrast;
+  return TEXT_CONTRASTS.some((c) => c.key === value) ? (value as TextContrast) : "auto";
+}
+
+/**
+ * The contrast actually used. "auto" looks at the background: a photo gets
+ * high contrast, and maximum when its veil lets most of the photo through.
+ */
+export function appliedContrast(
+  choice: TextContrast | undefined,
+  background: BackgroundKey,
+  veil: PhotoVeil,
+): AppliedContrast {
+  if (choice && choice !== "auto") return choice;
+  if (background !== "foto") return "normal";
+  return veil === "visible" ? "maxima" : "alta";
+}
+
 export function resolveVeil(overrides: unknown): PhotoVeil {
   const value = (overrides as { veil?: unknown } | null)?.veil;
   return PHOTO_VEILS.some((v) => v.key === value) ? (value as PhotoVeil) : DEFAULT_VEIL;

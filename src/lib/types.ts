@@ -30,8 +30,8 @@ export type Wish = {
   message: string;
   locale: "es" | "en";
   is_read: boolean;
-  /** When the couple approved it for the public guestbook. */
-  approved_at: string | null;
+  /** Kept out of the invitation's public guestbook by the couple. */
+  is_hidden: boolean;
   created_at: string;
 };
 

@@ -5,7 +5,14 @@ import { useState, type ReactNode } from "react";
 
 import { BackgroundSwatch, ThemePreview } from "@/components/invitation/theme-preview";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BACKGROUNDS, PHOTO_VEILS, type BackgroundKey, type PhotoVeil } from "@/lib/backgrounds";
+import {
+  BACKGROUNDS,
+  PHOTO_VEILS,
+  TEXT_CONTRASTS,
+  type BackgroundKey,
+  type PhotoVeil,
+  type TextContrast,
+} from "@/lib/backgrounds";
 import type { MediaImage } from "@/lib/media";
 import {
   ACCENTS,
@@ -25,6 +32,8 @@ export type Appearance = {
   /** null = the template's recommended background. */
   background: BackgroundKey | null;
   veil: PhotoVeil;
+  /** Missing in older drafts (= automatic). */
+  contrast?: TextContrast;
 };
 
 type Props = {
@@ -47,7 +56,14 @@ export function AppearanceFields({ value, onChange: set, couple, cover, photo, p
   const template = getTemplate(value.template);
   const background = value.background ?? template.background;
   const visibleTemplates = TEMPLATES.filter((t) => collection === "todas" || t.collection === collection);
-  const previewProps = { accent: value.accent, couple, cover, backgroundPhoto: photo, veil: value.veil };
+  const previewProps = {
+    accent: value.accent,
+    couple,
+    cover,
+    backgroundPhoto: photo,
+    veil: value.veil,
+    contrast: value.contrast,
+  };
 
   return (
     <div className="grid min-w-0 content-start gap-6">
@@ -175,6 +191,39 @@ export function AppearanceFields({ value, onChange: set, couple, cover, photo, p
               </div>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Legibilidad del texto</CardTitle>
+          <CardDescription>
+            Para que todos, también las personas mayores, lean bien la invitación. «Automática» la sube sola cuando el
+            fondo es una foto.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Legibilidad del texto">
+            {TEXT_CONTRASTS.map((c) => {
+              const active = (value.contrast ?? "auto") === c.key;
+              return (
+                <button
+                  key={c.key}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  onClick={() => set({ contrast: c.key })}
+                  className={cn(
+                    "grid gap-0.5 rounded-lg border p-3 text-left text-sm transition-colors hover:bg-accent/40",
+                    active && "border-primary bg-accent/30",
+                  )}
+                >
+                  <span className="font-medium">{c.label}</span>
+                  <span className="text-xs text-muted-foreground">{c.description}</span>
+                </button>
+              );
+            })}
+          </div>
         </CardContent>
       </Card>
 

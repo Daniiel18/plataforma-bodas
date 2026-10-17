@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { accountCategories, getPlatformAdmin } from "@/lib/platform-admin";
 
 import { formatDate } from "../ui";
-import { DeleteAccount, TestToggle } from "./test-toggle";
+import { DeleteAccount, SetTestPassword, TestToggle } from "./test-toggle";
 
 export const metadata: Metadata = { title: "Cuentas" };
 
@@ -71,6 +71,7 @@ async function AccountList() {
                   {!isAdmin.has(u.id) && (
                     <span className="flex flex-wrap">
                       <TestToggle accountId={u.id} isTest={categories.testIds.has(u.id)} />
+                      {categories.testIds.has(u.id) && <SetTestPassword accountId={u.id} email={u.email ?? ""} />}
                       <DeleteAccount accountId={u.id} email={u.email ?? ""} />
                     </span>
                   )}

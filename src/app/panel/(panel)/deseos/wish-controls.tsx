@@ -6,27 +6,27 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 
-import { markAllWishesRead, setWishApproved, setWishRead } from "./actions";
+import { markAllWishesRead, setWishHidden, setWishRead } from "./actions";
 
-/** Approve a wish for the invitation's guestbook, or take it back. */
-export function WishApproveToggle({ wishId, approved }: { wishId: string; approved: boolean }) {
+/** Hides a wish from the invitation's guestbook, or shows it again. */
+export function WishVisibilityToggle({ wishId, hidden }: { wishId: string; hidden: boolean }) {
   const [pending, startTransition] = useTransition();
 
   return (
     <Button
-      variant={approved ? "secondary" : "outline"}
+      variant={hidden ? "outline" : "secondary"}
       size="sm"
       disabled={pending}
       onClick={() =>
         startTransition(async () => {
-          const result = await setWishApproved(wishId, !approved);
+          const result = await setWishHidden(wishId, !hidden);
           if (result.ok) toast.success(result.message);
           else toast.error(result.error);
         })
       }
     >
-      {approved ? <EyeOffIcon /> : <EyeIcon />}
-      {approved ? "Quitar de la invitación" : "Mostrar en la invitación"}
+      {hidden ? <EyeIcon /> : <EyeOffIcon />}
+      {hidden ? "Mostrar en la invitación" : "Ocultar de la invitación"}
     </Button>
   );
 }

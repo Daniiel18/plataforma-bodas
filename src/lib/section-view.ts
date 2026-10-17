@@ -1,4 +1,12 @@
-import { resolveBackground, resolveVeil, type BackgroundKey, type PhotoVeil } from "./backgrounds";
+import {
+  resolveBackground,
+  resolveVeil,
+  type BackgroundKey,
+  type PhotoVeil,
+  appliedContrast,
+  resolveContrast,
+  type AppliedContrast,
+} from "./backgrounds";
 import type { GiftView } from "./gifts";
 import type { MediaImage } from "./media";
 import { trackUrl } from "./music-library";
@@ -43,7 +51,7 @@ export type SectionView =
       deadlineLabel: Bi | null;
       maxCompanions: number;
       companionsMode: CompanionsMode;
-      /** Wishes the couple approved for the invitation (empty when the guestbook is private). */
+      /** Wishes shown on the invitation (empty when the guestbook is private; hidden ones never show). */
       guestbook: GuestbookEntry[];
     }
   | { type: "gifts"; title: Bi; message: Bi; methods: GiftView[] };
@@ -60,7 +68,7 @@ export type InvitationData = {
   template: TemplateKey;
   accent: string | null;
   /** Page background; `photo` only when the background is "Tu foto". */
-  background: { key: BackgroundKey; photo: MediaImage | null; veil: PhotoVeil };
+  background: { key: BackgroundKey; photo: MediaImage | null; veil: PhotoVeil; contrast: AppliedContrast };
   couple: { partner1: string; partner2: string };
   event: { startsAt: string; timeZone: string } | null;
   intro: { title: Bi; subtitle: Bi | null; button: Bi } | null;
@@ -264,6 +272,11 @@ export function assembleInvitation(source: InvitationSource): { data: Invitation
       key: backgroundKey,
       photo: backgroundKey === "foto" ? source.backgroundPhoto : null,
       veil: resolveVeil(source.themeOverrides),
+      contrast: appliedContrast(
+        resolveContrast(source.themeOverrides),
+        backgroundKey,
+        resolveVeil(source.themeOverrides),
+      ),
     },
     couple: source.couple,
     event: source.event,

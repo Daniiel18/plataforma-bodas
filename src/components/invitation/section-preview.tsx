@@ -40,6 +40,7 @@ export function SectionPreview({
       className={cn(`invitation ${invitationFonts} relative overflow-hidden`, className)}
       style={style}
       {...themeAttributes(template, data.background.key)}
+      data-contrast={data.background.contrast}
     >
       <div className="inv-backdrop inv-backdrop-contained" aria-hidden />
       {view ? renderSection(view, data, true) : children}

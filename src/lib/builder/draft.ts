@@ -1,4 +1,4 @@
-import { DEFAULT_VEIL, type BackgroundKey, type PhotoVeil } from "@/lib/backgrounds";
+import { DEFAULT_VEIL, type BackgroundKey, type PhotoVeil, type TextContrast } from "@/lib/backgrounds";
 import { emptyGifts, type Gifts } from "@/lib/gifts";
 import type { PhotoCrop } from "@/lib/photo-crop";
 import { SECTION_TYPES, type SectionType, type Translations } from "@/lib/sections";
@@ -37,6 +37,8 @@ export type BuilderDraft = {
     /** null = the template's recommended background. */
     background: BackgroundKey | null;
     veil: PhotoVeil;
+    /** Missing in drafts saved before it existed (= automatic). */
+    contrast?: TextContrast;
   };
   /** Link of the invitation; follows the names until the couple edits it. */
   slug: string;
@@ -143,6 +145,7 @@ export function createDraft(template?: string | null, timeZone?: string): Builde
       accent: null,
       background: null,
       veil: DEFAULT_VEIL,
+      contrast: "auto",
     },
     slug: "",
     slugEdited: false,

@@ -2,10 +2,12 @@
 
 import { createHash, randomBytes } from "node:crypto";
 
+import { revalidateTag } from "next/cache";
 import { headers } from "next/headers";
 import { after } from "next/server";
 import { z } from "zod";
 
+import { invitationTag } from "@/lib/invitation";
 import { notifyCouple } from "@/lib/notify";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -114,6 +116,9 @@ export async function submitRsvp(input: z.input<typeof submitSchema>): Promise<{
     })
     .single<{ rsvp_id: string; wedding_id: string }>();
   if (error || !data) return failureFrom(error);
+
+  // With a public guestbook, the new wish shows on the invitation.
+  if (v.wish) revalidateTag(invitationTag(v.slug), "max");
 
   after(() =>
     notifyCouple(data.wedding_id, {

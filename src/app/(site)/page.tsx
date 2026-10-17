@@ -215,6 +215,15 @@ export default function Home() {
           >
             <T es="Crear mi invitación" en="Create my invitation" />
           </Link>
+          <Link
+            href="/donar"
+            className="text-sm text-[var(--site-ink-soft)] underline-offset-4 hover:text-[var(--site-ink)] hover:underline"
+          >
+            <T
+              es="Es gratis gracias a quienes nos apoyan · Apóyanos ♡"
+              en="It's free thanks to those who support us · Support us ♡"
+            />
+          </Link>
         </div>
       </section>
     </>

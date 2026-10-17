@@ -23,29 +23,22 @@ export async function setWishRead(wishId: string, isRead: boolean): Promise<Acti
   return { ok: true };
 }
 
-/** Shows a wish on the invitation's guestbook (when it is public) or takes it back. */
-export async function setWishApproved(wishId: string, approved: boolean): Promise<ActionResult> {
+/** Hides a wish from the invitation's public guestbook, or shows it again. */
+export async function setWishHidden(wishId: string, hidden: boolean): Promise<ActionResult> {
   const { supabase, wedding, readOnly } = await getAdminContext();
   if (readOnly) return READ_ONLY_RESULT;
   if (!z.uuid().safeParse(wishId).success) return { ok: false, error: "Deseo no válido" };
 
   const { error } = await supabase
     .from("wishes")
-    .update({ approved_at: approved ? new Date().toISOString() : null, is_read: true })
+    .update({ is_hidden: hidden, is_read: true })
     .eq("id", wishId)
     .eq("wedding_id", wedding.id);
   if (error) return { ok: false, error: "No se pudo actualizar" };
 
   refreshInvitation(wedding.slug);
   revalidatePath("/panel", "layout");
-  return {
-    ok: true,
-    message: approved
-      ? wedding.guestbook_public
-        ? "Deseo visible en la invitación"
-        : "Deseo aprobado. Se verá cuando activen «Mostrar deseos en la invitación» en Ajustes."
-      : "Deseo retirado de la invitación",
-  };
+  return { ok: true, message: hidden ? "Deseo oculto de la invitación" : "Deseo visible en la invitación" };
 }
 
 export async function markAllWishesRead(): Promise<ActionResult> {

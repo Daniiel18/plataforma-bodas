@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 
-import { deleteAccount, setAccountTest } from "../actions";
+import { deleteAccount, setAccountTest, setTestAccountPassword } from "../actions";
 
 /** Moves an account between "real" and "test" (test accounts stay out of the numbers). */
 export function TestToggle({ accountId, isTest }: { accountId: string; isTest: boolean }) {
@@ -77,6 +77,57 @@ export function DeleteAccount({ accountId, email }: { accountId: string; email: 
               onClick={remove}
             >
               {pending ? "Eliminando…" : "Eliminar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+/** Sets the password of a test account (they can't receive sign-in emails). */
+export function SetTestPassword({ accountId, email }: { accountId: string; email: string }) {
+  const [open, setOpen] = useState(false);
+  const [password, setPassword] = useState("");
+  const [pending, startTransition] = useTransition();
+
+  const save = () =>
+    startTransition(async () => {
+      const result = await setTestAccountPassword(accountId, password);
+      if (result.ok) {
+        toast.success(result.message);
+        setOpen(false);
+        setPassword("");
+      } else toast.error(result.error);
+    });
+
+  return (
+    <>
+      <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
+        Poner contraseña
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Contraseña de {email}</DialogTitle>
+            <DialogDescription>
+              Las cuentas de prueba no reciben correos. Con esta contraseña entras en /panel/login, «Entrar con
+              contraseña». Mínimo 8 caracteres, con letras y números.
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="new-password"
+            placeholder="Nueva contraseña"
+          />
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setOpen(false)}>
+              Cancelar
+            </Button>
+            <Button disabled={pending || password.length < 8} onClick={save}>
+              {pending ? "Guardando…" : "Guardar"}
             </Button>
           </DialogFooter>
         </DialogContent>

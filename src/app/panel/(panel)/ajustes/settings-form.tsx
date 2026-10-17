@@ -149,7 +149,8 @@ export function SettingsForm({ wedding, share }: Props) {
         <div>
           <Label htmlFor="guestbook_public">Mostrar deseos en la invitación</Label>
           <p className="text-sm text-muted-foreground">
-            Solo se ven los deseos que ustedes aprueben en <strong>Deseos</strong>, firmados con el primer nombre.
+            Se muestran todos los deseos, firmados con el primer nombre. En <strong>Deseos</strong> pueden ocultar
+            cualquiera.
           </p>
         </div>
         <Switch id="guestbook_public" name="guestbook_public" defaultChecked={wedding.guestbook_public} />

@@ -63,6 +63,7 @@ export function InvitationView({ data, preview = false }: { data: InvitationData
       className={`invitation tpl-${template.key} ${invitationFonts} flex-1`}
       style={style}
       {...themeAttributes(template, data.background.key)}
+      data-contrast={data.background.contrast}
       data-lang-root
       suppressHydrationWarning
     >

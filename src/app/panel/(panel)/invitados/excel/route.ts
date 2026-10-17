@@ -6,8 +6,8 @@ import { companionsOf, type RsvpWithDetails } from "@/lib/types";
 
 type Row = Omit<RsvpWithDetails, "wishes"> & {
   wishes:
-    | { message: string; locale: string; created_at: string; approved_at: string | null }
-    | { message: string; locale: string; created_at: string; approved_at: string | null }[]
+    | { message: string; locale: string; created_at: string; is_hidden: boolean }
+    | { message: string; locale: string; created_at: string; is_hidden: boolean }[]
     | null;
 };
 
@@ -30,7 +30,7 @@ export async function GET() {
   const { supabase, wedding } = await getAdminContext();
   const { data, error } = await supabase
     .from("rsvps")
-    .select("*, rsvp_companions(id, full_name, position), wishes(message, locale, created_at, approved_at)")
+    .select("*, rsvp_companions(id, full_name, position), wishes(message, locale, created_at, is_hidden)")
     .eq("wedding_id", wedding.id)
     .eq("is_archived", false)
     .order("created_at", { ascending: true });
@@ -91,7 +91,7 @@ export async function GET() {
       wish.message,
       wish.locale === "en" ? "Inglés" : "Español",
       when(wish.created_at),
-      wish.approved_at ? "Sí" : "No",
+      wedding.guestbook_public && !wish.is_hidden ? "Sí" : "No",
     ]);
   }
   styleSheet(wishes, [28, 70, 10, 22, 16]);
