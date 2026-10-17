@@ -105,6 +105,22 @@ export async function registerMedia(
     };
   }
 
+  if (m.kind === "audio") {
+    const { data: music } = await supabase
+      .from("sections")
+      .select("content")
+      .eq("wedding_id", wedding.id)
+      .eq("type", "music")
+      .maybeSingle();
+    if (music?.content && typeof music.content === "object") {
+      await supabase
+        .from("sections")
+        .update({ content: { ...music.content, track: null } })
+        .eq("wedding_id", wedding.id)
+        .eq("type", "music");
+    }
+  }
+
   if (m.kind === "qr") {
     await supabase
       .from("gift_methods")

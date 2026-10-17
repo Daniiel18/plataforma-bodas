@@ -7,6 +7,7 @@ import { MusicIcon } from "lucide-react";
 import { EnvelopePreview, SectionPreview } from "@/components/invitation/section-preview";
 import { ThemePreview } from "@/components/invitation/theme-preview";
 import type { BuilderDraft, StepKey } from "@/lib/builder/draft";
+import { findTrack } from "@/lib/music-library";
 import { buildSectionView, type InvitationData, type ViewContext } from "@/lib/section-view";
 import { parseContent, type SectionType } from "@/lib/sections";
 import { getTemplate } from "@/lib/templates";
@@ -79,19 +80,23 @@ export function StepPreview({
 
   if (step === "musica") {
     const music = parseContent("music", draft.sections.music.content);
+    const track = findTrack(music.track);
+    const ready = Boolean(track || draft.media.audio);
     return (
       <SectionPreview data={data} className="rounded-xl border">
         <div className="grid justify-items-center gap-3 px-6 py-12 text-center">
           <span className="grid size-14 place-items-center rounded-full bg-[var(--inv-accent)] text-[var(--inv-on-strong)] shadow-lg">
             <MusicIcon className="size-6" />
           </span>
-          <p className="inv-heading text-lg">{draft.media.audio ? "Su canción está lista" : "Aún sin canción"}</p>
+          <p className="inv-heading text-lg">
+            {track ? track.title.es : draft.media.audio ? "Su canción está lista" : "Aún sin canción"}
+          </p>
           <p className="max-w-xs text-sm text-[var(--inv-ink-soft)]">
-            {draft.media.audio
+            {ready
               ? music.autoplay_on_open
                 ? "Empezará a sonar cuando el invitado abra el sobre, con un botón para pausarla."
                 : "El invitado la pone con el botón de música."
-              : "Elijan un MP3 para acompañar la invitación."}
+              : "Elijan una canción de la lista o suban la suya."}
           </p>
         </div>
       </SectionPreview>

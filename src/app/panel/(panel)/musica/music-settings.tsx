@@ -1,15 +1,58 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { MusicLibraryPicker } from "@/components/editor/music-library-picker";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import type { TrackKey } from "@/lib/music-library";
+import type { SectionContent } from "@/lib/sections";
 
 import { saveSection, setSectionVisible } from "../contenido/actions";
 
-export function MusicSettings({ autoplayOnOpen, visible }: { autoplayOnOpen: boolean; visible: boolean }) {
+/** The song (library or their own) and how it plays. */
+export function MusicLibraryCard({ content, hasOwnSong }: { content: SectionContent<"music">; hasOwnSong: boolean }) {
+  const router = useRouter();
+  const [track, setTrack] = useState<TrackKey | null>(content.track);
+  const [pending, startTransition] = useTransition();
+
+  const choose = (next: TrackKey | null) => {
+    const previous = track;
+    setTrack(next);
+    startTransition(async () => {
+      const result = await saveSection("music", { ...content, track: next });
+      if (result.ok) {
+        toast.success(next ? "Canción elegida" : "Sonará su propia canción");
+        router.refresh();
+      } else {
+        toast.error(result.error);
+        setTrack(previous);
+      }
+    });
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Elegir una canción</CardTitle>
+        <CardDescription>
+          Grabaciones instrumentales de uso libre. Toquen ▶ para escucharlas y elijan una.
+          {!hasOwnSong && !track && " Mientras no elijan ninguna, la invitación no tiene música."}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <MusicLibraryPicker value={track} onChange={choose} hasOwnSong={hasOwnSong} disabled={pending} />
+      </CardContent>
+    </Card>
+  );
+}
+
+export function MusicSettings({ content, visible }: { content: SectionContent<"music">; visible: boolean }) {
+  const router = useRouter();
+  const autoplayOnOpen = content.autoplay_on_open;
   const [autoplay, setAutoplay] = useState(autoplayOnOpen);
   const [enabled, setEnabled] = useState(visible);
   const [pending, startTransition] = useTransition();
@@ -17,8 +60,10 @@ export function MusicSettings({ autoplayOnOpen, visible }: { autoplayOnOpen: boo
   const update = (fn: () => Promise<{ ok: boolean; message?: string; error?: string }>, rollback: () => void) =>
     startTransition(async () => {
       const result = await fn();
-      if (result.ok) toast.success(result.message ?? "Guardado");
-      else {
+      if (result.ok) {
+        toast.success(result.message ?? "Guardado");
+        router.refresh();
+      } else {
         toast.error(result.error);
         rollback();
       }
@@ -59,7 +104,7 @@ export function MusicSettings({ autoplayOnOpen, visible }: { autoplayOnOpen: boo
             onCheckedChange={(value) => {
               setAutoplay(value);
               update(
-                () => saveSection("music", { autoplay_on_open: value }),
+                () => saveSection("music", { ...content, autoplay_on_open: value }),
                 () => setAutoplay(!value),
               );
             }}

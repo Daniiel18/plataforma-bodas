@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { TRACK_KEYS } from "./music-library";
+
 /**
  * Content model of each invitation section.
  *
@@ -135,7 +137,11 @@ export const sectionSchemas = {
   }),
   rsvp: z.object({ title: text(120), message: text(300), closed_message: text(300) }),
   gifts: z.object({ title: text(120), message: text(300) }),
-  music: z.object({ autoplay_on_open: z.boolean().default(true) }),
+  music: z.object({
+    autoplay_on_open: z.boolean().default(true),
+    /** A song of the library; null plays the couple's own upload. */
+    track: z.enum(TRACK_KEYS).nullable().catch(null).default(null),
+  }),
 } satisfies Record<SectionType, z.ZodType>;
 
 export type SectionContent<T extends SectionType> = z.infer<(typeof sectionSchemas)[T]>;

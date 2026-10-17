@@ -10,7 +10,10 @@ describe("parseContent", () => {
       style: "coverflow",
       autoplay: true,
     });
-    expect(parseContent("music", {})).toEqual({ autoplay_on_open: true });
+    expect(parseContent("music", {})).toEqual({ autoplay_on_open: true, track: null });
+    // A song that is no longer in the library falls back to their own upload.
+    expect(parseContent("music", { track: "no-existe" }).track).toBeNull();
+    expect(parseContent("music", { track: "canon" }).track).toBe("canon");
   });
 });
 

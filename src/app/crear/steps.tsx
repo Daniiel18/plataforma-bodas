@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, type ReactNode } from "react";
 
 import { AppearanceFields } from "@/components/editor/appearance-fields";
 import { GiftMethodsFields } from "@/components/editor/gift-methods-fields";
+import { MusicLibraryPicker } from "@/components/editor/music-library-picker";
 import { SectionForm } from "@/components/editor/section-forms";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -230,19 +231,42 @@ function AppearanceStep({ draft }: { draft: BuilderDraft }) {
 function MusicStep({ draft }: { draft: BuilderDraft }) {
   const setSection = useBuilder((s) => s.setSection);
   const music = parseContent("music", draft.sections.music.content);
+  const ownSong = draft.media.audio?.id ?? null;
+
+  // A song they upload becomes the one that plays.
+  const lastSong = useRef(ownSong);
+  useEffect(() => {
+    if (ownSong && ownSong !== lastSong.current) setSection("music", { ...music, track: null });
+    lastSong.current = ownSong;
+  }, [ownSong, music, setSection]);
+
   return (
     <ToggleSection type="music" draft={draft}>
-      <div className="grid gap-4">
-        <LocalMediaField
-          slot="audio"
-          emptyLabel="Elegir su canción (MP3 o M4A)"
-          hint="Hasta 15 MB. Suena cuando el invitado abre el sobre y tiene botón para pausarla."
-        />
+      <div className="grid gap-5">
+        <div className="grid gap-2">
+          <Label>Elijan una canción</Label>
+          <p className="text-xs text-muted-foreground">
+            Grabaciones instrumentales de uso libre. Toquen ▶ para escucharlas.
+          </p>
+          <MusicLibraryPicker
+            value={music.track}
+            onChange={(track) => setSection("music", { ...music, track })}
+            hasOwnSong={Boolean(ownSong)}
+          />
+        </div>
+        <div className="grid gap-2">
+          <Label>O suban la suya</Label>
+          <LocalMediaField
+            slot="audio"
+            emptyLabel="Subir su canción (MP3 o M4A)"
+            hint="Hasta 15 MB. Las canciones de Apple Music o Spotify no se pueden usar; necesitan el archivo."
+          />
+        </div>
         <label className="flex items-center justify-between gap-3 rounded-lg border p-3 text-sm">
           Empezar a sonar al abrir el sobre
           <Switch
             checked={music.autoplay_on_open}
-            onCheckedChange={(autoplay_on_open) => setSection("music", { autoplay_on_open })}
+            onCheckedChange={(autoplay_on_open) => setSection("music", { ...music, autoplay_on_open })}
           />
         </label>
       </div>

@@ -1,6 +1,7 @@
 import { resolveBackground, resolveVeil, type BackgroundKey, type PhotoVeil } from "./backgrounds";
 import type { GiftView } from "./gifts";
 import type { MediaImage } from "./media";
+import { trackUrl } from "./music-library";
 import {
   bilingual,
   DEFAULT_TEXT,
@@ -224,10 +225,9 @@ export function assembleInvitation(source: InvitationSource): { data: Invitation
     : null;
 
   const musicSection = find("music");
-  const music =
-    musicSection && source.audioUrl
-      ? { url: source.audioUrl, autoplayOnOpen: parseContent("music", musicSection.content).autoplay_on_open }
-      : null;
+  const musicContent = parseContent("music", musicSection?.content);
+  const musicUrl = musicContent.track ? trackUrl(musicContent.track) : source.audioUrl;
+  const music = musicSection && musicUrl ? { url: musicUrl, autoplayOnOpen: musicContent.autoplay_on_open } : null;
 
   const ctx: ViewContext = {
     cover: source.cover,

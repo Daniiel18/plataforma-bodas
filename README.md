@@ -56,7 +56,7 @@ The couple manages every detail from a dashboard and gets a push notification on
 - **Venue picker**: search the address on a map and drag the pin to the exact entrance — guests' map, directions and calendar event use that point.
 - **Gallery manager**: up to 30 photos, compressed in the browser, drag-and-drop ordering and a live preview of every 3D style.
 - **Template studio**: 14 templates in seven collections (classic, romantic, glamour, minimal, botanical, boho and evening), 14 page backgrounds — from silk and marble to damask, lace and art déco, or the couple's own photo — and curated accent colors, all mixable with a live preview.
-- **Music and gifts**: upload the song and turn on the gift methods they want — Zelle (with its QR), PayPal, bank transfer or registry links.
+- **Music and gifts**: pick a song from the built-in public domain library or upload their own, and turn on the gift methods they want — Zelle (with its QR), PayPal, bank transfer or registry links.
 - **Live dashboard**: answers and wishes appear instantly as in-app notifications and every page updates itself, no reload needed (Supabase Realtime).
 - **Push notifications** to the couple's phones (installable as an app): one per answer, with the wish included, and one per change.
 - **Share on publish**: the moment the invitation goes live, a dialog offers the link and a ready-made invitation message (optionally bilingual) for Messages/iMessage, WhatsApp, Messenger, Telegram, Facebook, email or the phone's share sheet.

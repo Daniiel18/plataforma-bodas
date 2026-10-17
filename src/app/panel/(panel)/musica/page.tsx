@@ -8,7 +8,7 @@ import { parseContent } from "@/lib/sections";
 
 import { BlockSkeleton, PageHeader } from "../page-header";
 import { SingleMediaField } from "../single-media-field";
-import { MusicSettings } from "./music-settings";
+import { MusicLibraryCard, MusicSettings } from "./music-settings";
 
 export const metadata: Metadata = { title: "Música" };
 
@@ -30,12 +30,18 @@ async function MusicLoader() {
     supabase.from("sections").select("content, is_visible").eq("wedding_id", wedding.id).eq("type", "music").single(),
   ]);
 
+  const content = parseContent("music", section?.content);
+
   return (
     <div className="grid max-w-2xl gap-6">
+      <MusicLibraryCard key={content.track ?? "own"} content={content} hasOwnSong={Boolean(audio)} />
       <Card>
         <CardHeader>
-          <CardTitle>Canción</CardTitle>
-          <CardDescription>Formato MP3 o M4A, hasta 15 MB. Si subes otra, reemplaza a la anterior.</CardDescription>
+          <CardTitle>O suban su propia canción</CardTitle>
+          <CardDescription>
+            Un archivo MP3 o M4A de hasta 15 MB (las canciones de Apple Music o Spotify no se pueden usar). Al subirla,
+            pasa a sonar en lugar de la elegida arriba.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <SingleMediaField
@@ -49,10 +55,7 @@ async function MusicLoader() {
           />
         </CardContent>
       </Card>
-      <MusicSettings
-        autoplayOnOpen={parseContent("music", section?.content).autoplay_on_open}
-        visible={section?.is_visible ?? true}
-      />
+      <MusicSettings content={content} visible={section?.is_visible ?? true} />
     </div>
   );
 }

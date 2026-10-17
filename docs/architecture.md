@@ -116,6 +116,10 @@ Guests have no accounts. A random 192-bit token identifies their answer; only it
 3. A Server Action validates the path, type and size and registers the file; a database trigger enforces the limits (30 photos, one cover, one song, one QR).
 4. Guests receive images through `next/image`, so Vercel's CDN serves optimized versions and Supabase egress stays low. Music is only downloaded after the guest opens the envelope.
 
+### Music
+
+The music section stores `track`, a song of the library (`src/lib/music-library.ts`, public domain recordings served from `/public/music`), or null to play the couple's own upload; uploading a song resets it to null. Library songs live on Vercel's CDN, not in Storage.
+
 ### Photo framing
 
 Each photo keeps how the couple framed it in `media.crop` (`src/lib/photo-crop.ts`): the point of the photo shown at the frame's center and a zoom where 1 fills the frame. Below 1 the whole photo can show, over a blurred copy of itself; the zoom is relative, so one framing serves every frame shape (4:5 polaroid, square or ring carousel cards, any screen). `FramedPhoto` places cover and gallery photos from that geometry; the page background does it in CSS (`.inv-backdrop::before` with container units), because its frame is the guest's screen. The *Ajustar* dialog (`src/components/editor/photo-crop-dialog.tsx`) is shared by the dashboard and the builder, which keeps the framing in the draft and sends it when publishing.
