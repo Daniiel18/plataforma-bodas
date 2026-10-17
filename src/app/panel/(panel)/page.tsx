@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAdminContext } from "@/lib/admin";
 import { daysUntil, displayZone, formatDateTime, formatShortDateTime, isPast } from "@/lib/dates";
@@ -96,6 +97,22 @@ async function Dashboard() {
 
   return (
     <>
+      {!wedding.is_published && (
+        <div className="mb-6 flex flex-col gap-3 rounded-xl border border-primary/40 bg-accent/30 p-4 text-sm sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            <strong>Su invitación todavía no está publicada:</strong> nadie la ve. Revísenla en la vista previa y
+            publíquenla en Ajustes cuando esté lista.
+          </p>
+          <div className="flex shrink-0 gap-2">
+            <Button asChild variant="outline" size="sm">
+              <Link href="/panel/vista-previa">Vista previa</Link>
+            </Button>
+            <Button asChild size="sm">
+              <Link href="/panel/ajustes">Publicar</Link>
+            </Button>
+          </div>
+        </div>
+      )}
       <p className="-mt-4 mb-6 text-sm text-muted-foreground">
         {wedding.event_starts_at
           ? `Boda el ${formatDateTime(wedding.event_starts_at, zone)}`

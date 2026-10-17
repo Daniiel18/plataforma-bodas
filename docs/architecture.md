@@ -171,6 +171,10 @@ Couples create their account the first time they sign in; there is no separate s
 2. The browser uploads the photos, song and QR from IndexedDB straight to Storage.
 3. **`finishPublishing`** translates every Spanish text to English, publishes the wedding (the database moves it from `draft` to `active`) and returns what the share dialog needs.
 
+**Save without publishing.** *Guardar en mi cuenta* (any step) and *Guardar sin publicar* (review step) run the same flow with `?modo=guardar`: the wedding is created as an unpublished `draft`, the device is freed, and the couple goes on from the dashboard on any device, publishing from *Ajustes* when ready. A draft only kept in the browser is lost if that browser's storage is (another app's in-app browser, a private tab, cleared data), so this is the way to switch devices.
+
+An interrupted move resumes only when the account's wedding is the one this device started (its id is kept in `localStorage` until the move ends); otherwise the couple is asked before anything is replaced.
+
 Drafts saved by an older builder are migrated in the browser (`migrateDraft`), so nobody loses their work after a deploy.
 
 ## Gift methods

@@ -114,19 +114,27 @@ export function SignIn({ next, linkError }: { next: string; linkError: boolean }
     });
 
   const publishing = next.startsWith("/crear/publicar");
+  const saving = publishing && next.includes("modo=guardar");
 
   return (
     <div className="mx-auto grid w-full max-w-md gap-6 px-4 py-12 md:py-20">
       <div className="grid gap-2 text-center">
         <h1 className="font-heading text-4xl font-medium">
-          {publishing ? (
+          {saving ? (
+            <T es="Guarden su invitación" en="Save your invitation" />
+          ) : publishing ? (
             <T es="Un paso más para publicar" en="One more step to publish" />
           ) : (
             <T es="Entra a tu panel" en="Sign in to your dashboard" />
           )}
         </h1>
         <p className="text-[var(--site-ink-soft)]">
-          {publishing ? (
+          {saving ? (
+            <T
+              es="Entren para guardarla en su cuenta, sin publicarla, y seguirla desde cualquier celular. Es gratis."
+              en="Sign in to save it to your account, unpublished, and continue on any phone. It's free."
+            />
+          ) : publishing ? (
             <T
               es="Entra para guardar su invitación y recibir las confirmaciones. Es gratis."
               en="Sign in to save your invitation and receive your guests' replies. It's free."

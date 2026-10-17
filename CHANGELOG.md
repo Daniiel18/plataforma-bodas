@@ -8,6 +8,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - **Sign-in** (`/entrar`) with Google or a 6-digit code (plus a link) sent by email; the account is created on the first sign-in. Google's consent screen shows *Lazo de Oro*, and the email arrives in the language of the page.
 - **Publish from the builder**: after signing in, the draft becomes the couple's wedding — photos, music and QR uploaded from the device, texts translated to English — and the share dialog opens. One wedding per account; if there is one already, the couple can replace its design and keep their guests' replies.
+- **Save without publishing**: *Guardar en mi cuenta* in the builder (any step, once names and date are in) keeps the invitation in the couple's account as an unpublished draft, so they can go on from any phone or computer in the dashboard, which reminds them it is not published yet.
 - **More gift methods**: PayPal.me, bank transfer (with copy buttons) and gift-registry links next to Zelle. Each couple turns on the ones they want, in the builder and in the dashboard, which also gets a switch to show or hide the whole gift box.
 - **Lazo de Oro platform site**: landing page (live demo in a phone, how it works, FAQ), privacy policy and terms in Spanish and English, original gold-bow logo and app icons, sitemap, robots and link previews.
 - **One indexable demo per template** (`/demo/<template>`) with a *Create yours with this template* bar.

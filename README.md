@@ -33,7 +33,7 @@ The couple manages every detail from a dashboard and gets a push notification on
 
 - **Landing page** in Spanish or English (picked from the phone), with a real invitation running inside a phone, how it works and an FAQ.
 - **One indexable demo per template** (`/demo/<template>`) with a *Create yours with this template* button.
-- **Builder without an account** (`/crear`): a 14-step guide — names, date, template, envelope and cover, parents, venue map, schedule, dress code, photos, music, gifts, replies — with a live preview of every step. Everything is saved on the device (photos and music in IndexedDB) until the couple signs in, which publishes it right away and opens the share dialog.
+- **Builder without an account** (`/crear`): a 14-step guide — names, date, template, envelope and cover, parents, venue map, schedule, dress code, photos, music, gifts, replies — with a live preview of every step. Everything is saved on the device (photos and music in IndexedDB) until the couple signs in, which publishes it right away and opens the share dialog — or saves it to their account unpublished, to go on from any device.
 
 - **Sign in with Google or an emailed code** (`/entrar`): no password to remember, Google's consent screen shows *Lazo de Oro*, and the email arrives in the language of the page.
 

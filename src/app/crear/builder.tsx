@@ -1,8 +1,8 @@
 "use client";
 
-import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, RotateCcwIcon } from "lucide-react";
+import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, CloudUploadIcon, RotateCcwIcon } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import { Logo } from "@/components/brand/logo";
@@ -18,7 +18,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { track } from "@/lib/analytics";
-import { missingForPublish, STEPS, type BuilderDraft } from "@/lib/builder/draft";
+import { missingForPublish, SAVE_PATH, STEPS, type BuilderDraft } from "@/lib/builder/draft";
 import { draftMediaIds, draftToInvitation } from "@/lib/builder/invitation";
 import { removeLocalMedia, useLocalMediaUrls } from "@/lib/builder/media";
 import { useBuilder } from "@/lib/builder/store";
@@ -31,7 +31,8 @@ import { StepPreview } from "./step-preview";
 import { StepFields } from "./steps";
 
 const STEP_INTRO: Record<(typeof STEPS)[number]["key"], string> = {
-  nombres: "Empecemos por lo más importante. Todo se guarda en este dispositivo; no necesitan cuenta para diseñar.",
+  nombres:
+    "Empecemos por lo más importante. Todo se guarda en este dispositivo; si quieren seguir en otro, usen «Guardar en mi cuenta».",
   fecha: "La cuenta regresiva, el calendario y «Añadir al calendario» salen de aquí.",
   plantilla: "Elijan el diseño, el fondo y, si quieren, un color. Podrán cambiarlos cuando quieran.",
   portada: "Así empieza su invitación.",
@@ -111,10 +112,11 @@ function Wizard({ draft }: { draft: BuilderDraft }) {
           <Link href="/" aria-label="Lazo de Oro" className="text-sm">
             <Logo markClassName="size-7" />
           </Link>
-          <div className="flex items-center gap-2 text-xs text-[var(--site-ink-soft)]">
-            <span className="hidden items-center gap-1 sm:flex">
+          <div className="flex items-center gap-1 text-xs text-[var(--site-ink-soft)] sm:gap-2">
+            <span className="hidden items-center gap-1 lg:flex">
               <CheckIcon className="size-3.5" /> Guardado en este dispositivo
             </span>
+            <SaveToAccount draft={draft} />
             <StartOver />
           </div>
         </div>
@@ -211,6 +213,79 @@ function PhonePreview() {
   return <PhoneFrame src="/crear/vista-previa" title="Vista previa de la invitación" width={300} />;
 }
 
+/** Keeps the draft in the couple's account, unpublished, to go on from any device. */
+function SaveToAccount({ draft }: { draft: BuilderDraft }) {
+  const router = useRouter();
+  const goTo = useBuilder((s) => s.goTo);
+  const [open, setOpen] = useState(false);
+  const missing = missingForPublish(draft)[0];
+  const missingStep = missing ? STEPS.findIndex((s) => s.key === missing) : -1;
+
+  return (
+    <>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => setOpen(true)}
+        className="text-xs"
+        aria-label="Guardar en mi cuenta"
+      >
+        <CloudUploadIcon /> <span className="sm:hidden">Guardar</span>
+        <span className="hidden sm:inline">Guardar en mi cuenta</span>
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          {missing ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>Primero, sus nombres y la fecha</DialogTitle>
+                <DialogDescription>
+                  Para guardar la invitación en su cuenta necesitamos al menos los nombres de los novios y la fecha de
+                  la boda.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button
+                  onClick={() => {
+                    goTo(missingStep);
+                    setOpen(false);
+                  }}
+                >
+                  Ir al paso {missingStep + 1}
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle>Guardar en su cuenta</DialogTitle>
+                <DialogDescription>
+                  Entran con Google o con un código por correo y la invitación queda guardada en su cuenta,{" "}
+                  <strong>sin publicar</strong>. Después la siguen desde su panel en cualquier celular o computadora
+                  (fotos, textos, música…) y la publican cuando esté lista.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="ghost" onClick={() => setOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={() => {
+                    track("save_click");
+                    router.push(SAVE_PATH);
+                  }}
+                >
+                  <CloudUploadIcon /> Continuar
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
 function StartOver() {
   const [open, setOpen] = useState(false);
   const reset = useBuilder((s) => s.reset);
@@ -222,8 +297,15 @@ function StartOver() {
   };
   return (
     <>
-      <Button variant="ghost" size="sm" onClick={() => setOpen(true)} className="text-xs">
-        <RotateCcwIcon /> Empezar de nuevo
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => setOpen(true)}
+        className="text-xs"
+        aria-label="Empezar de nuevo"
+        title="Empezar de nuevo"
+      >
+        <RotateCcwIcon /> <span className="hidden sm:inline">Empezar de nuevo</span>
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>

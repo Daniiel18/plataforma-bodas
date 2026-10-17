@@ -16,6 +16,7 @@ const EVENTS = [
   "builder_step",
   "builder_review",
   "publish_click",
+  "save_click",
 ] as const;
 
 const short = z.string().trim().max(100);

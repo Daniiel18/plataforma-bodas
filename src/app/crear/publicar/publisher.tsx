@@ -1,6 +1,14 @@
 "use client";
 
-import { CheckCircle2Icon, ExternalLinkIcon, LayoutDashboardIcon, Loader2Icon, Share2Icon } from "lucide-react";
+import {
+  CheckCircle2Icon,
+  CloudCheckIcon,
+  EyeIcon,
+  ExternalLinkIcon,
+  LayoutDashboardIcon,
+  Loader2Icon,
+  Share2Icon,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
@@ -10,7 +18,7 @@ import { ShareInvitationDialog } from "@/components/share-invitation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { BuilderDraft, LocalMedia } from "@/lib/builder/draft";
-import { normalizeSlugInput, slugProblem } from "@/lib/builder/draft";
+import { normalizeSlugInput, SAVE_PATH, slugProblem, suggestSlug } from "@/lib/builder/draft";
 import { draftMediaIds } from "@/lib/builder/invitation";
 import { readLocalMedia, removeLocalMedia } from "@/lib/builder/media";
 import { useBuilder } from "@/lib/builder/store";
@@ -41,6 +49,7 @@ type Phase =
   | { name: "slug"; suggestion: string | null }
   | { name: "error"; message: string }
   | { name: "done"; slug: string; share: ShareDetails; failedUploads: number }
+  | { name: "saved"; failedUploads: number }
   | { name: "empty" };
 
 /** Files of the draft in upload order (single files first, then the gallery). */
@@ -57,6 +66,30 @@ function uploads(draft: BuilderDraft): { kind: MediaKind; media: LocalMedia }[] 
   ];
 }
 
+/**
+ * The wedding this device is moving its draft into, kept until the move ends, so
+ * an interrupted publish resumes instead of asking to replace the couple's own
+ * wedding (a wedding saved earlier from another device is never replaced silently).
+ */
+const PENDING_KEY = "lazodoro-publishing";
+const pending = {
+  get: () => {
+    try {
+      return localStorage.getItem(PENDING_KEY);
+    } catch {
+      return null;
+    }
+  },
+  set: (id: string | null) => {
+    try {
+      if (id) localStorage.setItem(PENDING_KEY, id);
+      else localStorage.removeItem(PENDING_KEY);
+    } catch {
+      // Without storage an interrupted publish asks before replacing; nothing is lost.
+    }
+  },
+};
+
 const subscribe = () => () => {};
 
 export function Publisher() {
@@ -71,6 +104,8 @@ export function Publisher() {
 
 function PublishFlow() {
   const router = useRouter();
+  // Read once: this component only renders in the browser.
+  const [saveOnly] = useState(() => new URLSearchParams(window.location.search).get("modo") === "guardar");
   const [phase, setPhase] = useState<Phase>(() =>
     useBuilder.getState().draft ? { name: "preparing" } : { name: "empty" },
   );
@@ -78,19 +113,24 @@ function PublishFlow() {
 
   const run = useCallback(
     async (mode: "new" | "replace") => {
+      // A link left blank or half-typed takes the one suggested by the names.
+      const typed = useBuilder.getState().draft;
+      if (typed && slugProblem(typed.slug)) {
+        useBuilder.getState().setSlug(suggestSlug(typed.couple.partner1, typed.couple.partner2));
+      }
       const draft = useBuilder.getState().draft;
       if (!draft) return setPhase({ name: "empty" });
       setPhase({ name: "preparing" });
 
       let result: PrepareResult = await prepareWedding(draft, mode);
       // A publish from this device was interrupted after creating the wedding: resume it.
-      if (result.status === "has_wedding" && !result.published && result.slug === draft.slug && mode === "new") {
+      if (result.status === "has_wedding" && result.weddingId === pending.get() && mode === "new") {
         result = await prepareWedding(draft, "replace");
       }
 
       switch (result.status) {
         case "signin":
-          router.replace(`/entrar?next=${encodeURIComponent("/crear/publicar")}`);
+          router.replace(`/entrar?next=${encodeURIComponent(saveOnly ? SAVE_PATH : "/crear/publicar")}`);
           return;
         case "has_wedding":
           return setPhase({ name: "choose", slug: result.slug, couple: result.couple });
@@ -99,6 +139,8 @@ function PublishFlow() {
         case "error":
           return setPhase({ name: "error", message: result.error });
       }
+
+      pending.set(result.weddingId);
 
       // Photos, QR and song go straight from this device to Storage.
       const files = uploads(draft);
@@ -123,15 +165,20 @@ function PublishFlow() {
       }
 
       setPhase({ name: "publishing" });
-      const finished = await finishPublishing();
+      const finished = await finishPublishing({ publish: !saveOnly });
       if (!finished.ok) return setPhase({ name: "error", message: finished.error });
 
       // The design now lives in the account: free the device.
       await Promise.all(draftMediaIds(draft).map((id) => removeLocalMedia(id).catch(() => undefined)));
       useBuilder.setState({ draft: null, step: 0 });
-      setPhase({ name: "done", slug: finished.slug, share: finished.share, failedUploads: failed });
+      pending.set(null);
+      setPhase(
+        saveOnly
+          ? { name: "saved", failedUploads: failed }
+          : { name: "done", slug: finished.slug, share: finished.share, failedUploads: failed },
+      );
     },
-    [router],
+    [router, saveOnly],
   );
 
   useEffect(() => {
@@ -152,7 +199,7 @@ function PublishFlow() {
         />
       );
     case "publishing":
-      return <Progress title="Publicando su invitación…" />;
+      return <Progress title={saveOnly ? "Guardando su invitación…" : "Publicando su invitación…"} />;
     case "empty":
       return (
         <Card>
@@ -173,7 +220,7 @@ function PublishFlow() {
     case "choose":
       return <ChooseWedding slug={phase.slug} couple={phase.couple} onReplace={() => run("replace")} />;
     case "slug":
-      return <PickSlug suggestion={phase.suggestion} onRetry={() => run("new")} />;
+      return <PickSlug suggestion={phase.suggestion} saveOnly={saveOnly} onRetry={() => run("new")} />;
     case "error":
       return (
         <Card>
@@ -190,6 +237,8 @@ function PublishFlow() {
       );
     case "done":
       return <Published slug={phase.slug} share={phase.share} failedUploads={phase.failedUploads} />;
+    case "saved":
+      return <Saved failedUploads={phase.failedUploads} />;
   }
 }
 
@@ -265,7 +314,15 @@ function ChooseWedding({ slug, couple, onReplace }: { slug: string; couple: stri
   );
 }
 
-function PickSlug({ suggestion, onRetry }: { suggestion: string | null; onRetry: () => void }) {
+function PickSlug({
+  suggestion,
+  saveOnly,
+  onRetry,
+}: {
+  suggestion: string | null;
+  saveOnly: boolean;
+  onRetry: () => void;
+}) {
   const setSlug = useBuilder((s) => s.setSlug);
   const [value, setValue] = useState(suggestion ?? useBuilder.getState().draft?.slug ?? "");
   const problem = slugProblem(value);
@@ -289,8 +346,40 @@ function PickSlug({ suggestion, onRetry }: { suggestion: string | null; onRetry:
           onRetry();
         }}
       >
-        Usar este enlace y publicar
+        {saveOnly ? "Usar este enlace y guardar" : "Usar este enlace y publicar"}
       </Button>
+    </Card>
+  );
+}
+
+function Saved({ failedUploads }: { failedUploads: number }) {
+  return (
+    <Card>
+      <div className="grid justify-items-center gap-3 text-center">
+        <CloudCheckIcon className="size-12 text-success" />
+        <h1 className="font-heading text-3xl">Su invitación está guardada en su cuenta</h1>
+        <p className="text-[var(--site-ink-soft)]">
+          Todavía no está publicada: nadie la ve. Síganla editando desde su panel, en este o en cualquier otro
+          dispositivo, y publíquenla en <strong className="text-[var(--site-ink)]">Ajustes</strong> cuando esté lista.
+        </p>
+        {failedUploads > 0 && (
+          <p className="rounded-lg bg-amber-100 px-3 py-2 text-sm text-amber-900">
+            {failedUploads} archivo(s) no se pudieron subir. Pueden añadirlos desde su panel.
+          </p>
+        )}
+      </div>
+      <div className="grid gap-2">
+        <Button asChild size="lg" className="h-12">
+          <Link href="/panel">
+            <LayoutDashboardIcon /> Seguir en mi panel
+          </Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link href="/panel/vista-previa">
+            <EyeIcon /> Ver cómo va quedando
+          </Link>
+        </Button>
+      </div>
     </Card>
   );
 }

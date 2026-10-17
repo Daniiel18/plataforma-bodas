@@ -19,13 +19,13 @@ import { translateEsToEn } from "@/lib/translate";
  * straight from the browser to Storage):
  *   1. prepareWedding: creates the wedding from the draft, or replaces the
  *      design of the account's wedding (guests' answers are kept).
- *   2. finishPublishing: translates the texts and publishes.
+ *   2. finishPublishing: translates the texts and publishes, or leaves the
+ *      wedding as an unpublished draft when the couple only saves it.
  */
 
 export type PrepareResult =
   | { status: "ready"; weddingId: string; slug: string }
-  /** `published: false` means a publish from this builder was interrupted (it resumes by replacing). */
-  | { status: "has_wedding"; slug: string; couple: string; published: boolean }
+  | { status: "has_wedding"; weddingId: string; slug: string; couple: string }
   | { status: "slug_taken"; suggestion: string | null }
   | { status: "signin" }
   | { status: "error"; error: string };
@@ -96,9 +96,9 @@ export async function prepareWedding(input: unknown, mode: "new" | "replace"): P
     if (mode !== "replace") {
       return {
         status: "has_wedding",
+        weddingId: owned.wedding_id,
         slug: existing.slug,
         couple: `${existing.partner1_name} & ${existing.partner2_name}`,
-        published: existing.is_published,
       };
     }
     if (!["draft", "active"].includes(existing.status)) {
@@ -186,8 +186,8 @@ async function replaceDesign(
 
 export type FinishResult = { ok: true; slug: string; share: ShareDetails } | { ok: false; error: string };
 
-/** Translates every text into English and publishes the couple's wedding. */
-export async function finishPublishing(): Promise<FinishResult> {
+/** Translates every text into English and publishes the couple's wedding (unless they only save it). */
+export async function finishPublishing({ publish = true }: { publish?: boolean } = {}): Promise<FinishResult> {
   const { supabase, wedding, readOnly } = await getAdminContext();
   if (readOnly) return READ_ONLY_RESULT;
 
@@ -223,8 +223,10 @@ export async function finishPublishing(): Promise<FinishResult> {
     }
   }
 
-  const { error } = await supabase.from("weddings").update({ is_published: true }).eq("id", wedding.id);
-  if (error) return { ok: false, error: "No se pudo publicar. Inténtalo de nuevo desde tu panel." };
+  if (publish) {
+    const { error } = await supabase.from("weddings").update({ is_published: true }).eq("id", wedding.id);
+    if (error) return { ok: false, error: "No se pudo publicar. Inténtalo de nuevo desde tu panel." };
+  }
 
   refreshInvitation(wedding.slug);
   return { ok: true, slug: wedding.slug, share: shareDetails(wedding) };

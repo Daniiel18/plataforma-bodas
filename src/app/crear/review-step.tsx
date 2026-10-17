@@ -1,6 +1,13 @@
 "use client";
 
-import { AlertCircleIcon, CheckCircle2Icon, ExternalLinkIcon, PencilIcon, SparklesIcon } from "lucide-react";
+import {
+  AlertCircleIcon,
+  CheckCircle2Icon,
+  CloudUploadIcon,
+  ExternalLinkIcon,
+  PencilIcon,
+  SparklesIcon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -10,6 +17,7 @@ import { track } from "@/lib/analytics";
 import {
   missingForPublish,
   normalizeSlugInput,
+  SAVE_PATH,
   sectionsWithExamples,
   slugProblem,
   STEPS,
@@ -134,14 +142,24 @@ export function ReviewStep({ draft }: { draft: BuilderDraft }) {
         >
           <SparklesIcon /> Publicar mi invitación
         </Button>
+        <Button
+          variant="outline"
+          disabled={missing.length > 0}
+          onClick={() => {
+            track("save_click");
+            router.push(SAVE_PATH);
+          }}
+        >
+          <CloudUploadIcon /> Guardar sin publicar
+        </Button>
         <Button variant="outline" asChild>
           <a href="/crear/vista-previa" target="_blank" rel="noopener">
             <ExternalLinkIcon /> Ver en pantalla completa
           </a>
         </Button>
         <p className="text-xs text-muted-foreground">
-          Su invitación está guardada en este dispositivo. Para publicarla les pediremos entrar con Google o con un
-          código que les enviamos por correo.
+          Su invitación está guardada en este dispositivo. Para publicarla, o para guardarla en su cuenta y seguir desde
+          otro celular, les pediremos entrar con Google o con un código que les enviamos por correo.
         </p>
       </section>
     </div>

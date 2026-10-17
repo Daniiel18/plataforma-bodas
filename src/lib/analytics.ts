@@ -3,7 +3,8 @@
  * localStorage. Nothing is sent when the browser asks not to be tracked.
  */
 
-type EventName = "landing_view" | "demo_view" | "builder_start" | "builder_step" | "builder_review" | "publish_click";
+type EventName =
+  "landing_view" | "demo_view" | "builder_start" | "builder_step" | "builder_review" | "publish_click" | "save_click";
 
 const ID_KEY = "lazodoro-aid";
 

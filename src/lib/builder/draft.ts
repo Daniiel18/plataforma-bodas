@@ -12,6 +12,9 @@ import { DEFAULT_TEMPLATE, resolveTemplate, type AccentValue, type TemplateKey }
 /** 2: every gift method (v1 only had Zelle). */
 export const DRAFT_VERSION = 2;
 
+/** Where the builder sends the couple to save the draft in their account without publishing it. */
+export const SAVE_PATH = "/crear/publicar?modo=guardar";
+
 /** A file kept in the browser's IndexedDB. */
 export type LocalMedia = { id: string; mime: string; width: number | null; height: number | null };
 

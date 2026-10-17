@@ -7,7 +7,10 @@ import { Publisher } from "./publisher";
 
 export const metadata: Metadata = { title: "Publicar", robots: { index: false, follow: false } };
 
-/** Moves the builder's draft into the couple's account and publishes it (needs a session, see proxy.ts). */
+/**
+ * Moves the builder's draft into the couple's account and publishes it, or only
+ * saves it with `?modo=guardar` (needs a session, see proxy.ts).
+ */
 export default function PublishPage() {
   return (
     <div className="site flex flex-1 flex-col" data-lang-root>
