@@ -104,7 +104,7 @@ Platform tables outside the diagram: `platform_admins` (super admins), `analytic
 Other rules enforced by the database:
 
 - **Replies** are only accepted while the wedding is `draft` or `active` (`RSVP_CLOSED` otherwise).
-- **Accounts** can own as many live weddings as their plan allows (`features.max_weddings`, 3 on the free plan).
+- **Accounts** can own as many live weddings as their plan allows (`features.max_weddings`, 1 on the free plan).
 - **Slugs** are 3–60 characters and cannot take a reserved app path (`panel`, `crear`, `admin`, …).
 - **Settings per wedding:** `companions_mode` (`names` asks for each companion's name; `count` stores only `rsvps.companions_count`) and `guestbook_public` (private by default; hidden wishes never show).
 
@@ -151,6 +151,7 @@ Guests never write to tables directly. The RSVP Server Actions call these functi
 | `rsvp_submit` | Building block of `rsvp_reply`: creates the RSVP and its companions. Checks publication, deadline, max companions and a per-connection rate limit. |
 | `rsvp_status` | Returns the guest's own answer from their token hash. |
 | `rsvp_change` | Switches Yes ↔ No before the deadline; increments `change_count`. |
+| `set_auth_locale` | Stores the sign-in page language (`es`/`en`) in an account's metadata, so the sign-in email is sent in that language. |
 
 ## Realtime
 
@@ -169,4 +170,5 @@ Supabase's security and performance advisors report **no errors and no warnings*
 - `name_normalized` (accents, punctuation and case removed) plus `pg_trgm` similarity powers duplicate detection across guests **and** companions (`rsvp_duplicate_matches`).
 - Triggers keep companions consistent: none when the answer is "No", never above `max_companions`, and they are removed automatically when someone changes to "No".
 - `enforce_media_limits` caps uploads per wedding (30 photos; one cover, song and QR) and checks that files live in the wedding's own folder.
+- `gift_methods` has one row per wedding and method (`zelle`, `paypal`, `bank`, `registry`; unique on `wedding_id, type`); method-specific fields live in `details`, a JSON object of at most 4 KB.
 - `wedding_stats` aggregates the dashboard numbers with the caller's permissions (`SECURITY INVOKER`).

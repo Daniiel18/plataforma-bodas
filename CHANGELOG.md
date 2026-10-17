@@ -6,9 +6,12 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- **Sign-in** (`/entrar`) with Google or a 6-digit code (plus a link) sent by email; the account is created on the first sign-in. Google's consent screen shows *Lazo de Oro*, and the email arrives in the language of the page.
+- **Publish from the builder**: after signing in, the draft becomes the couple's wedding — photos, music and QR uploaded from the device, texts translated to English — and the share dialog opens. One wedding per account; if there is one already, the couple can replace its design and keep their guests' replies.
+- **More gift methods**: PayPal.me, bank transfer (with copy buttons) and gift-registry links next to Zelle. Each couple turns on the ones they want, in the builder and in the dashboard, which also gets a switch to show or hide the whole gift box.
 - **Lazo de Oro platform site**: landing page (live demo in a phone, how it works, FAQ), privacy policy and terms in Spanish and English, original gold-bow logo and app icons, sitemap, robots and link previews.
 - **One indexable demo per template** (`/demo/<template>`) with a *Create yours with this template* bar.
-- **Builder without an account** (`/crear`): a 14-step guide with live previews, example texts, photos and music kept on the device, venue map, link availability check and a full-size preview. Publishing arrives with sign-in in the next stage.
+- **Builder without an account** (`/crear`): a 14-step guide with live previews, example texts, photos and music kept on the device, venue map, link availability check and a full-size preview.
 - **Product analytics** without cookies (`/api/events`), respecting *Do Not Track*.
 - More Latin American time zones.
 - **Platform foundation (Lazo de Oro)**: account profiles created on sign-up, platform administrators, plans (a free plan with every feature, ready for paid plans), product analytics and an audit log.
@@ -18,8 +21,16 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Changed
 
+- The couple's dashboard moved from `/admin` to `/panel` (old links redirect, and the installable app now lives under `/panel`).
+- The platform's address is now **lazodeoro.vercel.app**.
+- The publishing screen no longer mentions the translation.
 - The section forms, venue map and template pickers are shared between the dashboard and the builder (`src/components/editor`), and the invitation is assembled by one function for both the public page and the builder.
 - Live previews keep showing a family or an activity while it is still being typed.
+
+### Fixed
+
+- The music kept playing after leaving an invitation, and could not be paused after going from a demo to the builder.
+- Some phone photos (HEIC, very large, or without a file type) could not be used as the cover: the builder now tries a second decoder and says what to do when a photo cannot be read or the browser does not allow saving files (private mode).
 
 ## [1.1.0] — 2026-10-15
 

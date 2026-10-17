@@ -4,7 +4,7 @@ The platform (**Lazo de Oro**) is a single Next.js 16 application backed by Supa
 
 - **Couples discovering it** land on the platform site (`/`), browse one demo per template (`/demo/<template>`) and design their invitation in the builder (`/crear`) without an account.
 - **Guests** open a public, cached, mobile-first invitation (`/<slug>`). It must load instantly on mobile data and work without an account.
-- **The couple** use a private dashboard (`/admin`) that is always rendered per request, behind authentication and Row Level Security.
+- **The couple** sign in at `/entrar` (Google or a code sent by email) and use a private dashboard (`/panel`) that is always rendered per request, behind authentication and Row Level Security. `/admin` redirects there; it is reserved for the platform's own back office.
 
 ```mermaid
 flowchart LR
@@ -16,7 +16,7 @@ flowchart LR
   end
   subgraph Vercel["Vercel (Next.js 16)"]
     INV["/[slug] — cached invitation<br/>'use cache' + cacheTag"]
-    ADM["/admin — dynamic dashboard<br/>Suspense + Server Actions"]
+    ADM["/panel — dynamic dashboard<br/>Suspense + Server Actions"]
     RSVP["RSVP Server Actions"]
     CRON["/api/keep-alive (daily cron)"]
   end
@@ -51,7 +51,7 @@ Next.js 16 runs with **Cache Components**. Partial Prefetching is deliberately *
 | Route | Strategy | Why |
 | --- | --- | --- |
 | `/[slug]` | `getPublicInvitation()` is a `"use cache"` function with `cacheLife("max")` and `cacheTag("invitation:<slug>")`. `generateStaticParams` prerenders every published invitation at build time; any other slug is rendered on its first visit and stored (ISR). The page awaits `params` and the data before streaming, so a missing invitation returns `404`. | Every guest gets a static page from the CDN. |
-| `/admin/*` | Each page renders a static header and streams its data behind `<Suspense>`. `getAdminContext()` calls `connection()` and is memoized per request with React `cache()`. | Session-dependent data can never be prerendered or shared. |
+| `/panel/*` | Each page renders a static header and streams its data behind `<Suspense>`. `getAdminContext()` calls `connection()` and is memoized per request with React `cache()`. | Session-dependent data can never be prerendered or shared. |
 | Server Actions | Every mutation re-checks the session, the wedding membership and the role, then calls `updateTag("invitation:<slug>")`. | The couple sees their change on the public invitation immediately (read-your-own-writes). |
 
 ## Bilingual invitation without flicker
@@ -154,6 +154,29 @@ The builder is a 14-step wizard that works without an account:
 - **Example texts** (with their English) make the invitation look complete from the first minute; the review step lists the sections that still carry them.
 - **Server help without an account** is read-only and rate limited per hashed IP: link availability (`checkSlug`, with a free alternative) and venue search.
 
+## Sign-in
+
+Couples create their account the first time they sign in; there is no separate sign-up.
+
+- **Google.** `/entrar` renders the Google Identity Services button (`accounts.google.com/gsi/client`). Google returns an ID token bound to a hashed nonce, and `supabase.auth.signInWithIdToken` turns it into a session. Because the consent happens on our own origin, Google shows *Lazo de Oro* instead of the Supabase project domain. If the script cannot load (blockers, old browsers), the page falls back to Supabase's redirect flow.
+- **Email code.** `signInWithOtp` sends one email with a 6-digit code *and* a link (`/auth/confirm?token_hash=…`), so it works whether the couple opens it on the same phone or not.
+- **Email language.** Before asking for the code, the Server Action `rememberEmailLanguage` stores the page language (`es`/`en`) in the account's metadata through `set_auth_locale` (service role only, rate limited). The Supabase email templates branch on it — `{{ if eq (printf "%v" .Data.locale) "en" }}` — so each email arrives in one language.
+- **Redirects.** `proxy.ts` refreshes the session and sends visitors without one from `/panel` and `/crear/publicar` to `/entrar?next=…`; `safeNext` only accepts local paths. Password sign-in stays available at `/panel/login` for accounts created by hand.
+
+## Publishing from the builder
+
+`/crear/publicar` runs right after sign-in, in two Server Actions around the uploads:
+
+1. **`prepareWedding`** validates the whole draft with `draftSchema` (the same Zod schemas as the dashboard), reserves a free link and creates the wedding with its sections and gift methods. An account has one wedding: if it already has one, the couple chooses between replacing its design (guests' answers and wishes stay) and keeping it.
+2. The browser uploads the photos, song and QR from IndexedDB straight to Storage.
+3. **`finishPublishing`** translates every Spanish text to English, publishes the wedding (the database moves it from `draft` to `active`) and returns what the share dialog needs.
+
+Drafts saved by an older builder are migrated in the browser (`migrateDraft`), so nobody loses their work after a deploy.
+
+## Gift methods
+
+Each wedding has one `gift_methods` row per method — `zelle`, `paypal`, `bank` and `registry` — with method-specific fields in `details` (bank, account, routing; registry links). The couple turns each one on or off; the invitation only shows methods that are on and complete (`giftViews` in `src/lib/gifts.ts`), and anonymous visitors can only read visible rows. The same form (`src/components/editor/gift-methods-fields.tsx`) serves the builder and the dashboard. PayPal accepts any form of a PayPal.me user and registry links get `https://` added; anything that is not a web link is dropped.
+
 ## Product analytics
 
 `/api/events` stores funnel events (`landing_view`, `demo_view`, `builder_start`, `builder_step`, `builder_review`, `publish_click`) in `analytics_events` with a random id kept in `localStorage`, the approximate country and the device type. No cookies, bots are ignored, and nothing is sent when the browser has *Do Not Track* or *Global Privacy Control* on.
@@ -168,13 +191,16 @@ src/
 │   ├── crear/                  Builder without an account + full-size preview
 │   ├── api/events/             Product analytics
 │   ├── [slug]/                 Public invitation, RSVP actions, .ics route
-│   ├── admin/
+│   ├── (site)/entrar/          Sign-in with Google or an emailed code
+│   ├── crear/publicar/         Publishing a builder draft after sign-in
+│   ├── panel/
 │   │   ├── (panel)/            Dashboard pages (overview, guests, wishes, content,
 │   │   │                       gallery, music, gifts, appearance, settings)
-│   │   ├── login/ recuperar/   Authentication
+│   │   ├── login/ recuperar/   Password sign-in and recovery
+│   │   ├── sin-acceso/         Signed in without a wedding yet
 │   │   └── vista-previa/       Live preview, even before publishing
 │   ├── api/keep-alive/         Daily cron endpoint
-│   └── auth/confirm/           Email link handler (password recovery)
+│   └── auth/confirm/           Email link handler (sign-in links, password recovery)
 ├── components/
 │   ├── brand/                  Lazo de Oro logo
 │   ├── editor/                 Forms and pickers shared by the dashboard and the builder

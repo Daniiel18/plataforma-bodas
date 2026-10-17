@@ -17,7 +17,7 @@
 
 - **No payments for now.** Vercel's Hobby plan does not allow requesting or processing payments; donations are allowed. Turning on paid plans later means Vercel Pro, a checkout (PayPal Advanced Checkout keeps every method in one PayPal balance) and an orders table.
 - **Everything included** for every couple, with a small "Made with Lazo de Oro" credit.
-- **No custom domain**: weddings live at `lazodoro.vercel.app/<slug>`.
+- **No custom domain**: weddings live at `lazodeoro.vercel.app/<slug>`.
 - **Market**: Hispanic couples in the US and Latin America, in Spanish and English.
 - **Retention**: read-only 30 days after the event, archived 12 months after it; unpublished drafts are deleted after 30 days.
 

@@ -15,7 +15,7 @@ The couple manages every detail from a dashboard and gets a push notification on
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38bdf8?logo=tailwindcss&logoColor=white)
 ![License](https://img.shields.io/badge/license-proprietary-6f5b4e)
 
-**[Website](https://lazodoro.vercel.app)** · **[Live demo](https://lazodoro.vercel.app/demo)** · **[Create one](https://lazodoro.vercel.app/crear)** · **[Dashboard demo](#-try-the-dashboard)** · **[Architecture](docs/architecture.md)** · **[Deployment](docs/deployment.md)**
+**[Website](https://lazodeoro.vercel.app)** · **[Live demo](https://lazodeoro.vercel.app/demo)** · **[Create one](https://lazodeoro.vercel.app/crear)** · **[Dashboard demo](#-try-the-dashboard)** · **[Architecture](docs/architecture.md)** · **[Deployment](docs/deployment.md)**
 
 </div>
 
@@ -33,7 +33,9 @@ The couple manages every detail from a dashboard and gets a push notification on
 
 - **Landing page** in Spanish or English (picked from the phone), with a real invitation running inside a phone, how it works and an FAQ.
 - **One indexable demo per template** (`/demo/<template>`) with a *Create yours with this template* button.
-- **Builder without an account** (`/crear`): a 14-step guide — names, date, template, envelope and cover, parents, venue map, schedule, dress code, photos, music, Zelle, replies — with a live preview of every step. Everything is saved on the device (photos and music in IndexedDB) until the couple signs in to publish.
+- **Builder without an account** (`/crear`): a 14-step guide — names, date, template, envelope and cover, parents, venue map, schedule, dress code, photos, music, gifts, replies — with a live preview of every step. Everything is saved on the device (photos and music in IndexedDB) until the couple signs in, which publishes it right away and opens the share dialog.
+
+- **Sign in with Google or an emailed code** (`/entrar`): no password to remember, Google's consent screen shows *Lazo de Oro*, and the email arrives in the language of the page.
 
 ### For guests
 
@@ -42,7 +44,7 @@ The couple manages every detail from a dashboard and gets a push notification on
 - **One-tap add to calendar** that picks the right app for the guest's device — Apple Calendar on iPhone, Google Calendar on Android, an `.ics` file on computers — with a reminder the day before.
 - **3D photo gallery** in five styles — coverflow, cube, stacked cards, flip and a custom 3D ring — with swipe and full-screen viewer.
 - **Venue map** pointing at the exact spot the couple pinned, with a single *Get directions* button: Android shows the system's app chooser (Google Maps, Waze…), iPhone gets a native-style sheet with Apple Maps, Google Maps and Waze.
-- **Gift box** that opens to reveal the Zelle QR code, a *Send with Zelle* button that opens Zelle with the couple as recipient, *Save QR* (straight to the photo library on phones) and a copy-to-clipboard handle.
+- **Gift box** that opens to reveal every way the couple accepts gifts: Zelle (QR code, *Send with Zelle* button with the couple as recipient, *Save QR* straight to the photo library), PayPal.me, bank transfer details with copy buttons, and gift-registry links.
 - **Two-step reply**: attendance and named companions, then an optional private wish — saved together, so the couple gets a single notification. A personal link lets guests change *Yes ↔ No* from any device until the deadline.
 - **Spanish and English**, picked from the phone's language with a flicker-free toggle that never interrupts the music.
 
@@ -54,7 +56,7 @@ The couple manages every detail from a dashboard and gets a push notification on
 - **Venue picker**: search the address on a map and drag the pin to the exact entrance — guests' map, directions and calendar event use that point.
 - **Gallery manager**: up to 30 photos, compressed in the browser, drag-and-drop ordering and a live preview of every 3D style.
 - **Template studio**: 14 templates in seven collections (classic, romantic, glamour, minimal, botanical, boho and evening), 14 page backgrounds — from silk and marble to damask, lace and art déco, or the couple's own photo — and curated accent colors, all mixable with a live preview.
-- **Music and gifts**: upload the song and the Zelle QR.
+- **Music and gifts**: upload the song and turn on the gift methods they want — Zelle (with its QR), PayPal, bank transfer or registry links.
 - **Live dashboard**: answers and wishes appear instantly as in-app notifications and every page updates itself, no reload needed (Supabase Realtime).
 - **Push notifications** to the couple's phones (installable as an app): one per answer, with the wish included, and one per change.
 - **Share on publish**: the moment the invitation goes live, a dialog offers the link and a ready-made invitation message (optionally bilingual) for Messages/iMessage, WhatsApp, Messenger, Telegram, Facebook, email or the phone's share sheet.
@@ -69,13 +71,13 @@ The couple manages every detail from a dashboard and gets a push notification on
 
 ## 👀 Try the dashboard
 
-Open **[lazodoro.vercel.app/admin](https://lazodoro.vercel.app/admin)** and sign in with the read-only demo account:
+Open **[lazodeoro.vercel.app/panel/login](https://lazodeoro.vercel.app/panel/login)** and sign in with the read-only demo account:
 
 | Email | Password |
 | --- | --- |
 | `demo@plataforma-bodas.app` | `VerLaDemo2026!` |
 
-You can explore every screen; the database rejects any change made with this account. The guest side is at **[/demo](https://lazodoro.vercel.app/demo)** — try confirming attendance from your phone.
+You can explore every screen; the database rejects any change made with this account. The guest side is at **[/demo](https://lazodeoro.vercel.app/demo)** — try confirming attendance from your phone.
 
 ## 🧱 Tech stack
 
@@ -101,7 +103,7 @@ flowchart LR
   SA -->|service-role RPC| DB[(Postgres + RLS)]
   SA -.->|after response| PUSH[[Web Push]]
   PUSH -.-> Couple([Couple's phone])
-  Couple --> ADM["/admin dashboard"]
+  Couple --> ADM["/panel dashboard"]
   ADM -->|session + RLS| DB
   ADM -->|direct upload| ST[(Storage)]
   ADM -->|updateTag| INV
@@ -127,7 +129,7 @@ npm run demo:seed               # optional: fictional wedding at /demo
 npm run dev
 ```
 
-Open [localhost:3000/demo](http://localhost:3000/demo). To manage a wedding, create a user in Supabase Auth and link it:
+Open [localhost:3000/demo](http://localhost:3000/demo), or design an invitation at [localhost:3000/crear](http://localhost:3000/crear) and publish it by signing in. To create a wedding by hand for an existing account:
 
 ```bash
 npm run wedding:create -- ana-y-luis "Ana López" "Luis Pérez"

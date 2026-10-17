@@ -4,6 +4,8 @@ Day-to-day tasks for whoever runs the platform. Setup is covered in [deployment.
 
 ## Onboarding a couple
 
+Couples onboard themselves: they design their invitation at `/crear`, sign in with Google or an emailed code, and it is published on the spot. The manual path below is for couples who need help.
+
 1. **Create their account** in Supabase: **Authentication → Users → Add user**, with *Auto Confirm*. Send them the password through a private channel and ask them to change it from *¿Olvidaste tu contraseña?* on the login page.
 2. **Create the wedding and link the account:**
 
@@ -12,7 +14,7 @@ Day-to-day tasks for whoever runs the platform. Setup is covered in [deployment.
    npm run admin:link -- couple@email.com ana-y-luis
    ```
 
-3. The couple fills in everything from the dashboard — date, content, photos, music, Zelle, template — previews it and publishes it from **Ajustes**, which opens the share dialog.
+3. The couple fills in everything from the dashboard — date, content, photos, music, gifts, template — previews it and publishes it from **Ajustes**, which opens the share dialog.
 4. Suggest installing the dashboard on their phone (*Add to Home Screen*) and enabling notifications in **Ajustes**.
 
 To give someone read-only access (a planner, a relative), link their account with `--viewer`.

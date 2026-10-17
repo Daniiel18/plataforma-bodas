@@ -12,29 +12,39 @@ The whole stack runs on free tiers: **Vercel Hobby** for the app and **Supabase 
    npm run db:migrate
    ```
 
-4. Create a wedding and give the couple access. Create their user under **Authentication → Users → Add user** (with "Auto Confirm"), then:
+4. Couples create their account by signing in at `/entrar` and their wedding by publishing from `/crear`. To set one up by hand, create the user under **Authentication → Users → Add user** (with "Auto Confirm"), then:
 
    ```bash
    npm run wedding:create -- ana-y-luis "Ana López" "Luis Pérez"
    npm run admin:link -- couple@email.com ana-y-luis
    ```
 
-5. Under **Authentication → URL Configuration**, set the **Site URL** to your production domain and add `https://<your-domain>/**` to the redirect URLs (used by password recovery). Add `http://localhost:3000/**` too if you develop against the same project.
+5. Under **Authentication → URL Configuration**, set the **Site URL** to your production domain and add `https://<your-domain>/**` to the redirect URLs (used by sign-in links and password recovery). Add `http://localhost:3000/**` too if you develop against the same project.
 
 ### Supabase settings
 
-Accounts are created by the platform's operator, never by visitors, so the project can be locked down:
-
 | Setting | Where | Recommended |
 | --- | --- | --- |
-| Allow new users to sign up | Authentication → Sign In / Providers | **Off** — the dashboard has no sign-up page; create accounts with *Add user* |
+| Allow new users to sign up | Authentication → Sign In / Providers | **On** — couples create their account the first time they sign in |
+| Google | Authentication → Sign In / Providers → Google | On, with the client ID and secret from [Google sign-in](#google-sign-in) |
+| Email OTP length | Authentication → Sign In / Providers → Email | **6** digits |
+| Email templates | Authentication → Emails → *Confirm sign up* and *Magic link* | Subject and body branch on the language: `{{ if eq (printf "%v" .Data.locale) "en" }}…{{ else }}…{{ end }}`. Show `{{ .Token }}` and link to `{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email` |
 | Confirm email | Authentication → Sign In / Providers | On |
 | Minimum password length | Authentication → Sign In / Providers → Email | **8** or more, with letters and digits required |
 | Secure email change | Authentication → Sign In / Providers → Email | On |
 | Leaked password protection | Authentication → Attack Protection | Pro plan only; enable it when upgrading |
-| Custom SMTP | Authentication → Emails | The built-in mailer sends only a few emails per hour — enough for password recovery; configure SMTP before onboarding many couples |
+| Custom SMTP | Authentication → Emails | **Required**: the built-in mailer sends only a few emails per hour. A Gmail account of the brand with an app password works for launch (about 500 emails a day) |
 | Bucket `wedding-media` | Storage | Public read, 15 MB per file, images and audio only (set by the migrations) |
 | Advisors | Advisors → Security / Performance | Rerun after every migration; the only expected warning is leaked password protection |
+
+### Google sign-in
+
+In [Google Cloud](https://console.cloud.google.com) → **Google Auth Platform**:
+
+1. **Branding:** app name *Lazo de Oro*, the 120×120 logo, support email, home page, privacy policy (`/privacidad`) and terms (`/terminos`) on the production domain, which also goes under *Authorized domains*.
+2. **Audience:** External and *In production*. Only the basic scopes (`openid`, `email`, `profile`) are used, so no app review is needed.
+3. **Clients → Web application:** add every production domain and `http://localhost:3000` to *Authorized JavaScript origins* (the button only works on these origins), and `https://<project-ref>.supabase.co/auth/v1/callback` to *Authorized redirect URIs* (fallback redirect flow). Paste the client ID and secret into Supabase's Google provider; the client ID is public and also lives in `src/lib/site.ts`.
+4. **Brand verification:** verify the production domain in Google Search Console and submit the branding in the Verification Center, so the consent screen shows the logo.
 
 ## 2. Environment variables
 
@@ -45,6 +55,7 @@ Accounts are created by the platform's operator, never by visitors, so the proje
 | `SUPABASE_SECRET_KEY` | server | Secret key for RSVP functions and push delivery |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | public / server | Web Push keys — generate with `npx web-push generate-vapid-keys` |
 | `VAPID_SUBJECT` | server | Contact URL for push services (your production URL) |
+| `NEXT_PUBLIC_SITE_URL` | public, optional | Canonical URL for links, sitemap and share messages (defaults to `https://lazodeoro.vercel.app`) |
 | `IP_HASH_SALT` | server | Random string used to hash IPs for rate limiting |
 | `CRON_SECRET` | server | Random string; Vercel sends it to `/api/keep-alive` |
 | `MYMEMORY_EMAIL` | server, optional | Raises the free translation quota from ~5k to ~50k characters/day |
