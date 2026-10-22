@@ -91,6 +91,12 @@ export function isPast(date: Date | string) {
   return new Date(date).getTime() <= Date.now();
 }
 
+/** The most recent of several timestamps; missing ones are skipped. */
+export function latest(...values: (string | null | undefined)[]) {
+  // Compared as dates: Postgres and Supabase Auth format timestamps differently.
+  return values.reduce<string | null>((max, v) => (v && (!max || Date.parse(v) > Date.parse(max)) ? v : max), null);
+}
+
 export function isValidTimeZone(timeZone: string) {
   try {
     new Intl.DateTimeFormat("en-US", { timeZone });

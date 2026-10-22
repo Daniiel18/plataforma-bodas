@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { cache } from "react";
 
+import { recordLastSeen } from "@/lib/last-seen";
 import { createClient } from "@/lib/supabase/server";
 import type { Wedding } from "@/lib/types";
 
@@ -43,6 +44,8 @@ export const getAdminContext = cache(async () => {
     .eq("id", membership.wedding_id)
     .single<Wedding>();
   if (error || !wedding) redirect("/panel/sin-acceso");
+
+  recordLastSeen(claims.sub);
 
   return {
     supabase,

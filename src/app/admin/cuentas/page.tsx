@@ -6,7 +6,7 @@ import { BlockSkeleton, PageHeader } from "@/app/panel/(panel)/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { accountCategories, getPlatformAdmin } from "@/lib/platform-admin";
+import { accountCategories, getPlatformAdmin, lastSeenByAccount } from "@/lib/platform-admin";
 
 import { formatDate } from "../ui";
 import { DeleteAccount, SetTestPassword, TestToggle } from "./test-toggle";
@@ -41,6 +41,7 @@ async function AccountList() {
   const slugs = new Map((weddings ?? []).map((w) => [w.id, w.slug]));
   const isAdmin = categories.adminIds;
   const accounts = [...(users.data?.users ?? [])].sort((a, b) => b.created_at.localeCompare(a.created_at));
+  const lastSeen = await lastSeenByAccount(db, accounts);
 
   return (
     <Card className="overflow-hidden p-0">
@@ -51,7 +52,7 @@ async function AccountList() {
             <TableHead className="hidden sm:table-cell">Entra con</TableHead>
             <TableHead>Boda</TableHead>
             <TableHead className="hidden md:table-cell">Desde</TableHead>
-            <TableHead className="hidden md:table-cell">Última vez</TableHead>
+            <TableHead className="hidden md:table-cell">Último acceso</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -94,7 +95,7 @@ async function AccountList() {
                     : "—"}
                 </TableCell>
                 <TableCell className="hidden text-sm md:table-cell">{formatDate(u.created_at)}</TableCell>
-                <TableCell className="hidden text-sm md:table-cell">{formatDate(u.last_sign_in_at, true)}</TableCell>
+                <TableCell className="hidden text-sm md:table-cell">{formatDate(lastSeen.get(u.id), true)}</TableCell>
               </TableRow>
             );
           })}

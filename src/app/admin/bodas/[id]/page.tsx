@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { lifecycleDates } from "@/lib/lifecycle";
 import { findTrack } from "@/lib/music-library";
-import { getPlatformAdmin, PROTECTED_SLUGS } from "@/lib/platform-admin";
+import { getPlatformAdmin, lastSeenByAccount, PROTECTED_SLUGS } from "@/lib/platform-admin";
 import { parseContent } from "@/lib/sections";
 import { SITE_URL } from "@/lib/site";
 
@@ -66,6 +66,10 @@ async function WeddingDetail({ params }: { params: PageProps<"/admin/bodas/[id]"
 
   const accounts = await Promise.all(
     (members ?? []).map(async (m) => ({ ...m, user: (await db.auth.admin.getUserById(m.user_id)).data.user })),
+  );
+  const lastSeen = await lastSeenByAccount(
+    db,
+    accounts.flatMap((a) => (a.user ? [a.user] : [])),
   );
   const s = (stats as { responses: number; attending: number; total_people: number; wishes: number }[] | null)?.[0];
   const used = ((storage ?? []) as { wedding_id: string; bytes: number; files: number }[]).find(
@@ -168,7 +172,8 @@ async function WeddingDetail({ params }: { params: PageProps<"/admin/bodas/[id]"
                   {(user?.app_metadata?.providers as string[] | undefined)?.join(", ") ?? "—"}
                 </p>
                 <p className="text-muted-foreground">
-                  Cuenta desde {formatDate(user?.created_at)} · última vez {formatDate(user?.last_sign_in_at, true)}
+                  Cuenta desde {formatDate(user?.created_at)} · último acceso{" "}
+                  {formatDate(user && lastSeen.get(user.id), true)}
                 </p>
               </div>
             ))}

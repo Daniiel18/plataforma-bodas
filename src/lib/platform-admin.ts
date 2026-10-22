@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { cache } from "react";
 
+import { latest } from "@/lib/dates";
+import { recordLastSeen } from "@/lib/last-seen";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -22,6 +24,8 @@ export const getPlatformAdmin = cache(async () => {
   // RLS lets each account read only its own admin row.
   const { data: admin } = await supabase.from("platform_admins").select("role").eq("user_id", userId).maybeSingle();
   if (!admin) redirect("/panel");
+
+  recordLastSeen(userId);
 
   return {
     userId,
@@ -89,4 +93,17 @@ export async function accountCategories(db: ReturnType<typeof createAdminClient>
     isRealAccount: (id: string) => !adminIds.has(id) && !testIds.has(id),
     isRealWedding: (w: { id: string; slug: string }) => !PROTECTED_SLUGS.has(w.slug) && realOwners.get(w.id) === true,
   };
+}
+
+/**
+ * When each account last used the platform: its last visit to the dashboard
+ * (profiles.last_seen_at) or its last sign-in, whichever is more recent.
+ */
+export async function lastSeenByAccount(
+  db: ReturnType<typeof createAdminClient>,
+  users: { id: string; last_sign_in_at?: string | null }[],
+) {
+  const { data } = await db.from("profiles").select("id, last_seen_at");
+  const seen = new Map((data ?? []).map((p) => [p.id as string, p.last_seen_at as string | null]));
+  return new Map(users.map((u) => [u.id, latest(seen.get(u.id), u.last_sign_in_at)]));
 }

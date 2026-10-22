@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { dateToZonedInput, daysUntil, isPast, isValidTimeZone, zonedInputToDate } from "./dates";
+import { dateToZonedInput, daysUntil, isPast, isValidTimeZone, latest, zonedInputToDate } from "./dates";
 
 describe("zonedInputToDate", () => {
   it("interprets the local wall time in the wedding's time zone", () => {
@@ -42,5 +42,18 @@ describe("time helpers", () => {
   it("validates IANA time zones", () => {
     expect(isValidTimeZone("America/Santo_Domingo")).toBe(true);
     expect(isValidTimeZone("Mars/Olympus_Mons")).toBe(false);
+  });
+});
+
+describe("latest", () => {
+  it("compares the instants, not the text, across Postgres and Supabase Auth formats", () => {
+    // Same day: Auth writes "…Z" with milliseconds, Postgres "+00:00" with microseconds.
+    expect(latest("2026-10-21T15:16:20.250123+00:00", "2026-10-21T15:16:20.9Z")).toBe("2026-10-21T15:16:20.9Z");
+    expect(latest("2026-10-17T17:45:46.639Z", "2026-10-21T15:16:20.25+00:00")).toBe("2026-10-21T15:16:20.25+00:00");
+  });
+
+  it("skips missing values", () => {
+    expect(latest(null, "2026-10-19T12:50:09.639Z", undefined)).toBe("2026-10-19T12:50:09.639Z");
+    expect(latest(null, undefined)).toBeNull();
   });
 });

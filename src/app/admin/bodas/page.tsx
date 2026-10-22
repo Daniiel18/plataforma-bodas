@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { accountCategories, getPlatformAdmin } from "@/lib/platform-admin";
+import { latest } from "@/lib/dates";
+import { accountCategories, getPlatformAdmin, lastSeenByAccount } from "@/lib/platform-admin";
 
 import { formatBytes, formatDate, StatusBadge } from "../ui";
 
@@ -56,10 +57,18 @@ async function WeddingList({ searchParams }: { searchParams: PageProps<"/admin/b
     db.from("rsvps").select("wedding_id, attending").eq("is_archived", false),
     db.rpc("storage_by_wedding"),
   ]);
-  const categories = await accountCategories(db);
+  const [categories, lastSeen] = await Promise.all([
+    accountCategories(db),
+    lastSeenByAccount(db, users.data?.users ?? []),
+  ]);
 
   const emails = new Map((users.data?.users ?? []).map((u) => [u.id, u.email ?? ""]));
   const owner = new Map((members ?? []).map((m) => [m.wedding_id, emails.get(m.user_id) ?? ""]));
+  // The most recent access among the wedding's owners.
+  const ownerSeen = new Map<string, string | null>();
+  for (const m of members ?? []) {
+    ownerSeen.set(m.wedding_id, latest(ownerSeen.get(m.wedding_id), lastSeen.get(m.user_id)));
+  }
   const replies = new Map<string, number>();
   for (const r of rsvps ?? []) replies.set(r.wedding_id, (replies.get(r.wedding_id) ?? 0) + 1);
   const bytes = new Map(
@@ -116,6 +125,7 @@ async function WeddingList({ searchParams }: { searchParams: PageProps<"/admin/b
               <TableHead className="text-right">Respuestas</TableHead>
               <TableHead className="hidden text-right sm:table-cell">Archivos</TableHead>
               <TableHead className="hidden lg:table-cell">Creada</TableHead>
+              <TableHead className="hidden lg:table-cell">Último acceso</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -145,11 +155,12 @@ async function WeddingList({ searchParams }: { searchParams: PageProps<"/admin/b
                   {formatBytes(bytes.get(w.id) ?? 0)}
                 </TableCell>
                 <TableCell className="hidden text-sm lg:table-cell">{formatDate(w.created_at)}</TableCell>
+                <TableCell className="hidden text-sm lg:table-cell">{formatDate(ownerSeen.get(w.id), true)}</TableCell>
               </TableRow>
             ))}
             {!rows.length && (
               <TableRow>
-                <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={7} className="py-10 text-center text-sm text-muted-foreground">
                   Ninguna boda coincide.
                 </TableCell>
               </TableRow>
