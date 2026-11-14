@@ -1,19 +1,20 @@
 version: 2
 updates:
+  # One pull request a month with every minor and patch update, and security
+  # fixes grouped together as soon as they are published.
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: weekly
-      day: monday
-    open-pull-requests-limit: 5
+      interval: monthly
+    open-pull-requests-limit: 3
     groups:
-      next-and-react:
-        patterns: ["next", "react", "react-dom", "eslint-config-next", "@types/react*"]
-      supabase:
-        patterns: ["@supabase/*"]
-      tooling:
-        dependency-type: development
+      npm-updates:
+        applies-to: version-updates
+        patterns: ["*"]
         update-types: ["minor", "patch"]
+      npm-security:
+        applies-to: security-updates
+        patterns: ["*"]
     ignore:
       # Tracks the Node.js runtime in .nvmrc; bumped by hand together with it.
       - dependency-name: "@types/node"
@@ -28,5 +29,8 @@ updates:
     directory: /
     schedule:
       interval: monthly
+    groups:
+      github-actions:
+        patterns: ["*"]
     commit-message:
       prefix: "ci(deps)"

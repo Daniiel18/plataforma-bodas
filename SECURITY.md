@@ -21,4 +21,5 @@ including steps to reproduce and the potential impact. You will get a first resp
 
 | Package | Advisory | Status |
 | --- | --- | --- |
-| `braces` ≤ 3.0.3 (via `fast-glob`, used by ESLint and the shadcn CLI) | [GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) | Development tooling only, not part of the deployed app (`npm audit --omit=dev` reports 0 vulnerabilities). No patched release exists yet; Dependabot will pick it up automatically. |
+| `uuid` < 11.1.1 (via `exceljs`, used for the guest list export) | [GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq) | Not reachable: it affects `uuid` v3, v5 and v6 when a buffer is passed, and `exceljs` only calls v4. The only fix npm offers is a breaking `exceljs` downgrade, so it waits for an `exceljs` release. |
+| `minimatch` 7–11.0.0 and `deepmerge` 4.2–4.3.1 (via the shadcn CLI and ESLint) | [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249), [GHSA-gcqx-w48m-w2h4](https://github.com/advisories/GHSA-gcqx-w48m-w2h4) | Development tooling only, not part of the deployed app. No compatible release yet; Dependabot will pick it up automatically. |

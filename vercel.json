@@ -3,5 +3,8 @@
   "crons": [
     { "path": "/api/keep-alive", "schedule": "0 12 * * *" },
     { "path": "/api/cron/lifecycle", "schedule": "0 9 * * *" }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": { "dependabot/**": false }
+  }
 }
